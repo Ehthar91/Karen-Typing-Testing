@@ -227,6 +227,10 @@
   .language-switch button {
     padding: 6px 9px;
   }
+  .language-switch {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
   .brand small {
     display: none;
   }

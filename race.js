@@ -33,6 +33,9 @@ function makeRoomCode(){
 }
 function cleanName(value){return String(value||'').trim().replace(/\s+/g,' ').slice(0,24)}
 function cleanWords(value){return String(value||'').replace(/[,;\n\r\t]+/g,' ').trim().replace(/\s+/g,' ').slice(0,800)}
+const PWO_RACE_MARKER='\u2060';
+function storedRacePassage(passage,language){return language==='pwo'?PWO_RACE_MARKER+passage:passage}
+function racePassageInfo(value){const stored=String(value||'');if(stored.startsWith(PWO_RACE_MARKER))return{language:'pwo',text:stored.slice(1)};return{language:/^[\x00-\x7F]*$/.test(stored)?'en':'ksw',text:stored}}
 function roomRef(code){return fb.ref(db,`rooms/${code}`)}
 function playerRef(code,uid){return fb.ref(db,`rooms/${code}/players/${uid}`)}
 
@@ -57,7 +60,7 @@ document.querySelector('#createRaceForm').onsubmit=async e=>{
   e.preventDefault();raceError('');
   const passage=cleanWords(document.querySelector('#raceWordsInput').value);
   try{
-    if(!passage) throw new Error('Paste at least one Karen word for the race.');
+    if(!passage) throw new Error(`Paste at least one ${languageName()} word for the race.`);
     await initRaceFirebase();
     let created=false,tries=0;
     while(!created && tries<10){
@@ -69,7 +72,7 @@ document.querySelector('#createRaceForm').onsubmit=async e=>{
       const now=Date.now();
       await fb.set(ref,{
         hostUid:currentUser.uid,
-        passage,
+        passage:storedRacePassage(passage,typingLanguage),
         status:'waiting',
         createdAt:now,
         expiresAt:now+14400000,
@@ -99,7 +102,7 @@ document.querySelector('#joinRaceForm').onsubmit=async e=>{
     const players=Object.values(room.players||{});
     if(players.length>=30) throw new Error('This room is full.');
     if(players.some(p=>String(p.name||'').toLowerCase()===name.toLowerCase())) throw new Error('That name is already in this room. Add an initial.');
-    raceCode=code;racePlayerId=currentUser.uid;racePlayerName=name;raceMode='player';raceLanguage=/^[\x00-\x7F]*$/.test(room.passage||'')?'en':'ksw';
+    raceCode=code;racePlayerId=currentUser.uid;racePlayerName=name;raceMode='player';raceLanguage=racePassageInfo(room.passage).language;
     await fb.set(playerRef(code,currentUser.uid),{
       id:currentUser.uid,name,progress:0,wpm:0,accuracy:100,
       color:players.length%carColors.length,joinedAt:Date.now(),finishedAt:0
@@ -152,8 +155,8 @@ function watchRace(){
   },()=>document.querySelector('#raceConnection').textContent='Reconnecting…');
 }
 function beginLiveRace(data){
-  raceLobby.hidden=true;raceLive.hidden=false;raceLanguage=/^[\x00-\x7F]*$/.test(data.passage||'')?'en':'ksw';racePassageText=data.passage;raceTyped='';raceStartedAt=Date.now();raceCorrect=0;raceErrors=0;
-  document.querySelector('#racePassage').lang=raceLanguage==='en'?'en':'ksw';
+  const passageInfo=racePassageInfo(data.passage);raceLobby.hidden=true;raceLive.hidden=false;raceLanguage=passageInfo.language;racePassageText=passageInfo.text;raceTyped='';raceStartedAt=Date.now();raceCorrect=0;raceErrors=0;
+  document.querySelector('#racePassage').lang=raceLanguage==='en'?'en':raceLanguage==='pwo'?'kjp':'ksw';
   renderRacePassage();renderRaceKeyboard();
   if(raceMode==='host')document.querySelector('#racePrompt').textContent='Teacher view — watch the racers move live.';
 }
@@ -233,6 +236,6 @@ document.addEventListener('keydown',e=>{
   }
   e.preventDefault();acceptRaceInput(value)
 });
-function updateRaceLanguageInput(){const input=document.querySelector('#raceWordsInput'),english=typingLanguage==='en';input.lang=english?'en':'ksw';input.placeholder=english?'family\nmother\nfather':'မိၢ်\nပၢ်\nမိၢ်ပၢ်';document.querySelector('#createRaceForm p').textContent=english?'Paste the English words your students will type.':'Paste the Karen words your students will type.';document.querySelector('.race-intro p').textContent=english?'Everyone types the same English passage. Accurate typing moves your car toward the finish line.':'Everyone types the same Karen passage. Accurate typing moves your car toward the finish line.'}
+function updateRaceLanguageInput(){const input=document.querySelector('#raceWordsInput'),english=typingLanguage==='en',pwo=typingLanguage==='pwo',name=languageName();input.lang=languageTag();input.placeholder=english?'family\nmother\nfather':pwo?'ဆ\nတ\nန\nမ':'မိၢ်\nပၢ်\nမိၢ်ပၢ်';document.querySelector('#createRaceForm p').textContent=`Paste the ${name} words your students will type.`;document.querySelector('.race-intro p').textContent=`Everyone types the same ${name} passage. Accurate typing moves your car toward the finish line.`}
 window.addEventListener('typinglanguagechange',()=>{if(raceJoin&&!raceJoin.hidden){raceLanguage=typingLanguage;updateRaceLanguageInput()}});
 updateRaceLanguageInput();
