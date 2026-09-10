@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="games.css" />
   <link rel="stylesheet" href="race.css" />
   <link rel="stylesheet" href="mobile-keyboard.css" />
+  <link rel="stylesheet" href="race-modern.css" />
 </head>
 <body>
   <main class="app-shell">
@@ -104,12 +105,24 @@
           <div class="player-chips" id="lobbyPlayers"></div>
         </div>
         <div class="race-live" id="raceLive" hidden>
+          <div class="race-countdown" id="raceCountdown" hidden><strong id="raceCountdownText">3</strong></div>
           <div class="race-status"><span id="raceStatusText">Race in progress</span><strong id="racePosition">—</strong></div>
           <div class="race-track" id="raceTrack"></div>
           <div class="race-passage" id="racePassage" lang="ksw"></div>
           <div class="race-key-instruction" id="raceKeyInstruction" aria-live="polite"></div>
           <p class="race-prompt" id="racePrompt">Start typing with your English keyboard.</p>
           <div class="race-keyboard keyboard" id="raceKeyboard"></div>
+          <section class="race-results" id="raceResults" hidden aria-labelledby="raceResultsTitle">
+            <div class="confetti" aria-hidden="true"></div>
+            <p class="results-eyebrow">🏁 RACE COMPLETE 🏁</p>
+            <h2 id="raceResultsTitle">Final Results</h2>
+            <div class="race-podium" id="racePodium"></div>
+            <div class="other-racers" id="raceOthers" hidden><h3>Other Racers</h3><div id="raceOtherList"></div></div>
+            <div class="results-actions" id="raceResultActions">
+              <button class="button primary" id="raceAgain" type="button">↻ Race Again</button>
+              <button class="button ghost" id="raceNewWords" type="button">New Word List</button>
+            </div>
+          </section>
         </div>
       </section>
       <p class="privacy"><span aria-hidden="true">●</span> Race rooms expire after four hours.</p>

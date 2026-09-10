@@ -1,8 +1,9 @@
-const raceStage=document.querySelector('#raceStage'),raceJoin=document.querySelector('#raceJoin'),raceLobby=document.querySelector('#raceLobby'),raceLive=document.querySelector('#raceLive');
-let raceCode='',racePlayerId='',racePlayerName='',racePassageText='',raceTyped='',raceSendTimer=null,raceStartedAt=0,raceCorrect=0,raceErrors=0,raceMode='',raceUnsubscribe=null,raceLanguage=typingLanguage;
+const raceStage=document.querySelector('#raceStage'),raceJoin=document.querySelector('#raceJoin'),raceLobby=document.querySelector('#raceLobby'),raceLive=document.querySelector('#raceLive'),raceResults=document.querySelector('#raceResults');
+let raceCode='',racePlayerId='',racePlayerName='',racePassageText='',raceTyped='',raceSendTimer=null,raceCountdownTimer=null,raceCountdownDone=true,raceStartedAt=0,raceCorrect=0,raceErrors=0,raceMode='',raceUnsubscribe=null,raceLanguage=typingLanguage,raceLastStatus='',raceFinishing=false;
 let fb=null,db=null,auth=null,currentUser=null;
-const carColors=['🚗','🚙','🏎️','🚕','🚓','🚘'];
+const carColors=['#ef3340','#1687e8','#19a974','#f5a623','#8b5cf6','#ec4899'];
 const CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function raceCarGraphic(colorIndex=0){const color=carColors[colorIndex%carColors.length];return `<svg class="race-car-svg" viewBox="0 0 120 52" aria-hidden="true"><path class="car-shadow" d="M14 43h92"/><path fill="${color}" d="M8 34c2-7 8-10 18-11l15-13h35c10 0 18 5 25 13l12 3c4 1 6 4 6 9v6H8z"/><path fill="#dff4ff" d="M45 13h27c7 0 13 3 20 10H34z"/><path fill="rgba(255,255,255,.45)" d="M20 27h78l-7 5H17z"/><path fill="#fff" d="M103 27h9v5h-12z"/><circle cx="31" cy="40" r="9" fill="#17233b"/><circle cx="31" cy="40" r="4" fill="#cbd5e1"/><circle cx="92" cy="40" r="9" fill="#17233b"/><circle cx="92" cy="40" r="4" fill="#cbd5e1"/></svg>`}
 
 async function initRaceFirebase(){
   if(currentUser) return currentUser;
@@ -45,13 +46,13 @@ function openRace(){
   document.querySelector('#raceCodeInput').value='';
   document.querySelector('#raceNameInput').value='';
   document.querySelector('#raceWordsInput').value='';
-  raceLanguage=typingLanguage;updateRaceLanguageInput();
+  raceLanguage=typingLanguage;raceLastStatus='';raceFinishing=false;raceResults.hidden=true;updateRaceLanguageInput();
   document.querySelector('#raceConnection').textContent='Connecting…';
   initRaceFirebase().then(()=>document.querySelector('#raceConnection').textContent='Online').catch(()=>{});
 }
 function closeRace(){
   if(raceUnsubscribe){raceUnsubscribe();raceUnsubscribe=null}
-  clearTimeout(raceSendTimer);raceStage.hidden=true;raceCode='';racePlayerId='';raceTyped='';raceMode='';
+  clearTimeout(raceSendTimer);clearInterval(raceCountdownTimer);raceStage.hidden=true;raceCode='';racePlayerId='';raceTyped='';raceMode='';raceLastStatus='';raceResults.hidden=true;
 }
 document.querySelector('#backRace').onclick=()=>{closeRace();gameGrid.hidden=false};
 function raceError(message){document.querySelector('#raceError').textContent=message}
@@ -112,7 +113,7 @@ document.querySelector('#joinRaceForm').onsubmit=async e=>{
 };
 
 function showRaceLobby(data){
-  raceJoin.hidden=true;raceLobby.hidden=false;raceLive.hidden=true;
+  raceJoin.hidden=true;raceLobby.hidden=false;raceLive.hidden=true;raceLive.classList.remove('show-results');raceResults.hidden=true;
   document.querySelector('#roomCode').textContent=raceCode;
   document.querySelector('#startRace').hidden=raceMode!=='host';
   document.querySelector('#lobbyTitle').textContent=raceMode==='host'?'Waiting for racers':'You are in!';
@@ -137,7 +138,7 @@ document.querySelector('#startRace').onclick=async()=>{
     const room=snap.val();
     if(room.hostUid!==currentUser.uid) throw new Error('Only the teacher who created this room can start it.');
     if(!Object.keys(room.players||{}).length) throw new Error('Wait for at least one student to join.');
-    await fb.update(roomRef(raceCode),{status:'racing',startedAt:Date.now()});
+    await fb.update(roomRef(raceCode),{status:'racing',startedAt:Date.now()+3500});
   }catch(error){document.querySelector('#lobbyHint').textContent=error.message}
 };
 
@@ -148,25 +149,32 @@ function watchRace(){
     const room=snap.val();
     document.querySelector('#raceConnection').textContent='Online';
     const players=Object.values(room.players||{});
-    if(room.status==='waiting'){renderLobbyPlayers(players);return}
+    if(room.status==='waiting'){
+      const returning=raceLastStatus==='racing'||raceLastStatus==='finished';raceLastStatus='waiting';
+      if(returning){raceTyped='';raceFinishing=false;showRaceLobby({players});if(raceMode==='player'&&racePlayerId){const me=(room.players||{})[racePlayerId];if(me&&(me.progress||me.finishedAt))fb.update(playerRef(raceCode,racePlayerId),{progress:0,wpm:0,accuracy:100,finishedAt:0}).catch(()=>{})}}
+      else renderLobbyPlayers(players);return
+    }
+    raceLastStatus=room.status;
     const data={...room,players};
     if(raceLive.hidden)beginLiveRace(data);
     renderRace(data);
   },()=>document.querySelector('#raceConnection').textContent='Reconnecting…');
 }
 function beginLiveRace(data){
-  const passageInfo=racePassageInfo(data.passage);raceLobby.hidden=true;raceLive.hidden=false;raceLanguage=passageInfo.language;racePassageText=passageInfo.text;raceTyped='';raceStartedAt=Date.now();raceCorrect=0;raceErrors=0;
+  const passageInfo=racePassageInfo(data.passage);raceLobby.hidden=true;raceLive.hidden=false;raceLive.classList.remove('show-results');raceResults.hidden=true;raceLanguage=passageInfo.language;racePassageText=passageInfo.text;raceTyped='';raceStartedAt=data.startedAt||Date.now();raceCorrect=0;raceErrors=0;
   document.querySelector('#racePassage').lang=raceLanguage==='en'?'en':raceLanguage==='pwo'?'kjp':'ksw';
   renderRacePassage();renderRaceKeyboard();
+  startRaceCountdown(raceStartedAt);
   if(raceMode==='host')document.querySelector('#racePrompt').textContent='Teacher view — watch the racers move live.';
 }
+function startRaceCountdown(startAt){clearInterval(raceCountdownTimer);const overlay=document.querySelector('#raceCountdown'),label=document.querySelector('#raceCountdownText');const update=()=>{const left=startAt-Date.now();if(left<=0){label.textContent='GO!';raceCountdownDone=true;setTimeout(()=>{overlay.hidden=true},550);clearInterval(raceCountdownTimer);return}raceCountdownDone=false;overlay.hidden=false;label.textContent=String(Math.max(1,Math.ceil(left/1000)))};update();raceCountdownTimer=setInterval(update,180)}
 function renderRace(data){
   const players=[...(data.players||[])].sort((a,b)=>b.progress-a.progress||((a.finishedAt||Infinity)-(b.finishedAt||Infinity))||a.joinedAt-b.joinedAt);
   const track=document.querySelector('#raceTrack');track.innerHTML='';
   players.forEach((player,index)=>{
     const lane=document.createElement('div');lane.className='race-lane';
     const name=document.createElement('span');name.className='race-lane-name';name.textContent=`${index+1}. ${player.name}`;
-    const car=document.createElement('span');car.className='race-car';car.textContent=carColors[(player.color||0)%carColors.length];car.style.left=`${Math.min(91,(player.progress||0)*.91)}%`;
+    const car=document.createElement('span');car.className='race-car';car.innerHTML=raceCarGraphic(player.color||0);car.style.left=`${Math.min(88,(player.progress||0)*.88)}%`;
     const finish=document.createElement('span');finish.className='race-finish';lane.append(name,car,finish);track.appendChild(lane)
   });
   if(racePlayerId){
@@ -177,8 +185,12 @@ function renderRace(data){
   if(allFinished){
     document.querySelector('#raceStatusText').textContent='Race finished!';
     document.querySelector('#racePrompt').textContent=players[0]?`Winner: ${players[0].name}`:'Race finished';
+    renderRaceResults(players);
+    if(raceMode==='host'&&!raceFinishing&&data.status!=='finished'){raceFinishing=true;fb.update(roomRef(raceCode),{status:'finished'}).catch(()=>{raceFinishing=false})}
   }else document.querySelector('#raceStatusText').textContent='Race in progress';
 }
+function makePodiumPlace(player,place){const card=document.createElement('article');card.className=`podium-place place-${place}`;const medal=document.createElement('span');medal.className='podium-medal';medal.textContent=place===1?'🥇':place===2?'🥈':'🥉';const car=document.createElement('div');car.className='podium-car';car.innerHTML=raceCarGraphic(player.color||0);const name=document.createElement('strong');name.textContent=player.name;const stats=document.createElement('span');stats.textContent=`${Math.round(player.wpm||0)} WPM · ${Math.round(player.accuracy??100)}%`;const block=document.createElement('div');block.className='podium-block';block.dataset.place=place;block.append(name,stats);card.append(medal,car,block);return card}
+function renderRaceResults(players){if(!players.length)return;const podium=document.querySelector('#racePodium'),otherBox=document.querySelector('#raceOthers'),otherList=document.querySelector('#raceOtherList');podium.innerHTML='';otherList.innerHTML='';const order=[players[1]&&[players[1],2],players[0]&&[players[0],1],players[2]&&[players[2],3]].filter(Boolean);order.forEach(([player,place])=>podium.appendChild(makePodiumPlace(player,place)));players.slice(3).forEach((player,index)=>{const row=document.createElement('div');const place=document.createElement('b');place.textContent=`${index+4}.`;const name=document.createElement('span');name.textContent=player.name;const stats=document.createElement('span');stats.textContent=`${Math.round(player.wpm||0)} WPM · ${Math.round(player.accuracy??100)}%`;row.append(place,name,stats);otherList.appendChild(row)});otherBox.hidden=players.length<=3;document.querySelector('#raceResultActions').hidden=raceMode!=='host';raceLive.classList.add('show-results');raceResults.hidden=false}
 function raceExpected(){
   if(racePassageText[raceTyped.length]===' ')return{key:'Space',value:' ',shift:false};
   return allMappings(raceLanguage).find(item=>racePassageText.startsWith(item.value,raceTyped.length))||null
@@ -207,7 +219,7 @@ function renderRaceKeyboard(){
   if(expected?.key==='Space')space.classList.add('expected');space.onclick=()=>acceptRaceInput(' ');line.append(leftShift,space,rightShift);box.appendChild(line)
 }
 function acceptRaceInput(value){
-  if(raceMode!=='player'||raceLive.hidden||raceTyped.length>=racePassageText.length)return;
+  if(raceMode!=='player'||raceLive.hidden||!raceCountdownDone||raceTyped.length>=racePassageText.length)return;
   const remaining=racePassageText.slice(raceTyped.length);
   if(remaining.startsWith(value)){
     raceTyped+=value;raceCorrect+=value.length;document.querySelector('#racePrompt').textContent='Keep going!';
@@ -236,6 +248,15 @@ document.addEventListener('keydown',e=>{
   }
   e.preventDefault();acceptRaceInput(value)
 });
+document.querySelector('#raceAgain').onclick=async()=>{
+  if(raceMode!=='host')return;
+  try{
+    const snap=await fb.get(roomRef(raceCode));if(!snap.exists())throw new Error('Room not found.');const room=snap.val(),updates={status:'waiting',startedAt:0};
+    Object.keys(room.players||{}).forEach(uid=>{updates[`players/${uid}/progress`]=0;updates[`players/${uid}/wpm`]=0;updates[`players/${uid}/accuracy`]=100;updates[`players/${uid}/finishedAt`]=0});
+    try{await fb.update(roomRef(raceCode),updates)}catch{await fb.update(roomRef(raceCode),{status:'waiting',startedAt:0})}
+  }catch(error){document.querySelector('#raceStatusText').textContent=error.message}
+};
+document.querySelector('#raceNewWords').onclick=()=>{if(raceMode==='host'){closeRace();openRace()}};
 function updateRaceLanguageInput(){const input=document.querySelector('#raceWordsInput'),english=typingLanguage==='en',pwo=typingLanguage==='pwo',name=languageName();input.lang=languageTag();input.placeholder=english?'family\nmother\nfather':pwo?'ဆ\nတ\nန\nမ':'မိၢ်\nပၢ်\nမိၢ်ပၢ်';document.querySelector('#createRaceForm p').textContent=`Paste the ${name} words your students will type.`;document.querySelector('.race-intro p').textContent=`Everyone types the same ${name} passage. Accurate typing moves your car toward the finish line.`}
 window.addEventListener('typinglanguagechange',()=>{if(raceJoin&&!raceJoin.hidden){raceLanguage=typingLanguage;updateRaceLanguageInput()}});
 updateRaceLanguageInput();
