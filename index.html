@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
   <link rel="stylesheet" href="calculator.css?v=20260910-15" />
-  <link rel="stylesheet" href="seating.css?v=20260910-22" />
+  <link rel="stylesheet" href="seating.css?v=20260910-24" />
 </head>
 <body>
   <main class="app-shell">
@@ -270,7 +270,7 @@ Taylor</textarea><small>Enter one item per line.</small></label>
         <div class="seating-layout">
           <aside class="seating-setup">
             <div class="seating-storage"><span>Save with</span><div><button class="active" id="seatingLocalMode" type="button">This device</button><button id="seatingGoogleMode" type="button">Google account</button></div><button class="button primary" id="seatingGoogleSignIn" type="button" hidden>Sign in with Google</button><small id="seatingStorageStatus">Saved locally on this device</small></div>
-            <div class="class-manager"><label>Saved class<select id="seatingClassSelect" aria-label="Choose a saved class"></select></label><div><button class="button ghost" id="newSeatingClass" type="button">＋ New</button><button class="button danger" id="deleteSeatingClass" type="button">Delete</button></div></div>
+            <div class="class-manager"><label>Saved class<select id="seatingClassSelect" aria-label="Choose a saved class"></select></label><div><button class="button ghost" id="newSeatingClass" type="button">＋ New</button><button class="button ghost" id="duplicateSeatingClass" type="button">Duplicate</button><button class="button danger" id="deleteSeatingClass" type="button">Delete</button></div><div class="reuse-layout"><label>Use layout from<select id="seatingLayoutSource" aria-label="Choose a class layout to copy"></select></label><button class="button primary" id="useClassLayout" type="button">Use this layout</button><small>Copies desks only. This class keeps its own student names.</small></div></div>
             <label>Class name<input id="seatingClassName" value="My Class" maxlength="50" /></label>
             <label>Student names<textarea id="seatingRoster" rows="11" spellcheck="false" placeholder="Enter one student per line">Alex
 Maria
@@ -349,6 +349,6 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260910-19"></script>
-  <script src="seating.js?v=20260910-23"></script>
+  <script src="seating.js?v=20260910-24"></script>
 </body>
 </html>
