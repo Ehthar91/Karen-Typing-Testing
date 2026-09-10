@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
   <link rel="stylesheet" href="calculator.css?v=20260910-15" />
-  <link rel="stylesheet" href="seating.css?v=20260910-21" />
+  <link rel="stylesheet" href="seating.css?v=20260910-22" />
 </head>
 <body>
   <main class="app-shell">
@@ -282,7 +282,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
             <div class="seating-dimensions"><label>Rows<select id="seatingRows"></select></label><label>Columns<select id="seatingColumns"></select></label></div>
             <button class="button primary" id="buildSeating" type="button">Build seating chart</button>
             <div class="seating-actions"><button class="button ghost" id="shuffleSeating" type="button">Shuffle seats</button><button class="button ghost" id="flipSeating" type="button">Flip room</button></div>
-            <details class="layout-editor" open><summary>Desk layout editor</summary><div class="layout-mode-actions"><button class="button primary" id="editDeskLayout" type="button">Edit layout</button><button class="button ghost" id="resetDeskGrid" type="button">Grid layout</button></div><div class="desk-edit-actions"><button class="button ghost" id="addDesk" type="button">＋ Add desk</button><button class="button ghost" id="duplicateDesk" type="button">Duplicate</button><button class="button ghost" id="rotateDesk" type="button">↻ Rotate</button><button class="button danger" id="deleteDesk" type="button">Delete desk</button></div><div class="desk-history"><button class="button ghost" id="undoDesk" type="button">↶ Undo</button><button class="button ghost" id="redoDesk" type="button">↷ Redo</button></div><label class="rule-check"><input id="snapDesks" type="checkbox" checked /> Snap desks to grid</label><small>In Edit layout, drag desks freely. Drag the blue corner to resize. Shift-click to select several desks.</small></details>
+            <details class="layout-editor" open><summary>Desk layout editor</summary><div class="layout-mode-actions"><button class="button primary" id="editDeskLayout" type="button">Edit layout</button><button class="button ghost" id="resetDeskGrid" type="button">Grid layout</button></div><div class="desk-edit-actions"><button class="button ghost" id="addDesk" type="button">＋ Add desk</button><button class="button ghost" id="duplicateDesk" type="button">Duplicate</button><button class="button ghost" id="rotateDesk" type="button">↻ Rotate</button><button class="button danger" id="deleteDesk" type="button">Delete desk</button></div><div class="desk-history"><button class="button ghost" id="undoDesk" type="button">↶ Undo</button><button class="button ghost" id="redoDesk" type="button">↷ Redo</button></div><label class="rule-check"><input id="snapDesks" type="checkbox" checked /> Snap desks to grid</label><small>Drag across empty space to select desks. Drag any selected desk to move the group, or its blue corner to resize the whole selection.</small></details>
             <details class="seating-rules"><summary>Classroom rules</summary><label>Keep apart<textarea id="seatingKeepApart" rows="3" placeholder="Alex, Jordan&#10;Maria, Taylor"></textarea><small>One pair per line, separated by a comma.</small></label><label>Place near front<textarea id="seatingNearFront" rows="2" placeholder="Saw Htoo&#10;Naw Paw"></textarea></label><label class="rule-check"><input id="seatingAlternateGender" type="checkbox" /> Alternate groups A and B when possible</label><label>Group A names<textarea id="seatingGroupA" rows="2"></textarea></label><label>Group B names<textarea id="seatingGroupB" rows="2"></textarea></label></details>
             <details class="seating-groups"><summary>Automatic groups</summary><label>Number of groups<select id="seatingGroupCount"></select></label><button class="button primary" id="makeSeatingGroups" type="button">Create groups</button><div id="seatingGroupResults"></div></details>
             <p class="seating-help">Drag students to exchange seats. Use the lock on a seat to keep that student in place when shuffling.</p>
@@ -349,6 +349,6 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260910-19"></script>
-  <script src="seating.js?v=20260910-21"></script>
+  <script src="seating.js?v=20260910-22"></script>
 </body>
 </html>
