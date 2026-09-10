@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
   <link rel="stylesheet" href="calculator.css?v=20260910-15" />
-  <link rel="stylesheet" href="seating.css?v=20260910-24" />
+  <link rel="stylesheet" href="seating.css?v=20260910-25" />
 </head>
 <body>
   <main class="app-shell">
@@ -282,7 +282,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
             <div class="seating-dimensions"><label>Rows<select id="seatingRows"></select></label><label>Columns<select id="seatingColumns"></select></label></div>
             <button class="button primary" id="buildSeating" type="button">Build seating chart</button>
             <div class="seating-actions"><button class="button ghost" id="shuffleSeating" type="button">Shuffle seats</button><button class="button ghost" id="flipSeating" type="button">Flip room</button></div>
-            <details class="layout-editor" open><summary>Desk layout editor</summary><div class="layout-mode-actions"><button class="button primary" id="editDeskLayout" type="button">Edit layout</button><button class="button ghost" id="resetDeskGrid" type="button">Grid layout</button></div><div class="desk-edit-actions"><button class="button ghost" id="addDesk" type="button">＋ Add desk</button><button class="button ghost" id="duplicateDesk" type="button">Duplicate</button><button class="button ghost" id="rotateDesk" type="button">↻ Rotate</button><button class="button danger" id="deleteDesk" type="button">Delete desk</button></div><div class="desk-history"><button class="button ghost" id="undoDesk" type="button">↶ Undo</button><button class="button ghost" id="redoDesk" type="button">↷ Redo</button></div><label class="rule-check"><input id="snapDesks" type="checkbox" checked /> Snap desks to grid</label><small>Double-click a desk to add or edit its name. Drag across empty space to select desks, then move or resize the whole selection.</small></details>
+            <details class="layout-editor" open><summary>Desk layout editor</summary><div class="layout-mode-actions"><button class="button primary" id="editDeskLayout" type="button" data-tip="Enter or leave layout editing|E">Edit layout</button><button class="button ghost" id="resetDeskGrid" type="button" data-tip="Return desks to rows and columns">Grid layout</button></div><div class="desk-edit-actions"><button class="button ghost" id="addDesk" type="button" data-tip="Add an empty desk">＋ Add desk</button><button class="button ghost" id="duplicateDesk" type="button" data-tip="Duplicate selected desk|mod+D">Duplicate</button><button class="button ghost" id="rotateDesk" type="button" data-tip="Rotate selected desks|R">↻ Rotate</button><button class="button danger" id="deleteDesk" type="button" data-tip="Delete selected desks|Delete">Delete desk</button></div><div class="desk-history"><button class="button ghost" id="undoDesk" type="button" data-tip="Undo last layout change|mod+Z">↶ Undo</button><button class="button ghost" id="redoDesk" type="button" data-tip="Redo layout change|mod+Shift+Z">↷ Redo</button></div><div class="room-settings"><label>Room size<select id="roomPreset"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option><option value="wide">Wide</option><option value="square">Square</option><option value="custom">Custom</option></select></label><div><label>Width<input id="roomWidth" type="number" min="500" max="2000" step="10" value="760" /></label><label>Height<input id="roomHeight" type="number" min="360" max="1400" step="10" value="520" /></label></div></div><label class="rule-check"><input id="snapDesks" type="checkbox" checked /> Snap desks to grid</label><label class="rule-check"><input id="smartGuides" type="checkbox" checked /> Smart alignment guides</label><label class="rule-check"><input id="preventDeskOverlap" type="checkbox" checked /> Prevent overlapping</label><label class="rule-check"><input id="deskTooltips" type="checkbox" checked /> Show shortcut tooltips</label><button class="button ghost shortcuts-button" id="showDeskShortcuts" type="button">⌨ View keyboard shortcuts</button><small>Double-click a desk to edit its name. Drag across empty space to select desks, then move or resize the whole selection.</small></details>
             <details class="seating-rules"><summary>Classroom rules</summary><label>Keep apart<textarea id="seatingKeepApart" rows="3" placeholder="Alex, Jordan&#10;Maria, Taylor"></textarea><small>One pair per line, separated by a comma.</small></label><label>Place near front<textarea id="seatingNearFront" rows="2" placeholder="Saw Htoo&#10;Naw Paw"></textarea></label><label class="rule-check"><input id="seatingAlternateGender" type="checkbox" /> Alternate groups A and B when possible</label><label>Group A names<textarea id="seatingGroupA" rows="2"></textarea></label><label>Group B names<textarea id="seatingGroupB" rows="2"></textarea></label></details>
             <details class="seating-groups"><summary>Automatic groups</summary><label>Number of groups<select id="seatingGroupCount"></select></label><button class="button primary" id="makeSeatingGroups" type="button">Create groups</button><div id="seatingGroupResults"></div></details>
             <p class="seating-help">Drag students to exchange seats. Use the lock on a seat to keep that student in place when shuffling.</p>
@@ -291,11 +291,12 @@ Taylor</textarea><small>Enter one student per line.</small></label>
             <div class="seating-board" id="seatingBoard">
               <div class="seating-front">FRONT OF ROOM</div>
               <h3 id="seatingChartName">My Class</h3>
-              <div class="seating-grid" id="seatingGrid"></div>
+              <div class="room-stage" id="roomStage"><div class="seating-grid" id="seatingGrid"></div><button class="room-resize-handle" id="roomResizeHandle" type="button" aria-label="Resize classroom"></button></div>
             </div>
           </div>
         </div>
       </section>
+      <dialog class="shortcut-dialog" id="deskShortcutDialog"><form method="dialog"><button class="shortcut-close" aria-label="Close">×</button><h2>Desk layout shortcuts</h2><div id="deskShortcutList"></div><button class="button primary" value="close">Done</button></form></dialog><div class="shortcut-tooltip" id="deskTooltip" role="tooltip" hidden></div>
       <p class="privacy"><span aria-hidden="true">●</span> Save on this device or connect your Google account.</p>
     </section>
 
@@ -349,6 +350,6 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260910-19"></script>
-  <script src="seating.js?v=20260910-24"></script>
+  <script src="seating.js?v=20260910-25"></script>
 </body>
 </html>
