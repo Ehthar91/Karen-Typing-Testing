@@ -81,10 +81,13 @@ const wheelEntries=document.querySelector('#wheelEntries');
 const wheelResults=document.querySelector('#wheelResults');
 const wheelWinner=document.querySelector('#wheelWinner');
 const wheelWinnerName=document.querySelector('#wheelWinnerName');
+const wheelSpinTime=document.querySelector('#wheelSpinTime');
 const wheelColors=['#2563eb','#ef476f','#06b6d4','#f59e0b','#8b5cf6','#22c55e','#f97316','#ec4899','#0ea5e9','#14b8a6','#6366f1','#eab308'];
 let wheelRotation=0,wheelSpinning=false,lastWheelWinner='',wheelHistory=[];
 const savedWheelEntries=localStorage.getItem('glnWheelEntries');
 if(savedWheelEntries)wheelEntries.value=savedWheelEntries;
+const savedWheelSpinTime=localStorage.getItem('glnWheelSpinTime');
+if(savedWheelSpinTime&&wheelSpinTime.querySelector(`option[value="${savedWheelSpinTime}"]`))wheelSpinTime.value=savedWheelSpinTime;
 function currentWheelEntries(){
   let entries=wheelEntries.value.split(/\r?\n/).map(item=>item.trim()).filter(Boolean).slice(0,100);
   if(document.querySelector('#wheelNoDuplicates').checked)entries=[...new Set(entries)];
@@ -123,7 +126,7 @@ function renderWheelHistory(){
 function spinRandomWheel(){
   const entries=currentWheelEntries();if(!entries.length||wheelSpinning){if(!entries.length)showToast('Add at least one item');return}
   wheelSpinning=true;document.querySelector('#spinWheel').disabled=true;
-  const winnerIndex=randomWheelIndex(entries.length),arc=Math.PI*2/entries.length,target=-(winnerIndex+.5)*arc,twoPi=Math.PI*2,current=((wheelRotation%twoPi)+twoPi)%twoPi,normalizedTarget=((target%twoPi)+twoPi)%twoPi,delta=(normalizedTarget-current+twoPi)%twoPi,start=wheelRotation,end=start+twoPi*(6+randomWheelIndex(3))+delta,duration=4300,startTime=performance.now();
+  const spinSeconds=Math.max(1,Math.min(10,Number(wheelSpinTime.value)||1)),winnerIndex=randomWheelIndex(entries.length),arc=Math.PI*2/entries.length,target=-(winnerIndex+.5)*arc,twoPi=Math.PI*2,current=((wheelRotation%twoPi)+twoPi)%twoPi,normalizedTarget=((target%twoPi)+twoPi)%twoPi,delta=(normalizedTarget-current+twoPi)%twoPi,start=wheelRotation,end=start+twoPi*(4+Math.ceil(spinSeconds*.8)+randomWheelIndex(2))+delta,duration=spinSeconds*1000,startTime=performance.now();
   function animate(now){const progress=Math.min(1,(now-startTime)/duration),eased=1-Math.pow(1-progress,4);wheelRotation=start+(end-start)*eased;drawWheel();if(progress<1)requestAnimationFrame(animate);else{wheelRotation=end%twoPi;wheelSpinning=false;document.querySelector('#spinWheel').disabled=false;showWheelResult(entries[winnerIndex])}}
   requestAnimationFrame(animate);
 }
@@ -132,6 +135,7 @@ document.querySelector('#spinWheel').onclick=spinRandomWheel;
 wheelCanvas.onclick=spinRandomWheel;
 wheelEntries.oninput=saveAndDrawWheel;
 document.querySelector('#wheelNoDuplicates').onchange=drawWheel;
+wheelSpinTime.onchange=()=>localStorage.setItem('glnWheelSpinTime',wheelSpinTime.value);
 document.querySelector('#shuffleWheel').onclick=()=>{const entries=currentWheelEntries();for(let i=entries.length-1;i>0;i--){const j=randomWheelIndex(i+1);[entries[i],entries[j]]=[entries[j],entries[i]]}wheelEntries.value=entries.join('\n');saveAndDrawWheel()};
 document.querySelector('#clearWheel').onclick=()=>{wheelEntries.value='';saveAndDrawWheel();wheelEntries.focus()};
 document.querySelector('#clearWheelResults').onclick=()=>{wheelHistory=[];renderWheelHistory()};

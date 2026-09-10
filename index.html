@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260910-14" />
+  <link rel="stylesheet" href="calculator.css?v=20260910-15" />
 </head>
 <body>
   <main class="app-shell">
@@ -264,7 +264,7 @@ Naw Paw
 Jordan
 Taylor</textarea><small>Enter one item per line.</small></label>
             <div class="wheel-actions"><button class="button ghost" id="shuffleWheel" type="button">Shuffle</button><button class="button ghost" id="clearWheel" type="button">Clear</button></div>
-            <label class="wheel-check"><input id="wheelNoDuplicates" type="checkbox" checked /> Remove duplicate entries</label>
+            <div class="wheel-options"><label class="wheel-check"><input id="wheelNoDuplicates" type="checkbox" checked /> Remove duplicate entries</label><label class="wheel-time">Spin time<select id="wheelSpinTime" aria-label="Wheel spin time"><option value="1" selected>1 second</option><option value="2">2 seconds</option><option value="3">3 seconds</option><option value="4">4 seconds</option><option value="5">5 seconds</option><option value="6">6 seconds</option><option value="7">7 seconds</option><option value="8">8 seconds</option><option value="9">9 seconds</option><option value="10">10 seconds</option></select></label></div>
             <div class="wheel-history"><div><strong>Results</strong><button id="clearWheelResults" type="button">Clear results</button></div><ol id="wheelResults"><li>No results yet</li></ol></div>
           </div>
         </div>
@@ -325,6 +325,6 @@ Taylor</textarea><small>Enter one item per line.</small></label>
   <script src="race.js?v=20260910-6"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260910-14"></script>
+  <script src="calculator.js?v=20260910-15"></script>
 </body>
 </html>
