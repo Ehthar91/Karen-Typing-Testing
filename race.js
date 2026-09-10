@@ -162,6 +162,7 @@ function watchRace(){
 }
 function beginLiveRace(data){
   const passageInfo=racePassageInfo(data.passage);raceLobby.hidden=true;raceLive.hidden=false;raceLive.classList.remove('show-results');raceResults.hidden=true;raceLanguage=passageInfo.language;racePassageText=passageInfo.text;raceTyped='';raceStartedAt=data.startedAt||Date.now();raceCorrect=0;raceErrors=0;
+  raceLive.classList.toggle('teacher-view',raceMode==='host');document.querySelector('#raceFullscreen').hidden=raceMode!=='host';
   document.querySelector('#racePassage').lang=raceLanguage==='en'?'en':raceLanguage==='pwo'?'kjp':'ksw';
   renderRacePassage();renderRaceKeyboard();
   startRaceCountdown(raceStartedAt);
@@ -170,7 +171,7 @@ function beginLiveRace(data){
 function startRaceCountdown(startAt){clearInterval(raceCountdownTimer);const overlay=document.querySelector('#raceCountdown'),label=document.querySelector('#raceCountdownText');const update=()=>{const left=startAt-Date.now();if(left<=0){label.textContent='GO!';raceCountdownDone=true;setTimeout(()=>{overlay.hidden=true},550);clearInterval(raceCountdownTimer);return}raceCountdownDone=false;overlay.hidden=false;label.textContent=String(Math.max(1,Math.ceil(left/1000)))};update();raceCountdownTimer=setInterval(update,180)}
 function renderRace(data){
   const players=[...(data.players||[])].sort((a,b)=>b.progress-a.progress||((a.finishedAt||Infinity)-(b.finishedAt||Infinity))||a.joinedAt-b.joinedAt);
-  const track=document.querySelector('#raceTrack');track.innerHTML='';
+  const track=document.querySelector('#raceTrack');track.innerHTML='';track.classList.toggle('density-medium',players.length>8&&players.length<=16);track.classList.toggle('density-compact',players.length>16);
   players.forEach((player,index)=>{
     const lane=document.createElement('div');lane.className='race-lane';
     const name=document.createElement('span');name.className='race-lane-name';name.textContent=`${index+1}. ${player.name}`;
@@ -257,6 +258,9 @@ document.querySelector('#raceAgain').onclick=async()=>{
   }catch(error){document.querySelector('#raceStatusText').textContent=error.message}
 };
 document.querySelector('#raceNewWords').onclick=()=>{if(raceMode==='host'){closeRace();openRace()}};
+const raceFullscreenButton=document.querySelector('#raceFullscreen');
+raceFullscreenButton.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(raceStage.requestFullscreen)await raceStage.requestFullscreen()}catch{showToast('Full screen is not available on this browser')}};
+document.addEventListener('fullscreenchange',()=>{const active=document.fullscreenElement===raceStage;raceFullscreenButton.textContent=active?'✕ Exit Full Screen':'⛶ Full Screen';raceStage.classList.toggle('is-fullscreen',active)});
 function updateRaceLanguageInput(){const input=document.querySelector('#raceWordsInput'),english=typingLanguage==='en',pwo=typingLanguage==='pwo',name=languageName();input.lang=languageTag();input.placeholder=english?'family\nmother\nfather':pwo?'ဆ\nတ\nန\nမ':'မိၢ်\nပၢ်\nမိၢ်ပၢ်';document.querySelector('#createRaceForm p').textContent=`Paste the ${name} words your students will type.`;document.querySelector('.race-intro p').textContent=`Everyone types the same ${name} passage. Accurate typing moves your car toward the finish line.`}
 window.addEventListener('typinglanguagechange',()=>{if(raceJoin&&!raceJoin.hidden){raceLanguage=typingLanguage;updateRaceLanguageInput()}});
 updateRaceLanguageInput();

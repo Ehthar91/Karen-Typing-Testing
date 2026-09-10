@@ -1,5 +1,54 @@
 /* Modern right-facing race cars and animated winner podium. */
+.game-grid[hidden] { display: none !important; }
 .race-live { position: relative; }
+
+.race-fullscreen {
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #fff;
+  background: rgba(255,255,255,.12);
+  font: 800 .75rem Inter,sans-serif;
+  cursor: pointer;
+}
+.race-fullscreen[hidden] { display: none; }
+
+.race-live.teacher-view > .race-passage,
+.race-live.teacher-view > .race-key-instruction,
+.race-live.teacher-view > .race-prompt,
+.race-live.teacher-view > .race-keyboard { display: none; }
+
+.race-live.teacher-view .race-track { min-height: 420px; }
+.race-live.teacher-view .race-lane { height: max(72px,calc(420px / var(--lane-count,6))); }
+.race-live.teacher-view .race-track.density-medium .race-lane { height: 52px; }
+.race-live.teacher-view .race-track.density-compact {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 0 14px;
+}
+.race-live.teacher-view .race-track.density-compact .race-lane { height: 44px; margin: 0; }
+.race-live.teacher-view .race-track.density-medium .race-car,
+.race-live.teacher-view .race-track.density-compact .race-car { width: 70px; height: 34px; bottom: 2px; }
+.race-live.teacher-view .race-track.density-compact .race-lane-name { font-size: .65rem; top: 3px; }
+
+.race-stage:fullscreen,
+.race-stage.is-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  border: 0;
+  border-radius: 0;
+  background: #0b1730;
+}
+.race-stage:fullscreen .race-top,
+.race-stage.is-fullscreen .race-top { color: #fff; background: #071a38; }
+.race-stage:fullscreen .race-live.teacher-view,
+.race-stage.is-fullscreen .race-live.teacher-view { height: calc(100vh - 50px); display: flex; flex-direction: column; }
+.race-stage:fullscreen .race-live.teacher-view .race-track,
+.race-stage.is-fullscreen .race-live.teacher-view .race-track { flex: 1; min-height: 0; }
+.race-stage:fullscreen .race-live.teacher-view .race-track:not(.density-compact) .race-lane,
+.race-stage.is-fullscreen .race-live.teacher-view .race-track:not(.density-compact) .race-lane { height: auto; min-height: 54px; flex: 1; }
+.race-stage:fullscreen .race-live.teacher-view .race-track:not(.density-compact),
+.race-stage.is-fullscreen .race-live.teacher-view .race-track:not(.density-compact) { display: flex; flex-direction: column; }
 
 .race-track {
   position: relative;
