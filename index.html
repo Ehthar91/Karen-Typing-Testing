@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260910-13" />
+  <link rel="stylesheet" href="calculator.css?v=20260910-14" />
 </head>
 <body>
   <main class="app-shell">
@@ -35,7 +35,7 @@
         <button id="navPractice" type="button">Practice</button>
         <button id="navGames" type="button">Games</button>
         <button id="navQuiz" type="button">Quiz</button>
-        <button id="navCalculator" type="button">Calculator</button>
+        <button id="navCalculator" type="button">Tools</button>
       </nav>
       <div class="language-switch" role="group" aria-label="Typing language">
         <button class="active" id="languageKaren" type="button">S’gaw Karen</button>
@@ -222,12 +222,13 @@ Fish = ညၣ်</textarea>
 
     <section class="calculator-view" id="calculatorView" aria-labelledby="calculator-title" hidden>
       <div class="calculator-heading">
-        <div><p class="eyebrow">GLN MATH TOOLS</p><h1 id="calculator-title">Graphing &amp; Scientific Calculator</h1></div>
+        <div><p class="eyebrow">GLN CLASSROOM TOOLS</p><h1 id="calculator-title">Graphing &amp; Scientific Calculator</h1></div>
         <p class="hint" id="calculatorHint">Choose GLN TI-84 or GLN TI-30XS inside the calculator.</p>
       </div>
       <div class="calculator-mode-switch" role="group" aria-label="Choose a math tool">
         <button class="active" id="showCalculators" type="button">Calculators</button>
         <button id="showConverter" type="button">Unit Converter</button>
+        <button id="showWheel" type="button">Random Wheel</button>
       </div>
       <div class="calculator-frame-card" id="calculatorPanel">
         <iframe id="calculatorFrame" src="calculator.html?v=20260910-11" title="GLN graphing and scientific calculators" loading="lazy" allow="fullscreen"></iframe>
@@ -244,7 +245,35 @@ Fish = ညၣ်</textarea>
         </div>
         <p class="converter-equation" id="converterEquation"></p>
       </section>
-      <p class="privacy"><span aria-hidden="true">●</span> Your calculator work stays on this device.</p>
+      <section class="wheel-card" id="wheelPanel" aria-labelledby="wheelTitle" hidden>
+        <div class="wheel-toolbar">
+          <div><p class="eyebrow">CLASSROOM PICKER</p><h2 id="wheelTitle">Random Wheel</h2></div>
+          <button class="button ghost" id="wheelFullscreen" type="button">⛶ Full screen</button>
+        </div>
+        <div class="wheel-layout">
+          <div class="wheel-stage">
+            <div class="wheel-pointer" aria-hidden="true"></div>
+            <canvas id="randomWheel" width="640" height="640" aria-label="Random selection wheel"></canvas>
+            <button class="wheel-spin" id="spinWheel" type="button">SPIN</button>
+          </div>
+          <div class="wheel-controls">
+            <label class="wheel-entry-label">Names, words, or topics<textarea id="wheelEntries" rows="12" spellcheck="false" placeholder="Enter one item per line">Alex
+Maria
+Saw Htoo
+Naw Paw
+Jordan
+Taylor</textarea><small>Enter one item per line.</small></label>
+            <div class="wheel-actions"><button class="button ghost" id="shuffleWheel" type="button">Shuffle</button><button class="button ghost" id="clearWheel" type="button">Clear</button></div>
+            <label class="wheel-check"><input id="wheelNoDuplicates" type="checkbox" checked /> Remove duplicate entries</label>
+            <div class="wheel-history"><div><strong>Results</strong><button id="clearWheelResults" type="button">Clear results</button></div><ol id="wheelResults"><li>No results yet</li></ol></div>
+          </div>
+        </div>
+        <div class="wheel-winner" id="wheelWinner" hidden role="dialog" aria-modal="true" aria-labelledby="wheelWinnerName">
+          <div class="wheel-confetti" id="wheelConfetti" aria-hidden="true"></div>
+          <div class="wheel-winner-card"><span>Selected</span><strong id="wheelWinnerName">—</strong><div><button class="button ghost" id="keepWheelWinner" type="button">Keep</button><button class="button primary" id="removeWheelWinner" type="button">Remove</button></div></div>
+        </div>
+      </section>
+      <p class="privacy"><span aria-hidden="true">●</span> Your lists and work stay on this device.</p>
     </section>
 
     <section class="workspace practice-view" id="practiceView" aria-labelledby="practice-title" hidden>
@@ -296,6 +325,6 @@ Fish = ညၣ်</textarea>
   <script src="race.js?v=20260910-6"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260910-12"></script>
+  <script src="calculator.js?v=20260910-14"></script>
 </body>
 </html>
