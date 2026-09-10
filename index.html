@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
   <link rel="stylesheet" href="calculator.css?v=20260910-15" />
+  <link rel="stylesheet" href="seating.css?v=20260910-16" />
 </head>
 <body>
   <main class="app-shell">
@@ -229,6 +230,7 @@ Fish = ညၣ်</textarea>
         <button class="active" id="showCalculators" type="button">Calculators</button>
         <button id="showConverter" type="button">Unit Converter</button>
         <button id="showWheel" type="button">Random Wheel</button>
+        <button id="showSeating" type="button">Seating Chart</button>
       </div>
       <div class="calculator-frame-card" id="calculatorPanel">
         <iframe id="calculatorFrame" src="calculator.html?v=20260910-11" title="GLN graphing and scientific calculators" loading="lazy" allow="fullscreen"></iframe>
@@ -271,6 +273,35 @@ Taylor</textarea><small>Enter one item per line.</small></label>
         <div class="wheel-winner" id="wheelWinner" hidden role="dialog" aria-modal="true" aria-labelledby="wheelWinnerName">
           <div class="wheel-confetti" id="wheelConfetti" aria-hidden="true"></div>
           <div class="wheel-winner-card"><span>Selected</span><strong id="wheelWinnerName">—</strong><div><button class="button ghost" id="keepWheelWinner" type="button">Keep</button><button class="button primary" id="removeWheelWinner" type="button">Remove</button></div></div>
+        </div>
+      </section>
+      <section class="seating-card" id="seatingPanel" aria-labelledby="seatingTitle" hidden>
+        <div class="seating-toolbar">
+          <div><p class="eyebrow">CLASSROOM LAYOUT</p><h2 id="seatingTitle">Seating Chart</h2></div>
+          <div><button class="button ghost" id="printSeating" type="button">Print</button><button class="button ghost" id="seatingFullscreen" type="button">⛶ Full screen</button></div>
+        </div>
+        <div class="seating-layout">
+          <aside class="seating-setup">
+            <div class="seating-storage"><span>Save with</span><div><button class="active" id="seatingLocalMode" type="button">This device</button><button id="seatingGoogleMode" type="button">Google account</button></div><button class="button primary" id="seatingGoogleSignIn" type="button" hidden>Sign in with Google</button><small id="seatingStorageStatus">Saved locally on this device</small></div>
+            <label>Class name<input id="seatingClassName" value="My Class" maxlength="50" /></label>
+            <label>Student names<textarea id="seatingRoster" rows="11" spellcheck="false" placeholder="Enter one student per line">Alex
+Maria
+Saw Htoo
+Naw Paw
+Jordan
+Taylor</textarea><small>Enter one student per line.</small></label>
+            <div class="seating-dimensions"><label>Rows<select id="seatingRows"></select></label><label>Columns<select id="seatingColumns"></select></label></div>
+            <button class="button primary" id="buildSeating" type="button">Build seating chart</button>
+            <div class="seating-actions"><button class="button ghost" id="shuffleSeating" type="button">Shuffle seats</button><button class="button ghost" id="flipSeating" type="button">Flip room</button></div>
+            <p class="seating-help">Drag students to exchange seats. Use the lock on a seat to keep that student in place when shuffling.</p>
+          </aside>
+          <div class="seating-board-wrap" id="seatingPrintArea">
+            <div class="seating-board" id="seatingBoard">
+              <div class="seating-front">FRONT OF ROOM</div>
+              <h3 id="seatingChartName">My Class</h3>
+              <div class="seating-grid" id="seatingGrid"></div>
+            </div>
+          </div>
         </div>
       </section>
       <p class="privacy"><span aria-hidden="true">●</span> Your lists and work stay on this device.</p>
@@ -322,9 +353,10 @@ Taylor</textarea><small>Enter one item per line.</small></label>
   <script src="app.js?v=20260910-6"></script>
   <script src="practice.js?v=20260910-6"></script>
   <script src="games.js?v=20260910-6"></script>
-  <script src="race.js?v=20260910-6"></script>
+  <script src="race.js?v=20260910-17"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260910-15"></script>
+  <script src="calculator.js?v=20260910-17"></script>
+  <script src="seating.js?v=20260910-17"></script>
 </body>
 </html>

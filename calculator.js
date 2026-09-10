@@ -3,9 +3,11 @@ const calculatorView=document.querySelector('#calculatorView');
 const calculatorPanel=document.querySelector('#calculatorPanel');
 const converterPanel=document.querySelector('#converterPanel');
 const wheelPanel=document.querySelector('#wheelPanel');
+const seatingPanel=document.querySelector('#seatingPanel');
 const showCalculators=document.querySelector('#showCalculators');
 const showConverter=document.querySelector('#showConverter');
 const showWheel=document.querySelector('#showWheel');
+const showSeating=document.querySelector('#showSeating');
 const calculatorTitle=document.querySelector('#calculator-title');
 const calculatorHint=document.querySelector('#calculatorHint');
 const converterCategory=document.querySelector('#converterCategory');
@@ -27,16 +29,20 @@ const defaultUnits={weight:['lb','kg'],temperature:['F','C'],length:['in','cm'],
 function setCalculatorMode(mode){
   const converter=mode==='converter';
   const wheel=mode==='wheel';
-  calculatorPanel.hidden=converter||wheel;
+  const seating=mode==='seating';
+  calculatorPanel.hidden=converter||wheel||seating;
   converterPanel.hidden=!converter;
   wheelPanel.hidden=!wheel;
-  showCalculators.classList.toggle('active',!converter&&!wheel);
+  seatingPanel.hidden=!seating;
+  showCalculators.classList.toggle('active',!converter&&!wheel&&!seating);
   showConverter.classList.toggle('active',converter);
   showWheel.classList.toggle('active',wheel);
-  calculatorTitle.textContent=wheel?'Random Wheel':converter?'Unit Converter':'Graphing & Scientific Calculator';
-  calculatorHint.textContent=wheel?'Paste a list, spin, and select someone or something at random.':converter?'Convert common measurements instantly.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
+  showSeating.classList.toggle('active',seating);
+  calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':converter?'Unit Converter':'Graphing & Scientific Calculator';
+  calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':converter?'Convert common measurements instantly.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
   if(converter)setTimeout(()=>converterInput.focus(),0);
   if(wheel)setTimeout(drawWheel,0);
+  if(seating)setTimeout(()=>window.renderSeatingChart?.(),0);
 }
 function fillUnitMenus(){
   const group=unitGroups[converterCategory.value];
@@ -70,6 +76,7 @@ fillUnitMenus();
 showCalculators.onclick=()=>setCalculatorMode('calculator');
 showConverter.onclick=()=>setCalculatorMode('converter');
 showWheel.onclick=()=>setCalculatorMode('wheel');
+showSeating.onclick=()=>setCalculatorMode('seating');
 converterCategory.onchange=fillUnitMenus;
 converterInput.oninput=updateConversion;
 converterFrom.onchange=updateConversion;
