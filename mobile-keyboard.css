@@ -5,6 +5,10 @@
 }
 
 @media (max-width: 720px) {
+  #editor[readonly] {
+    caret-color: #2563eb;
+  }
+
   .keyboard-card {
     padding-left: 6px;
     padding-right: 6px;
