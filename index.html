@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="creator-credit.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
+  <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
 </head>
 <body>
   <main class="app-shell">
@@ -170,7 +171,7 @@ Fish = ညၣ်</textarea>
         </div>
         <p class="quiz-error" id="quizError" role="alert"></p>
         <div class="quiz-preview" id="quizPreview" hidden>
-          <div class="quiz-preview-head"><div><span>QUESTION PREVIEW</span><strong id="quizPreviewCount">0 questions</strong></div><div class="quiz-preview-actions"><button class="button ghost" id="startQuiz" type="button">Practice solo</button><button class="button primary" id="createClassQuiz" type="button">Create classroom quiz →</button></div></div>
+          <div class="quiz-preview-head"><div><span>QUESTION PREVIEW</span><strong id="quizPreviewCount">0 questions</strong></div><div class="quiz-preview-actions"><button class="button ghost" id="startQuiz" type="button">Practice solo</button><button class="button ghost" id="exportGoogleQuiz" type="button">Export Google Quiz</button><button class="button primary" id="createClassQuiz" type="button">Create classroom quiz →</button></div></div>
           <ol id="quizPreviewList"></ol>
         </div>
         <div class="quiz-join-card">
@@ -190,7 +191,7 @@ Fish = ညၣ်</textarea>
           <div class="quiz-live-status"><div><span id="quizLiveLabel">QUESTION 1 OF 2</span><h2 id="quizLiveQuestion">Question</h2><small id="quizLiveAnswer">Answer: —</small></div><button class="button primary" id="advanceClassQuiz" type="button">Next question →</button></div>
           <div class="quiz-live-scoreboard"><div class="quiz-score-head"><span>Student</span><span>Progress</span><span>Score</span></div><div id="quizLiveStudents"></div></div>
         </div>
-        <div class="quiz-class-results" id="quizClassResults" hidden><p class="eyebrow">CLASS RESULTS</p><h2>Quiz complete!</h2><div class="quiz-class-podium" id="quizClassPodium"></div><div class="quiz-class-list" id="quizClassList"></div><button class="button primary" id="quizClassAgain" type="button">Use this quiz again</button></div>
+        <div class="quiz-class-results" id="quizClassResults" hidden><p class="eyebrow">CLASS RESULTS</p><h2>Quiz complete!</h2><p class="print-date" id="quizPrintDate"></p><div class="quiz-class-podium" id="quizClassPodium"></div><div class="quiz-class-list" id="quizClassList"></div><div class="quiz-result-actions"><button class="button primary" id="quizClassAgain" type="button">Use this quiz again</button><button class="button ghost print-quiz" id="printClassResults" type="button">Print results</button></div></div>
         <p class="quiz-class-error" id="quizClassError" role="alert"></p>
       </section>
 
@@ -212,7 +213,7 @@ Fish = ညၣ်</textarea>
       <section class="quiz-results" id="quizResults" hidden>
         <span class="quiz-result-icon">✓</span><p class="eyebrow">QUIZ COMPLETE</p><h2 id="quizResultScore">0 out of 0</h2><p id="quizResultMessage">Review your answers and try again.</p>
         <div class="quiz-review" id="quizReview"></div>
-        <div class="quiz-result-actions"><button class="button primary" id="retryQuiz" type="button">Try again</button><button class="button ghost" id="newQuiz" type="button">Edit word list</button></div>
+    <div class="quiz-result-actions"><button class="button primary" id="retryQuiz" type="button">Try again</button><button class="button ghost" id="newQuiz" type="button">Edit word list</button><button class="button ghost print-quiz" id="printQuizResults" type="button">Print results</button></div>
       </section>
       <p class="privacy"><span aria-hidden="true">●</span> Quiz lists and answers stay on this device.</p>
     </section>
@@ -264,7 +265,7 @@ Fish = ညၣ်</textarea>
   <script src="practice.js?v=20260910-6"></script>
   <script src="games.js?v=20260910-6"></script>
   <script src="race.js?v=20260910-6"></script>
-  <script src="quiz.js?v=20260910-7"></script>
-  <script src="quiz-classroom.js?v=20260910-8"></script>
+  <script src="quiz.js?v=20260910-9"></script>
+  <script src="quiz-classroom.js?v=20260910-9"></script>
 </body>
 </html>
