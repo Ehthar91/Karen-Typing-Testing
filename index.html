@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
   <link rel="stylesheet" href="calculator.css?v=20260910-15" />
-  <link rel="stylesheet" href="seating.css?v=20260911-27" />
+  <link rel="stylesheet" href="seating.css?v=20260911-28" />
 </head>
 <body>
   <main class="app-shell">
@@ -280,7 +280,7 @@ Naw Paw
 Jordan
 Taylor</textarea><small>Enter one student per line.</small></label>
             <input id="seatingFileInput" type="file" accept=".csv,.txt" hidden /><button class="button ghost" id="importSeatingRoster" type="button">Upload CSV or text file</button>
-            <div class="seating-dimensions inspector-control"><label>Rows<select id="seatingRows"></select></label><label>Columns<select id="seatingColumns"></select></label></div>
+            <div class="seating-dimensions inspector-control" hidden><label>Rows<select id="seatingRows"></select></label><label>Columns<select id="seatingColumns"></select></label></div>
             <button class="button primary inspector-control" id="buildSeating" type="button">Build seating chart</button>
             <div class="seating-actions inspector-control"><button class="button ghost" id="shuffleSeating" type="button">Shuffle seats</button><button class="button ghost" id="flipSeating" type="button">Flip room</button></div>
             <details class="layout-editor" open><summary>Desk layout editor</summary><div class="layout-mode-actions"><button class="button primary" id="editDeskLayout" type="button" data-tip="Enter or leave layout editing|E">Edit layout</button><button class="button ghost" id="resetDeskGrid" type="button" data-tip="Return desks to rows and columns">Grid layout</button></div><div class="desk-edit-actions"><button class="button ghost" id="addDesk" type="button" data-tip="Add an empty desk">＋ Add desk</button><button class="button ghost" id="duplicateDesk" type="button" data-tip="Duplicate selected desk|mod+D">Duplicate</button><button class="button ghost" id="rotateDesk" type="button" data-tip="Rotate selected desks|R">↻ Rotate</button><button class="button danger" id="deleteDesk" type="button" data-tip="Delete selected desks|Delete">Delete desk</button></div><div class="desk-history"><button class="button ghost" id="undoDesk" type="button" data-tip="Undo last layout change|mod+Z">↶ Undo</button><button class="button ghost" id="redoDesk" type="button" data-tip="Redo layout change|mod+Shift+Z">↷ Redo</button></div><div class="room-settings"><label>Room size<select id="roomPreset"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option><option value="wide">Wide</option><option value="square">Square</option><option value="custom">Custom</option></select></label><div><label>Width<input id="roomWidth" type="number" min="500" max="2000" step="10" value="760" /></label><label>Height<input id="roomHeight" type="number" min="360" max="1400" step="10" value="520" /></label></div></div><label class="rule-check"><input id="snapDesks" type="checkbox" checked /> Snap desks to grid</label><label class="rule-check"><input id="smartGuides" type="checkbox" checked /> Smart alignment guides</label><label class="rule-check"><input id="preventDeskOverlap" type="checkbox" checked /> Prevent overlapping</label><label class="rule-check"><input id="deskTooltips" type="checkbox" checked /> Show shortcut tooltips</label><button class="button ghost shortcuts-button" id="showDeskShortcuts" type="button">⌨ View keyboard shortcuts</button><small>Double-click a desk to edit its name. Drag across empty space to select desks, then move or resize the whole selection.</small></details>
@@ -353,6 +353,6 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260910-19"></script>
-  <script src="seating.js?v=20260911-27"></script>
+  <script src="seating.js?v=20260911-28"></script>
 </body>
 </html>
