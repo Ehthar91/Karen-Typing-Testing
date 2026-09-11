@@ -5,7 +5,20 @@ const customResults=document.querySelector('#customGameResults');
 const customListKey='glnCustomGameListsV1';
 const cq=s=>document.querySelector(s);
 
-const tugAvatars=['🧙','🦸','🥷','🤖','🧑‍🚀','🧑‍🚒','🧚','🐉','🦊','🐼','🦁','🐯'];
+const tugAvatars=[
+  {name:'Headband Hero',skin:'#F3C7A6',hair:'#3B2417',shirt:'#FFB347',pants:'#355070',accent:'#F97316',accessory:'headband'},
+  {name:'Ponytail Pro',skin:'#EDC4A2',hair:'#5B3524',shirt:'#8B5CF6',pants:'#334155',accent:'#A855F7',accessory:'ponytail'},
+  {name:'Glasses Ace',skin:'#F1C19C',hair:'#201A18',shirt:'#38BDF8',pants:'#1E3A5F',accent:'#0EA5E9',accessory:'glasses'},
+  {name:'Hoodie Champ',skin:'#DCA882',hair:'#4A2C1F',shirt:'#22C55E',pants:'#374151',accent:'#16A34A',accessory:'hood'},
+  {name:'Sporty Star',skin:'#E7B893',hair:'#111827',shirt:'#F43F5E',pants:'#1F2937',accent:'#FB7185',accessory:'headband2'},
+  {name:'Gamer Kid',skin:'#F5C9AA',hair:'#2B1F1A',shirt:'#EAB308',pants:'#4338CA',accent:'#2563EB',accessory:'headphones'},
+  {name:'Ninja Friend',skin:'#E0AF89',hair:'#231815',shirt:'#6B7280',pants:'#111827',accent:'#EF4444',accessory:'mask'},
+  {name:'Astronaut Buddy',skin:'#F2C6A4',hair:'#583F2E',shirt:'#E5E7EB',pants:'#64748B',accent:'#60A5FA',accessory:'helmet'},
+  {name:'Robot Spark',skin:'#D7E2F0',hair:'#94A3B8',shirt:'#CBD5E1',pants:'#475569',accent:'#38BDF8',accessory:'robot'},
+  {name:'Wizard Wonder',skin:'#F0C4A0',hair:'#4C1D95',shirt:'#A78BFA',pants:'#4338CA',accent:'#7C3AED',accessory:'wizard'},
+  {name:'Cap Leader',skin:'#F1C8A7',hair:'#2D1F1A',shirt:'#FB7185',pants:'#3F3F46',accent:'#2563EB',accessory:'cap'},
+  {name:'Explorer Go',skin:'#C98C63',hair:'#5A341E',shirt:'#2DD4BF',pants:'#1F2937',accent:'#14B8A6',accessory:'satchel'}
+];
 const TUG_CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const TUG_WIN_LEAD=5;
 
@@ -36,6 +49,7 @@ let tugAttemptedChars=0;
 let tugErrors=0;
 let tugGameStartedAt=0;
 let tugPreviewToken=0;
+let tugLastScores={};
 
 function customLists(){try{return JSON.parse(localStorage.getItem(customListKey)||'{}')}catch{return{}}}
 function writeCustomLists(value){localStorage.setItem(customListKey,JSON.stringify(value))}
@@ -65,7 +79,45 @@ function tugError(message){cq('#tugClassError').textContent=message||''}
 function teamLabel(team){return team==='red'?'Team Red':team==='blue'?'Team Blue':'Unassigned'}
 function teamDot(team){return team==='red'?'🔴':team==='blue'?'🔵':'⚪'}
 function speedBonusWpm(){return customDifficulty()==='easy'?20:customDifficulty()==='hard'?40:30}
-
+function tugAvatarData(index){return tugAvatars[((Number(index)||0)%tugAvatars.length+tugAvatars.length)%tugAvatars.length]}
+function tugAvatarPose(player,base='idle'){if(base!=='pull')return base;if(player?.finished)return'hold';return'pull'}
+function tugConsumeScoreBursts(players){
+  const bursts={},next={};
+  players.forEach(player=>{
+    const score=Number(player?.score)||0;
+    const previous=Number(tugLastScores[player.id])||0;
+    if(score>previous)bursts[player.id]=score-previous>=2?'power':'pull';
+    next[player.id]=score;
+  });
+  tugLastScores=next;
+  return bursts;
+}
+function renderTugAvatarFigure(playerOrIndex,options={}){
+  const player=typeof playerOrIndex==='object'&&playerOrIndex?playerOrIndex:{avatar:playerOrIndex,name:options.name||''};
+  const avatarIndex=((Number(player.avatar)||0)%tugAvatars.length+tugAvatars.length)%tugAvatars.length;
+  const data=tugAvatarData(avatarIndex);
+  const root=document.createElement(options.tag||'div');
+  const team=options.team||player.team||'';
+  const facing=options.facing||((team==='blue'||options.side==='blue')?'left':'right');
+  const state=options.state||'idle';
+  root.className=['tug-character',`avatar-${avatarIndex}`,team?`team-${team}`:'',`facing-${facing}`,`state-${state}`,options.compact?'compact':'',options.mini?'mini':'',options.highlight?'is-me':'',options.pulse?`pulse-${options.pulse}`:'',options.stack?'stack':''].filter(Boolean).join(' ');
+  root.style.setProperty('--skin',data.skin);
+  root.style.setProperty('--hair',data.hair);
+  root.style.setProperty('--shirt',data.shirt);
+  root.style.setProperty('--pants',data.pants);
+  root.style.setProperty('--accent',data.accent);
+  root.dataset.accessory=data.accessory||'none';
+  root.setAttribute('aria-label',player.name?`${player.name} avatar: ${data.name}`:data.name);
+  if(options.showName){const name=document.createElement('span');name.className='tug-character-name';name.textContent=player.name||data.name;root.appendChild(name)}
+  const stage=document.createElement('span');stage.className='tug-character-stage';
+  if(options.pulse){const pop=document.createElement('b');pop.className='tug-character-pop';pop.textContent=options.pulse==='power'?'+2 PULL':'PULL!';stage.appendChild(pop)}
+  const body=document.createElement('span');body.className='tug-character-body';
+  body.innerHTML='<i class="tug-shadow"></i><i class="tug-rope-link"></i><i class="tug-leg back"></i><i class="tug-leg front"></i><i class="tug-torso"></i><i class="tug-arm back"></i><i class="tug-arm front"></i><i class="tug-head"></i><i class="tug-face"></i><i class="tug-band"></i><i class="tug-hair"></i><i class="tug-glasses"></i><i class="tug-hood"></i><i class="tug-headphones"></i><i class="tug-mask"></i><i class="tug-helmet"></i><i class="tug-robot-eye"></i><i class="tug-hat"></i><i class="tug-cape"></i><i class="tug-satchel"></i><i class="tug-dust"></i>';
+  stage.appendChild(body);
+  root.appendChild(stage);
+  if(options.caption){const meta=document.createElement('span');meta.className='tug-character-meta';meta.textContent=options.caption;root.appendChild(meta)}
+  return root;
+}
 function renderTugAvatarPicker(){
   const box=cq('#tugAvatarPicker');
   box.innerHTML='';
@@ -73,13 +125,14 @@ function renderTugAvatarPicker(){
     const button=document.createElement('button');
     button.type='button';
     button.className='tug-avatar-choice';
-    button.textContent=avatar;
     button.setAttribute('role','radio');
-    button.setAttribute('aria-label',`Avatar ${index+1}`);
+    button.setAttribute('aria-label',avatar.name);
     button.onclick=()=>{tugAvatarIndex=index;renderTugAvatarPicker()};
     const selected=index===tugAvatarIndex;
     button.classList.toggle('selected',selected);
     button.setAttribute('aria-checked',selected?'true':'false');
+    button.appendChild(renderTugAvatarFigure(index,{compact:true,showLabel:false,state:selected?'ready':'idle',facing:'right'}));
+    const label=document.createElement('span');label.className='tug-avatar-choice-label';label.textContent=avatar.name;button.appendChild(label);
     box.appendChild(button);
   });
 }
@@ -92,7 +145,7 @@ cq('#tugChooseBlue').onclick=()=>{if(!cq('#tugChooseBlue').disabled){tugSelected
 
 function closeTugRoom(){
   if(tugUnsubscribe){tugUnsubscribe();tugUnsubscribe=null}
-  tugRoom=null;tugClassStarted=false;tugFinishing=false;tugCode='';tugRole='';tugPlayerId='';tugPlayerName='';tugSelectedTeam='';tugTeam='';
+  tugRoom=null;tugClassStarted=false;tugFinishing=false;tugCode='';tugRole='';tugPlayerId='';tugPlayerName='';tugSelectedTeam='';tugTeam='';tugLastScores={};
 }
 function openCustomGame(mode){
   stopGame();
@@ -381,9 +434,13 @@ function renderTugLobbyPlayers(players){
     const list=document.createElement('div');list.className='tug-player-chips';
     if(!members.length){const empty=document.createElement('span');empty.className='tug-empty-player';empty.textContent='No players yet';list.appendChild(empty)}
     members.sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0)).forEach(player=>{
-      const chip=document.createElement('span');chip.className='tug-player-chip';
-      const avatar=document.createElement('b');avatar.textContent=tugAvatars[player.avatar||0]||tugAvatars[0];
-      const name=document.createElement('span');name.textContent=player.name;chip.append(avatar,name);
+      const chip=document.createElement('article');chip.className='tug-player-chip';
+      chip.appendChild(renderTugAvatarFigure(player,{team:player.team,compact:true,mini:true,state:'idle',facing:player.team==='blue'?'left':'right'}));
+      const info=document.createElement('div');info.className='tug-chip-info';
+      const name=document.createElement('strong');name.textContent=player.name;
+      const role=document.createElement('span');role.textContent=tugAvatarData(player.avatar).name;
+      info.append(name,role);
+      chip.appendChild(info);
       if(tugRole==='host'){
         const controls=document.createElement('span');controls.className='tug-chip-controls';
         ['red','blue'].forEach(nextTeam=>{const assign=document.createElement('button');assign.type='button';assign.className=`tug-mini-team ${nextTeam}`;assign.textContent=nextTeam==='red'?'R':'B';assign.title=`Move ${player.name} to ${teamLabel(nextTeam)}`;assign.disabled=player.team===nextTeam;assign.onclick=()=>fb.update(tugPlayerRef(tugCode,player.id),{team:nextTeam}).catch(()=>{});controls.appendChild(assign)});
@@ -460,16 +517,16 @@ function beginTugPlayer(room){
   cq('#customTarget').lang=languageTagFor(customLanguage);cq('#customTyped').lang=languageTagFor(customLanguage);
   updateTugPlayerArena(room,Object.values(room.players||{}));nextCustomChallenge();
 }
-function updateTugAvatarRow(selector,players,team){
+function updateTugAvatarRow(selector,players,team,pulseMap={}){
   const box=cq(selector);box.innerHTML='';
   players.filter(p=>p.team===team).sort((a,b)=>(b.score||0)-(a.score||0)).forEach(player=>{
-    const avatar=document.createElement('span');avatar.textContent=tugAvatars[player.avatar||0]||tugAvatars[0];avatar.title=`${player.name}: ${player.score||0} pulls`;if(player.id===tugPlayerId)avatar.classList.add('me');box.appendChild(avatar);
+    box.appendChild(renderTugAvatarFigure(player,{team,state:tugAvatarPose(player,'pull'),facing:team==='red'?'right':'left',showName:true,caption:`${Number(player.score)||0} pulls`,highlight:player.id===tugPlayerId,pulse:pulseMap[player.id]}));
   });
 }
 function updateTugPlayerArena(room,players){
-  const stats=tugTeamStats(players),position=tugRopePosition(players);
+  const stats=tugTeamStats(players),position=tugRopePosition(players),pulseMap=tugConsumeScoreBursts(players);
   cq('#tugPlayerRopeMarker').style.left=`${position}%`;
-  updateTugAvatarRow('#tugRedAvatars',players,'red');updateTugAvatarRow('#tugBlueAvatars',players,'blue');
+  updateTugAvatarRow('#tugRedAvatars',players,'red',pulseMap);updateTugAvatarRow('#tugBlueAvatars',players,'blue',pulseMap);
   const myStats=tugTeam==='red'?stats.red:stats.blue,other=tugTeam==='red'?stats.blue:stats.red;
   const lead=myStats.avg-other.avg;
   cq('#tugPlayerStatus').textContent=lead>.05?`${teamLabel(tugTeam)} is pulling ahead!`:lead<-.05?'The other team is pulling ahead — keep typing!':'The rope is nearly centered. Keep pulling!';
@@ -477,7 +534,7 @@ function updateTugPlayerArena(room,players){
 function tugProgressText(player,total){if(player.finished)return'Finished';const current=Math.min(total,Math.max(0,Number(player.index)||0)+1);return `Prompt ${current} / ${total}`}
 function makeTugPlayerCard(player,total){
   const card=document.createElement('article');card.className=`tug-score-card ${player.team||''}`;
-  const avatar=document.createElement('span');avatar.className='tug-score-avatar';avatar.textContent=tugAvatars[player.avatar||0]||tugAvatars[0];
+  const avatar=document.createElement('span');avatar.className='tug-score-avatar';avatar.appendChild(renderTugAvatarFigure(player,{team:player.team,compact:true,mini:true,state:player.finished?'hold':'ready',facing:player.team==='blue'?'left':'right'}));
   const info=document.createElement('div');const name=document.createElement('strong');name.textContent=player.name;const progress=document.createElement('span');progress.textContent=tugProgressText(player,total);info.append(name,progress);
   const metrics=document.createElement('div');metrics.className='tug-score-metrics';metrics.innerHTML=`<b>${Number(player.score)||0} pulls</b><span>${Number(player.wpm||0).toFixed(1)} WPM · ${Number(player.accuracy??100).toFixed(0)}%</span>`;
   card.append(avatar,info,metrics);if(player.finished)card.classList.add('finished');return card;
@@ -493,10 +550,10 @@ function renderTugScoreboard(players,total){
   });
 }
 function renderTugTeacherArena(players){
-  const stats=tugTeamStats(players),position=tugRopePosition(players);
+  const stats=tugTeamStats(players),position=tugRopePosition(players),pulseMap=tugConsumeScoreBursts(players);
   cq('#tugTeacherRedScore').textContent=stats.red.avg.toFixed(1);cq('#tugTeacherBlueScore').textContent=stats.blue.avg.toFixed(1);cq('#tugTeacherRopeMarker').style.left=`${position}%`;
-  const fill=(selector,members)=>{const box=cq(selector);box.innerHTML='';members.slice().sort((a,b)=>(b.score||0)-(a.score||0)).forEach(player=>{const span=document.createElement('span');span.textContent=tugAvatars[player.avatar||0]||tugAvatars[0];span.title=`${player.name}: ${player.score||0} pulls`;box.appendChild(span)})};
-  fill('#tugTeacherRedAvatars',stats.red.players);fill('#tugTeacherBlueAvatars',stats.blue.players);
+  const fill=(selector,members,team)=>{const box=cq(selector);box.innerHTML='';members.slice().sort((a,b)=>(b.score||0)-(a.score||0)).forEach(player=>{box.appendChild(renderTugAvatarFigure(player,{team,state:tugAvatarPose(player,'pull'),facing:team==='red'?'right':'left',showName:true,caption:`${Number(player.score)||0} pulls`,pulse:pulseMap[player.id]}))})};
+  fill('#tugTeacherRedAvatars',stats.red.players,'red');fill('#tugTeacherBlueAvatars',stats.blue.players,'blue');
 }
 function renderTugTeacherLive(room,players){
   cq('#tugClassSetup').hidden=true;cq('#tugLobby').hidden=true;customLive.hidden=true;customResults.hidden=true;cq('#tugTeacherLive').hidden=false;cq('#tugTeacherResults').hidden=true;cq('#endTugRoom').hidden=false;cq('#tugLiveCode').textContent=tugCode;

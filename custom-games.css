@@ -16,3 +16,104 @@ body.theme-rgb .tug-class-setup,body.theme-rgb .tug-lobby,body.theme-rgb .tug-te
 @media(max-width:900px){.tug-class-options,.tug-scoreboard{grid-template-columns:1fr}.tug-class-setup,.tug-lobby,.tug-teacher-live{padding:18px}.tug-teacher-head{align-items:flex-start;flex-direction:column}.tug-teacher-arena{grid-template-columns:100px minmax(180px,1fr) 100px}.tug-lobby-teams{grid-template-columns:1fr}.tug-lobby-team.unassigned{grid-column:auto}.tug-awards{grid-template-columns:1fr!important}.tug-world{grid-template-columns:90px minmax(180px,1fr) 90px}}
 @media(max-width:620px){.tug-host-settings{grid-template-columns:1fr}.tug-host-settings label:last-child{grid-column:auto}.tug-room-code{align-items:stretch;flex-direction:column;text-align:center}.tug-avatar-picker{grid-template-columns:repeat(4,1fr)}.tug-teacher-arena{grid-template-columns:1fr}.tug-arena-score{display:flex;align-items:baseline;justify-content:center;gap:7px}.tug-arena-score strong{font-size:1.5rem}.tug-world{grid-template-columns:1fr;gap:8px}.tug-player-team>div{min-height:32px}.tug-player-rope{order:2}.tug-player-team.red{order:1}.tug-player-team.blue{order:3}.tug-score-card{grid-template-columns:auto 1fr}.tug-score-metrics{grid-column:2;text-align:left}.tug-result-actions{flex-direction:column}.custom-challenge{padding:16px 10px}}
 @media(max-width:440px){.tug-avatar-picker{grid-template-columns:repeat(3,1fr)}.tug-team-picker{grid-template-columns:1fr}}
+
+/* Animated Tug of War avatars */
+.tug-avatar-picker{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tug-avatar-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:148px;padding:12px 10px;font-size:inherit;text-align:center}
+.tug-avatar-choice-label{display:block;color:#294667;font-size:.76rem;font-weight:800;line-height:1.25}
+.tug-player-chip{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border-radius:18px}
+.tug-chip-info{display:flex;flex-direction:column;min-width:0}
+.tug-chip-info strong{color:#173868;font-size:.92rem}
+.tug-chip-info span{color:#708198;font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tug-live-avatars{min-height:126px;align-items:end}
+.tug-live-avatars>span{gap:8px;align-items:flex-end}
+.tug-score-avatar{display:flex;align-items:flex-end;justify-content:center;width:64px;height:78px;padding:4px;border-radius:14px;background:#eef5ff}
+.tug-score-card{grid-template-columns:auto minmax(96px,1fr) auto;align-items:center}
+.tug-world{grid-template-columns:minmax(160px,1.1fr) minmax(260px,1.45fr) minmax(160px,1.1fr);align-items:end;min-height:300px;padding:24px;background:linear-gradient(180deg,#eef6ff 0 52%,#d9e9fb 52% 62%,#bddc90 62% 100%)}
+.tug-player-team>div{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:10px;min-height:164px}
+.tug-player-rope{padding-bottom:18px}
+.tug-player-rope .tug-rope-line{margin-top:0;margin-bottom:14px}
+.tug-player-rope p{font-size:.94rem}
+body.theme-rgb .tug-avatar-choice-label{color:#ebf3ff}
+body.theme-rgb .tug-chip-info strong{color:#f2f7ff}
+body.theme-rgb .tug-chip-info span{color:#a8b9ce}
+body.theme-rgb .tug-score-avatar{background:#172d49}
+body.theme-rgb .tug-world{background:linear-gradient(180deg,#081527 0 50%,#12263e 50% 62%,#0f2c20 62% 100%)!important}
+
+.tug-character{--scale:1;--flip:1;--team-color:#94a3b8;display:inline-flex;flex-direction:column;align-items:center;gap:4px;min-width:70px;max-width:84px}
+.tug-character.team-red{--team-color:#df4b54}
+.tug-character.team-blue{--team-color:#3d82e6}
+.tug-character.compact{--scale:.82;min-width:54px;max-width:62px}
+.tug-character.mini{--scale:.68;min-width:46px;max-width:54px}
+.tug-character.facing-left{--flip:-1}
+.tug-character-name,.tug-character-meta{display:block;text-align:center;line-height:1.15}
+.tug-character-name{font-size:.66rem;font-weight:900;color:#173868;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tug-character-meta{font-size:.62rem;font-weight:800;color:#5f7188}
+body.theme-rgb .tug-character-name{color:#eff5ff}
+body.theme-rgb .tug-character-meta{color:#9fb0c8}
+.tug-character.is-me .tug-character-name{color:#7c4d00}
+body.theme-rgb .tug-character.is-me .tug-character-name{color:#ffd166}
+.tug-character-stage{position:relative;display:block;width:calc(62px * var(--scale));height:calc(96px * var(--scale))}
+.tug-character-body{position:absolute;left:50%;bottom:0;width:calc(50px * var(--scale));height:calc(84px * var(--scale));transform:translateX(-50%) scaleX(var(--flip));transform-origin:50% 100%;animation:tugIdle 2.2s ease-in-out infinite}
+.tug-character.state-ready .tug-character-body{animation:tugReady 1.1s ease-in-out infinite alternate}
+.tug-character.state-pull .tug-character-body,.tug-character.state-hold .tug-character-body{animation:tugPull 1s ease-in-out infinite}
+.tug-character.pulse-pull .tug-character-body{animation:tugPower .65s ease-in-out 2}
+.tug-character.pulse-power .tug-character-body{animation:tugPower .48s ease-in-out 3}
+.tug-character.pulse-power .tug-character-pop{background:#fff3bf;color:#8a4b00}
+.tug-shadow,.tug-rope-link,.tug-leg,.tug-torso,.tug-arm,.tug-head,.tug-face,.tug-band,.tug-hair,.tug-glasses,.tug-hood,.tug-headphones,.tug-mask,.tug-helmet,.tug-robot-eye,.tug-hat,.tug-cape,.tug-satchel,.tug-dust{position:absolute;display:block;box-sizing:border-box}
+.tug-shadow{left:11px;bottom:0;width:28px;height:6px;border-radius:50%;background:rgba(15,23,42,.15)}
+.tug-rope-link{right:-2px;top:43px;width:18px;height:4px;border-radius:999px;background:linear-gradient(90deg,#d7a46a,#b87437)}
+.tug-leg{bottom:6px;width:10px;height:28px;border-radius:999px;background:var(--pants);transform-origin:50% 0%}
+.tug-leg.back{left:15px;transform:rotate(7deg)}
+.tug-leg.front{left:27px;transform:rotate(-7deg)}
+.tug-torso{left:13px;top:33px;width:24px;height:26px;border-radius:11px 11px 9px 9px;background:var(--shirt);box-shadow:inset 0 -4px 0 rgba(255,255,255,.16)}
+.tug-arm{top:36px;width:8px;height:24px;border-radius:999px;background:var(--skin);transform-origin:50% 4px}
+.tug-arm.back{left:12px;transform:rotate(45deg)}
+.tug-arm.front{left:33px;transform:rotate(-60deg)}
+.tug-head{left:15px;top:12px;width:20px;height:20px;border-radius:50%;background:var(--skin);z-index:2}
+.tug-face{left:20px;top:20px;width:10px;height:8px;z-index:3}
+.tug-face::before{content:'';position:absolute;left:1px;top:1px;width:2px;height:2px;border-radius:50%;background:#1f2937;box-shadow:6px 0 0 #1f2937}
+.tug-face::after{content:'';position:absolute;left:2px;top:5px;width:6px;height:2px;border-bottom:2px solid #7c2d12;border-radius:0 0 6px 6px}
+.tug-band{left:14px;top:18px;width:22px;height:5px;border-radius:999px;background:var(--team-color);z-index:4;box-shadow:0 0 0 1px rgba(255,255,255,.45) inset}
+.tug-hair{left:13px;top:10px;width:24px;height:12px;border-radius:14px 14px 8px 8px;background:var(--hair);z-index:5}
+.tug-glasses,.tug-hood,.tug-headphones,.tug-mask,.tug-helmet,.tug-robot-eye,.tug-hat,.tug-cape,.tug-satchel{display:none}
+.tug-dust{left:9px;bottom:0;width:34px;height:12px;opacity:0}
+.tug-dust::before,.tug-dust::after{content:'';position:absolute;bottom:0;width:9px;height:5px;border-radius:50%;background:rgba(180,148,87,.35)}
+.tug-dust::before{left:4px}.tug-dust::after{right:5px}
+.tug-character.state-pull .tug-dust,.tug-character.pulse-pull .tug-dust,.tug-character.pulse-power .tug-dust{opacity:1;animation:tugDust .55s ease-in-out infinite}
+.tug-character-pop{position:absolute;left:50%;top:-2px;z-index:8;padding:3px 7px;border-radius:999px;background:#fff;border:1px solid rgba(15,23,42,.08);color:#8a2b31;font-size:.58rem;font-weight:900;white-space:nowrap;transform:translate(-50%,0);box-shadow:0 6px 16px rgba(15,23,42,.12);animation:tugPop .95s ease-out forwards}
+.tug-character[data-accessory='ponytail'] .tug-hair::after{content:'';position:absolute;right:1px;top:8px;width:7px;height:13px;border-radius:0 0 8px 8px;background:var(--hair)}
+.tug-character[data-accessory='glasses'] .tug-glasses{display:block;left:18px;top:20px;width:14px;height:5px;border-top:2px solid #111827;border-bottom:2px solid transparent;z-index:6}
+.tug-character[data-accessory='glasses'] .tug-glasses::before,.tug-character[data-accessory='glasses'] .tug-glasses::after{content:'';position:absolute;top:0;width:5px;height:5px;border:2px solid #111827;border-radius:50%}
+.tug-character[data-accessory='glasses'] .tug-glasses::before{left:0}.tug-character[data-accessory='glasses'] .tug-glasses::after{right:0}
+.tug-character[data-accessory='hood'] .tug-hood{display:block;left:10px;top:10px;width:30px;height:28px;border-radius:17px 17px 8px 8px;border:4px solid var(--shirt);border-bottom:0;z-index:1;opacity:.95}
+.tug-character[data-accessory='headphones'] .tug-headphones{display:block;left:11px;top:10px;width:28px;height:18px;border:3px solid #1f2937;border-bottom:0;border-radius:16px 16px 0 0;z-index:6}
+.tug-character[data-accessory='headphones'] .tug-headphones::before,.tug-character[data-accessory='headphones'] .tug-headphones::after{content:'';position:absolute;top:8px;width:6px;height:10px;border-radius:6px;background:#111827}
+.tug-character[data-accessory='headphones'] .tug-headphones::before{left:-2px}.tug-character[data-accessory='headphones'] .tug-headphones::after{right:-2px}
+.tug-character[data-accessory='mask'] .tug-mask{display:block;left:18px;top:22px;width:14px;height:7px;border-radius:0 0 6px 6px;background:#111827;z-index:6}
+.tug-character[data-accessory='helmet'] .tug-helmet{display:block;left:11px;top:8px;width:28px;height:22px;border-radius:15px 15px 10px 10px;background:#f8fafc;border:2px solid #cbd5e1;z-index:6;opacity:.9}
+.tug-character[data-accessory='helmet'] .tug-helmet::after{content:'';position:absolute;left:5px;top:8px;width:18px;height:8px;border-radius:999px;background:rgba(96,165,250,.25)}
+.tug-character[data-accessory='robot'] .tug-head{border-radius:6px;background:#cbd5e1;border:2px solid #94a3b8}
+.tug-character[data-accessory='robot'] .tug-hair{display:none}
+.tug-character[data-accessory='robot'] .tug-face::before{left:1px;top:1px;width:3px;height:3px;background:#0ea5e9;box-shadow:4px 0 0 #0ea5e9}
+.tug-character[data-accessory='robot'] .tug-face::after{left:1px;top:6px;width:8px;height:0;border-bottom:2px solid #475569;border-radius:0}
+.tug-character[data-accessory='robot'] .tug-robot-eye{display:block;left:24px;top:8px;width:2px;height:6px;background:#64748b;border-radius:999px}
+.tug-character[data-accessory='wizard'] .tug-hat{display:block;left:9px;top:0;width:0;height:0;border-left:15px solid transparent;border-right:9px solid transparent;border-bottom:24px solid #7c3aed;z-index:7}
+.tug-character[data-accessory='wizard'] .tug-hat::after{content:'';position:absolute;left:-15px;top:22px;width:24px;height:6px;border-radius:999px;background:#c4b5fd}
+.tug-character[data-accessory='wizard'] .tug-cape{display:block;left:10px;top:34px;width:18px;height:22px;border-radius:4px 4px 10px 10px;background:rgba(76,29,149,.36);z-index:0}
+.tug-character[data-accessory='cap'] .tug-hat{display:block;left:12px;top:11px;width:24px;height:9px;border-radius:12px 12px 5px 5px;background:#2563eb;z-index:7}
+.tug-character[data-accessory='cap'] .tug-hat::after{content:'';position:absolute;right:-5px;top:3px;width:10px;height:5px;border-radius:0 6px 6px 0;background:#1d4ed8}
+.tug-character[data-accessory='satchel'] .tug-satchel{display:block;left:22px;top:44px;width:10px;height:12px;border-radius:3px;background:#854d0e;z-index:6}
+.tug-character[data-accessory='satchel'] .tug-satchel::before{content:'';position:absolute;left:-6px;top:-4px;width:18px;height:2px;background:#854d0e;transform:rotate(-36deg);transform-origin:left center}
+.tug-character[data-accessory='headband2'] .tug-band{height:6px;background:linear-gradient(90deg,#fb7185,#f43f5e)}
+.tug-character[data-accessory='headband'] .tug-band::after{content:'';position:absolute;right:-1px;top:4px;width:6px;height:10px;background:var(--team-color);border-radius:0 0 5px 5px;transform:rotate(18deg)}
+
+@keyframes tugIdle{0%,100%{transform:translateX(-50%) scaleX(var(--flip)) translateY(0) rotate(0deg)}50%{transform:translateX(-50%) scaleX(var(--flip)) translateY(-1px) rotate(-1deg)}}
+@keyframes tugReady{0%{transform:translateX(-50%) scaleX(var(--flip)) translateY(0) rotate(0deg)}100%{transform:translateX(-50%) scaleX(var(--flip)) translateY(1px) rotate(-6deg)}}
+@keyframes tugPull{0%,100%{transform:translateX(-50%) scaleX(var(--flip)) translateX(0) translateY(0) rotate(0deg)}25%{transform:translateX(-50%) scaleX(var(--flip)) translateX(-3px) translateY(1px) rotate(8deg)}55%{transform:translateX(-50%) scaleX(var(--flip)) translateX(2px) translateY(-1px) rotate(-7deg)}80%{transform:translateX(-50%) scaleX(var(--flip)) translateX(-1px) translateY(0) rotate(4deg)}}
+@keyframes tugPower{0%,100%{transform:translateX(-50%) scaleX(var(--flip)) translateX(0) translateY(0) rotate(0deg)}35%{transform:translateX(-50%) scaleX(var(--flip)) translateX(-6px) translateY(2px) rotate(15deg)}65%{transform:translateX(-50%) scaleX(var(--flip)) translateX(4px) translateY(-2px) rotate(-10deg)}}
+@keyframes tugDust{0%,100%{transform:translateY(0);opacity:.2}50%{transform:translateY(-1px);opacity:.65}}
+@keyframes tugPop{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}18%{opacity:1;transform:translate(-50%,-2px) scale(1)}100%{opacity:0;transform:translate(-50%,-18px) scale(1.05)}}
+
+@media(max-width:900px){.tug-avatar-picker{grid-template-columns:repeat(3,minmax(0,1fr))}.tug-player-team>div,.tug-live-avatars>span{gap:8px}.tug-world{grid-template-columns:1fr;gap:10px;min-height:320px}.tug-player-rope{order:2}.tug-player-team.red{order:1}.tug-player-team.blue{order:3}}
+@media(max-width:620px){.tug-avatar-picker{grid-template-columns:repeat(2,minmax(0,1fr))}.tug-avatar-choice{min-height:132px}.tug-player-chip{grid-template-columns:auto 1fr}.tug-chip-controls{grid-column:1/-1;justify-content:flex-end}.tug-live-avatars{min-height:106px}.tug-character{max-width:68px}.tug-character-name{font-size:.6rem}.tug-character-meta{font-size:.57rem}.tug-score-avatar{width:56px;height:70px}}
