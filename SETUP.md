@@ -38,3 +38,10 @@ The cars update live through Firebase Realtime Database, so students can use sep
 ## Important
 
 Your Firebase web config is designed to be used in client-side web apps. Access control is enforced by the Realtime Database rules. Do not replace the provided rules with fully-public read/write rules.
+
+
+## Classroom Typing Defense
+
+This version also uses Firebase Realtime Database for multiplayer **Typing Defense**. The host can paste a custom word/sentence list, create a five-character room code, and watch player progress live. Players join with the code and choose a defender avatar before the game begins.
+
+When updating this version, publish the included `firebase-rules.json` in **Firebase Console → Realtime Database → Rules** so the new `defenseRooms` path is allowed.
