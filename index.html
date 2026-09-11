@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="styles.css?v=20260910-6" />
   <link rel="stylesheet" href="practice.css?v=20260910-6" />
   <link rel="stylesheet" href="games.css?v=20260910-6" />
+  <link rel="stylesheet" href="custom-games.css?v=20260911-1" />
   <link rel="stylesheet" href="race.css?v=20260910-6" />
   <link rel="stylesheet" href="mobile-keyboard.css?v=20260910-6" />
   <link rel="stylesheet" href="race-modern.css?v=20260910-6" />
@@ -91,6 +92,8 @@
         <button class="game-card race-card" data-game="race" type="button"><span class="game-icon">🏁</span><span><strong>Classroom Car Race</strong><small>Create one room code. Players join with their names and race live.</small></span><em>Race →</em></button>
         <button class="game-card sprint-card" data-game="sprint" type="button"><span class="game-icon">⚡</span><span><strong>Word Sprint</strong><small>Type as many Karen words as you can in 45 seconds.</small></span><em>Play →</em></button>
         <button class="game-card rain-card" data-game="rain" type="button"><span class="game-icon">↓</span><span><strong>Falling Words</strong><small>Type each word before it reaches the bottom.</small></span><em>Play →</em></button>
+        <button class="game-card adventure-card" data-game="adventure" type="button"><span class="game-icon">🧭</span><span><strong>Typing Adventure</strong><small>Travel through checkpoints using a teacher’s words or sentences.</small></span><em>Explore →</em></button>
+        <button class="game-card defense-card" data-game="defense" type="button"><span class="game-icon">🛡️</span><span><strong>Typing Defense</strong><small>Protect the village using a teacher’s words or sentences.</small></span><em>Defend →</em></button>
       </div>
       <section class="game-stage" id="gameStage" hidden aria-live="polite">
         <div class="game-stage-top"><button class="back-games" id="backGames" type="button">← All games</button><strong id="activeGameTitle">Word Sprint</strong><button class="button ghost" id="restartGame" type="button">↻ Restart</button></div>
@@ -102,6 +105,23 @@
         </div>
         <p class="game-tip" id="gameTip">Use your English keyboard or tap the highlighted key below.</p>
         <div class="game-keyboard keyboard" id="gameKeyboard"></div>
+      </section>
+      <section class="custom-game-stage" id="customGameStage" hidden aria-live="polite">
+        <div class="game-stage-top"><button class="back-games" id="customBackGames" type="button">← All games</button><strong id="customGameTitle">Typing Adventure</strong><button class="button ghost" id="customRestart" type="button">↻ Restart</button></div>
+        <div class="custom-game-setup" id="customGameSetup">
+          <div class="custom-game-intro"><span id="customGameIcon">🧭</span><div><h2 id="customSetupTitle">Build a Typing Adventure</h2><p>Paste one word or complete sentence on each line.</p></div></div>
+          <label class="custom-list-label">Teacher word or sentence list<textarea id="customWordsInput" rows="8" maxlength="4000" lang="ksw" placeholder="မိၢ်&#10;ပၢ်&#10;မိၢ်ဒီးပၢ်အိၣ်လၢဟံၣ်။"></textarea><small>Use one word or sentence per line. Commas also work for word lists.</small></label>
+          <div class="custom-list-tools"><select id="customSavedList" aria-label="Saved game lists"><option value="">Choose a saved list…</option></select><button class="button ghost" id="customSaveList" type="button">Save list</button><button class="button danger" id="customDeleteList" type="button">Delete</button></div>
+          <div class="custom-options"><label>Difficulty<select id="customDifficulty"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label><label>Challenges<input id="customChallengeCount" type="number" min="1" max="50" value="10"></label></div>
+          <p class="custom-error" id="customGameError" role="alert"></p><button class="button primary custom-start" id="customStartGame" type="button">Start adventure</button>
+        </div>
+        <div class="custom-game-live" id="customGameLive" hidden>
+          <div class="custom-game-stats"><div><span>Score</span><strong id="customScore">0</strong></div><div><span id="customStatusLabel">Checkpoint</span><strong id="customRound">1 / 10</strong></div><div><span id="customLifeLabel">Stars</span><strong id="customLives">★★★</strong></div></div>
+          <div class="adventure-world" id="adventureWorld"><div class="adventure-sky">Typing Trail</div><div class="adventure-path" id="adventurePath"><span class="adventure-player" id="adventurePlayer">🧭</span><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="defense-world" id="defenseWorld" hidden><div class="defense-lane"><span class="defense-enemy" id="defenseEnemy">👾</span><span class="defense-gate">🏫</span></div><div class="defense-timer"><span id="defenseTimerBar"></span></div></div>
+          <div class="custom-challenge"><span>TYPE THIS</span><div class="custom-target" id="customTarget" lang="ksw"></div><div class="custom-typed" id="customTyped" lang="ksw"></div><p>Start typing with your English keyboard.</p></div><div class="game-keyboard keyboard" id="customGameKeyboard"></div>
+        </div>
+        <div class="custom-game-results" id="customGameResults" hidden><span id="customResultIcon">🏆</span><h2 id="customResultTitle">Adventure complete!</h2><p id="customResultSummary"></p><div><button class="button primary" id="customPlayAgain" type="button">Play again</button><button class="button ghost" id="customNewList" type="button">Change list</button></div></div>
       </section>
       <section class="race-stage" id="raceStage" hidden aria-live="polite">
         <div class="race-top"><button class="back-games" id="backRace" type="button">← All games</button><strong>Classroom Car Race</strong><span id="raceConnection">Online</span></div>
@@ -349,7 +369,8 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
   <script src="app.js?v=20260911-1"></script>
   <script src="practice.js?v=20260910-6"></script>
-  <script src="games.js?v=20260910-6"></script>
+  <script src="games.js?v=20260911-1"></script>
+  <script src="custom-games.js?v=20260911-1"></script>
   <script src="race.js?v=20260910-17"></script>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
