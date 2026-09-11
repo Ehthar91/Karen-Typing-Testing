@@ -40,8 +40,10 @@ The cars update live through Firebase Realtime Database, so students can use sep
 Your Firebase web config is designed to be used in client-side web apps. Access control is enforced by the Realtime Database rules. Do not replace the provided rules with fully-public read/write rules.
 
 
-## Classroom Typing Defense
+## Classroom Typing Tug of War
 
-This version also uses Firebase Realtime Database for multiplayer **Typing Defense**. The host can paste a custom word/sentence list, create a five-character room code, and watch player progress live. Players join with the code and choose a defender avatar before the game begins.
+This version uses Firebase Realtime Database for multiplayer **Typing Tug of War**. The host can paste a custom word/sentence list, create a five-character room code, choose how teams are assigned, and watch both teams compete live. Players join with the code, choose an avatar, and type the host's prompts to earn pull points for Team Red or Team Blue.
 
-When updating this version, publish the included `firebase-rules.json` in **Firebase Console → Realtime Database → Rules** so the new `defenseRooms` path is allowed.
+Each correct prompt earns one pull point. Fast, error-free typing can earn one bonus pull point. The rope uses each team's average pull contribution so slightly uneven team sizes stay fair.
+
+When updating this version, publish the included `firebase-rules.json` in **Firebase Console → Realtime Database → Rules** so the new `tugRooms` path is allowed.
