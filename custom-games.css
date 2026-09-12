@@ -370,3 +370,73 @@ body.theme-rgb .tug-avatar-fallback{background:linear-gradient(180deg,#173352,#1
 
 @media(max-width:760px){.tug-avatar-picker{grid-template-columns:repeat(2,minmax(0,1fr))}.tug-avatar-choice{min-height:252px}.tug-avatar-choice .tug-character.compact .tug-character-stage{min-height:146px}.tug-avatar-choice .tug-character.compact .tug-avatar-art{max-height:142px}.tug-character{min-width:88px;max-width:106px}.tug-character .tug-avatar-art{max-height:110px}}
 @media(max-width:520px){.tug-avatar-choice{min-height:236px;padding:12px 10px}.tug-avatar-choice-label{font-size:.76rem}.tug-character.compact .tug-avatar-art{max-height:132px}}
+
+
+/* Rope integration rebuild overrides */
+.tug-teacher-arena{grid-template-columns:140px minmax(420px,1fr) 140px;align-items:end;gap:12px;padding:22px 18px 16px;overflow:hidden}
+.tug-arena-score{position:relative;z-index:4;align-self:center}
+.tug-rope-wrap{position:relative;display:flex;flex-direction:column;justify-content:flex-start;min-height:270px;padding-top:78px}
+.tug-teacher-arena .tug-rope-wrap{margin-top:-4px}
+.tug-rope-wrap .tug-rope-line{position:relative;z-index:1;width:calc(100% + 340px);margin:0 0 0 -170px;height:20px;border-radius:999px;background:
+  linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0) 35%),
+  repeating-linear-gradient(90deg,#d6b178 0 16px,#b57a3c 16px 32px,#dfbc89 32px 48px,#a66b33 48px 64px);
+  box-shadow:inset 0 2px 2px rgba(255,255,255,.28),inset 0 -3px 5px rgba(84,53,24,.34),0 10px 18px rgba(60,38,16,.18)}
+.tug-rope-wrap .tug-rope-line::before{content:'';position:absolute;inset:3px 0 auto;height:5px;border-radius:999px;background:rgba(255,255,255,.18)}
+.tug-rope-wrap .tug-rope-line::after{content:'';position:absolute;left:5%;right:5%;bottom:-14px;height:10px;border-radius:999px;background:radial-gradient(ellipse at center,rgba(57,39,17,.14),rgba(57,39,17,0) 72%)}
+.tug-rope-wrap .tug-rope-knot{position:absolute;top:50%;left:50%;z-index:3;width:26px;height:58px;font-size:0;transform:translate(-50%,-55%);filter:drop-shadow(0 4px 6px rgba(69,20,28,.24))}
+.tug-rope-wrap .tug-rope-knot::before{content:'';position:absolute;left:50%;top:3px;width:12px;height:18px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,#f76570,#cc3340);transform:translateX(-50%)}
+.tug-rope-wrap .tug-rope-knot::after{content:'';position:absolute;left:50%;top:18px;width:28px;height:34px;transform:translateX(-50%);background:linear-gradient(180deg,#f86873,#c92634);clip-path:polygon(50% 0,100% 18%,72% 100%,50% 78%,28% 100%,0 18%)}
+.tug-rope-wrap .tug-finish,.tug-rope-wrap .tug-center{top:-16px;height:52px;width:4px;border-radius:999px}
+.tug-rope-wrap .tug-finish.red{left:1.5%;background:linear-gradient(180deg,#ff7e88,#cb2d39)}
+.tug-rope-wrap .tug-finish.blue{right:1.5%;background:linear-gradient(180deg,#92c4ff,#2f73da)}
+.tug-rope-wrap .tug-center{left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#93a7bc,#6d8198);opacity:.56}
+.tug-live-avatars{position:absolute;left:0;right:0;bottom:4px;display:grid;grid-template-columns:1fr 1fr;gap:16px;z-index:4;pointer-events:none}
+.tug-live-avatars>span{display:flex;align-items:flex-end;min-height:132px;padding:0 8px}
+.tug-live-avatars>span:first-child{justify-content:flex-start;padding-left:18px}
+.tug-live-avatars>span:last-child{justify-content:flex-end;padding-right:18px}
+.tug-live-avatars>span .tug-character{min-width:118px;max-width:142px}
+.tug-live-avatars>span .tug-character .tug-character-stage{min-height:134px}
+.tug-live-avatars>span .tug-character .tug-avatar-art{max-height:130px}
+.tug-live-avatars>span::after{left:12%;right:12%;bottom:4px;height:12px}
+.tug-teacher-arena .tug-character.facing-right .tug-avatar-art{transform:translateX(10px)}
+.tug-teacher-arena .tug-character.facing-left .tug-avatar-art{transform:scaleX(-1) translateX(10px)}
+.tug-teacher-arena .tug-character.state-idle .tug-avatar-art{animation:tugIdleAsset 2.4s ease-in-out infinite}
+.tug-teacher-arena .tug-character.state-ready .tug-avatar-art{animation:tugBraceAsset .95s ease-in-out infinite alternate}
+.tug-teacher-arena .tug-character.state-pull .tug-avatar-art,.tug-teacher-arena .tug-character.state-hold .tug-avatar-art{animation:tugPullAsset .95s ease-in-out infinite}
+.tug-teacher-arena .tug-character.pulse-pull .tug-avatar-art,.tug-teacher-arena .tug-character.pulse-power .tug-avatar-art{animation:tugPowerAsset .48s ease-in-out 2}
+.tug-world{position:relative;grid-template-columns:minmax(220px,1fr) minmax(420px,1.25fr) minmax(220px,1fr);align-items:end;gap:8px;min-height:450px;padding:20px 20px 14px;overflow:hidden;background:
+  radial-gradient(circle at 50% 6%,rgba(255,255,255,.64),transparent 34%),
+  linear-gradient(180deg,#d8ecfb 0 58%,#c4ddef 58% 68%,#b7d18c 68% 100%)}
+.tug-world::after{content:'';position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(78,106,44,.04) 35%,rgba(71,99,39,.08));pointer-events:none}
+.tug-player-team{position:relative;z-index:4;gap:10px}
+.tug-player-team>span{min-width:164px;padding:11px 18px;border-radius:16px 16px 8px 8px;box-shadow:0 10px 24px rgba(17,24,39,.18)}
+.tug-player-team>div{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px;min-height:250px;padding:0 18px 16px;background:none}
+.tug-player-team.red>div{justify-content:flex-end;padding-right:32px}
+.tug-player-team.blue>div{justify-content:flex-start;padding-left:32px}
+.tug-player-team>div::after{left:18%;right:18%;bottom:10px;height:14px;background:radial-gradient(ellipse at center,rgba(74,99,42,.28),rgba(74,99,42,0) 72%)}
+.tug-player-team .tug-character{min-width:132px;max-width:156px}
+.tug-player-team .tug-character .tug-character-stage{min-height:176px}
+.tug-player-team .tug-character .tug-avatar-art{max-height:170px}
+.tug-player-rope{position:relative;z-index:2;display:flex;align-items:flex-end;justify-content:center;min-height:260px;padding-bottom:76px}
+.tug-player-rope .tug-rope-wrap{width:100%;min-height:0;padding-top:0;justify-content:flex-end}
+.tug-player-rope .tug-rope-line{width:calc(100% + 520px);margin-left:-260px;height:22px}
+.tug-player-rope .tug-rope-knot{top:50%;transform:translate(-50%,-56%)}
+.tug-player-rope p{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);margin:0;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.82);box-shadow:0 10px 20px rgba(17,24,39,.08);font-size:.95rem;white-space:nowrap;color:#17395b}
+.tug-player-team.red .tug-character{transform:translateX(22px)}
+.tug-player-team.blue .tug-character{transform:translateX(-22px)}
+.tug-player-team.red .tug-character.facing-right .tug-avatar-art{transform:translateX(14px)}
+.tug-player-team.blue .tug-character.facing-left .tug-avatar-art{transform:scaleX(-1) translateX(14px)}
+.tug-player-team .tug-character.state-idle .tug-avatar-art{animation:tugIdleAsset 2.4s ease-in-out infinite}
+.tug-player-team .tug-character.state-ready .tug-avatar-art{animation:tugBraceAsset .95s ease-in-out infinite alternate}
+.tug-player-team .tug-character.state-pull .tug-avatar-art,.tug-player-team .tug-character.state-hold .tug-avatar-art{animation:tugPullAsset .95s ease-in-out infinite}
+.tug-player-team .tug-character.pulse-pull .tug-avatar-art,.tug-player-team .tug-character.pulse-power .tug-avatar-art{animation:tugPowerAsset .48s ease-in-out 2}
+
+body.theme-rgb .tug-teacher-arena{background:linear-gradient(180deg,#0f243c 0 57%,#123149 57% 68%,#0f301f 68% 100%)}
+body.theme-rgb .tug-world{background:radial-gradient(circle at 50% 5%,rgba(113,170,234,.12),transparent 30%),linear-gradient(180deg,#0f233b 0 58%,#143149 58% 68%,#10301f 68% 100%)!important}
+body.theme-rgb .tug-player-team>div::after,body.theme-rgb .tug-live-avatars>span::after{background:radial-gradient(ellipse at center,rgba(28,88,61,.42),rgba(28,88,61,0) 72%)}
+body.theme-rgb .tug-player-rope p{background:rgba(16,36,61,.78);color:#eef4ff;box-shadow:0 10px 20px rgba(0,0,0,.2)}
+body.theme-rgb .tug-rope-wrap .tug-rope-line{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 35%),repeating-linear-gradient(90deg,#d7b47f 0 16px,#b67c42 16px 32px,#dcb987 32px 48px,#9f6936 48px 64px)}
+
+@media(max-width:1100px){.tug-player-rope .tug-rope-line{width:calc(100% + 420px);margin-left:-210px}.tug-live-avatars>span .tug-character{min-width:104px;max-width:126px}.tug-live-avatars>span .tug-character .tug-avatar-art{max-height:118px}.tug-player-team .tug-character{min-width:118px;max-width:140px}.tug-player-team .tug-character .tug-avatar-art{max-height:154px}}
+@media(max-width:900px){.tug-teacher-arena{grid-template-columns:1fr;gap:12px;padding-bottom:12px}.tug-live-avatars{position:relative;bottom:auto;grid-template-columns:1fr 1fr;margin-top:-42px}.tug-rope-wrap{min-height:210px;padding-top:46px}.tug-rope-wrap .tug-rope-line{width:calc(100% + 220px);margin-left:-110px}.tug-world{grid-template-columns:1fr;gap:10px;min-height:500px;padding:20px 14px 12px}.tug-player-rope{order:2;min-height:180px;padding-bottom:54px}.tug-player-rope .tug-rope-line{width:calc(100% + 180px);margin-left:-90px}.tug-player-team.red{order:1}.tug-player-team.blue{order:3}.tug-player-team>div{min-height:190px;padding:0 8px 14px}.tug-player-team.red>div,.tug-player-team.blue>div{justify-content:center;padding-left:8px;padding-right:8px}.tug-player-team.red .tug-character,.tug-player-team.blue .tug-character{transform:none}.tug-player-team .tug-character{min-width:104px;max-width:122px}.tug-player-team .tug-character .tug-character-stage{min-height:150px}.tug-player-team .tug-character .tug-avatar-art{max-height:146px}}
+@media(max-width:620px){.tug-live-avatars{grid-template-columns:1fr}.tug-live-avatars>span:last-child{justify-content:center;padding-right:8px}.tug-live-avatars>span:first-child{justify-content:center;padding-left:8px}.tug-avatar-picker{grid-template-columns:repeat(2,minmax(0,1fr))}.tug-avatar-choice{min-height:236px}.tug-avatar-choice .tug-character.compact .tug-character-stage{min-height:132px}.tug-avatar-choice .tug-character.compact .tug-avatar-art{max-height:128px}.tug-player-rope p{bottom:10px;font-size:.88rem}.tug-player-rope .tug-rope-line{width:calc(100% + 120px);margin-left:-60px;height:18px}}
