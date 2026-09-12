@@ -78,8 +78,7 @@ function speedBonusWpm(){return customDifficulty()==='easy'?20:customDifficulty(
 function tugAvatarData(index){return tugAvatars[((Number(index)||0)%tugAvatars.length+tugAvatars.length)%tugAvatars.length]}
 function tugAvatarSrc(index,team='neutral'){
   const data=tugAvatarData(index);
-  const side=(team==='red'||team==='blue')?team:'neutral';
-  return `tug-avatar-${data.key}-${side}.svg`;
+  return `tug-avatar-${data.key}.png`;
 }
 function tugAvatarPose(player,base='idle'){if(base!=='pull')return base;if(player?.finished)return'hold';return'pull'}
 function tugConsumeScoreBursts(players){
