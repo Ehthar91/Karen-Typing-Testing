@@ -702,3 +702,153 @@ body.theme-rgb .tug-avatar-fallback{background:linear-gradient(180deg,#173352,#1
   .tug-arena-score{top:12px;width:104px}.tug-rope-wrap{top:190px}
   .tug-player-rope{top:214px}.tug-player-rope p{bottom:-60px;font-size:.9rem;padding:8px 12px}.tug-player-team .tug-character{min-width:108px;max-width:132px}.tug-player-team .tug-avatar-art{max-height:150px}
 }
+
+
+/* Final host + player layout polish */
+/* Common character layout */
+.tug-live-avatars .tug-character,
+.tug-player-team .tug-character,
+.tug-score-avatar .tug-character{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.tug-live-avatars .tug-character-name,
+.tug-player-team .tug-character-name,
+.tug-score-avatar .tug-character-name{order:2;margin-top:4px;line-height:1.05}
+.tug-live-avatars .tug-character-stage,
+.tug-player-team .tug-character-stage,
+.tug-score-avatar .tug-character-stage{order:1}
+.tug-live-avatars .tug-character-meta,
+.tug-player-team .tug-character-meta,
+.tug-score-avatar .tug-character-meta{order:3}
+
+/* Host / teacher view */
+.tug-teacher-arena{
+  min-height:286px;
+  padding:12px 16px 12px;
+  border-radius:22px;
+}
+.tug-arena-score{
+  top:18px;
+  width:116px;
+  padding:14px 10px;
+  border-radius:18px;
+}
+.tug-arena-score.red{left:16px}
+.tug-arena-score.blue{right:16px}
+.tug-arena-score strong{font-size:2.05rem}
+.tug-rope-wrap{
+  left:28px;
+  right:28px;
+  top:122px;
+}
+.tug-rope-wrap .tug-rope-line{height:16px}
+.tug-rope-wrap .tug-finish,.tug-rope-wrap .tug-center{top:-12px;height:40px}
+.tug-rope-wrap .tug-rope-knot{width:24px;height:50px}
+.tug-live-avatars{
+  top:-70px;
+  gap:14px;
+}
+.tug-live-avatars>span{
+  min-height:158px;
+  padding:0 12px;
+}
+.tug-live-avatars>span:first-child{justify-content:flex-end;padding-right:112px}
+.tug-live-avatars>span:last-child{justify-content:flex-start;padding-left:112px}
+.tug-live-avatars .tug-character{min-width:140px;max-width:160px;gap:2px}
+.tug-live-avatars .tug-character-stage{min-height:150px}
+.tug-live-avatars .tug-avatar-art{max-height:148px}
+.tug-live-avatars .tug-character-name{font-size:1.02rem;font-weight:900;color:#f2f6fb;text-shadow:0 2px 8px rgba(13,25,38,.42)}
+.tug-live-avatars .tug-character-meta{font-size:.78rem}
+
+/* Player view */
+.tug-world{
+  min-height:288px;
+  padding:18px 18px 18px;
+  column-gap:10px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.tug-player-team{
+  gap:6px;
+}
+.tug-player-team>span{
+  min-width:138px;
+  padding:8px 16px;
+  font-size:.86rem;
+}
+.tug-player-team>div{
+  min-height:196px;
+  padding:52px 12px 0;
+}
+.tug-player-team.red>div{justify-content:flex-end;padding-right:72px}
+.tug-player-team.blue>div{justify-content:flex-start;padding-left:72px}
+.tug-player-team .tug-character{min-width:144px;max-width:166px;gap:2px}
+.tug-player-team .tug-character-stage{min-height:156px}
+.tug-player-team .tug-avatar-art{max-height:154px}
+.tug-player-team .tug-character-name{font-size:1.02rem;font-weight:900;text-shadow:0 2px 8px rgba(13,25,38,.36)}
+.tug-player-rope{
+  left:28px;
+  right:28px;
+  top:138px;
+}
+.tug-player-rope .tug-rope-line{height:16px}
+.tug-player-rope .tug-finish,.tug-player-rope .tug-center{top:-12px;height:40px}
+.tug-player-rope .tug-rope-knot{width:24px;height:50px}
+.tug-player-rope p{
+  top:28px;
+  bottom:auto;
+  z-index:4;
+  font-size:.92rem;
+  max-width:min(72%,560px);
+  text-align:center;
+}
+
+/* score board chips below host */
+.tug-scoreboard{gap:12px;margin-top:14px}
+.tug-score-team{padding:14px;border-radius:22px}
+.tug-score-card{padding:10px 12px}
+
+body.theme-rgb .tug-live-avatars .tug-character-name,
+body.theme-rgb .tug-player-team .tug-character-name{color:#eef4ff}
+
+@media(max-width:1100px){
+  .tug-live-avatars>span:first-child{padding-right:88px}
+  .tug-live-avatars>span:last-child{padding-left:88px}
+  .tug-player-team.red>div{padding-right:54px}
+  .tug-player-team.blue>div{padding-left:54px}
+}
+@media(max-width:900px){
+  .tug-teacher-arena{min-height:310px;padding:12px}
+  .tug-arena-score{top:12px;width:108px}
+  .tug-rope-wrap{left:16px;right:16px;top:126px}
+  .tug-live-avatars{top:-60px}
+  .tug-live-avatars>span:first-child{padding-right:52px}
+  .tug-live-avatars>span:last-child{padding-left:52px}
+  .tug-live-avatars .tug-character{min-width:124px;max-width:142px}
+  .tug-live-avatars .tug-avatar-art{max-height:136px}
+
+  .tug-world{min-height:314px;padding:16px 12px 16px;row-gap:8px}
+  .tug-player-rope{left:16px;right:16px;top:146px}
+  .tug-player-team>span{align-self:center}
+  .tug-player-team.blue>span{align-self:center}
+  .tug-player-team>div{min-height:164px;padding:42px 8px 0}
+  .tug-player-team.red>div,.tug-player-team.blue>div{justify-content:center;padding-left:8px;padding-right:8px}
+  .tug-player-team .tug-character{min-width:126px;max-width:144px}
+  .tug-player-team .tug-avatar-art{max-height:140px}
+  .tug-player-rope p{top:26px;max-width:80%}
+}
+@media(max-width:620px){
+  .tug-teacher-arena{min-height:334px}
+  .tug-rope-wrap{top:154px}
+  .tug-live-avatars{top:-54px;grid-template-columns:1fr;gap:0}
+  .tug-live-avatars>span:first-child,.tug-live-avatars>span:last-child{justify-content:center;padding:0 4px}
+  .tug-live-avatars .tug-character{min-width:112px;max-width:132px}
+  .tug-live-avatars .tug-avatar-art{max-height:124px}
+
+  .tug-world{min-height:332px}
+  .tug-player-rope{top:170px}
+  .tug-player-rope p{top:24px;font-size:.86rem;max-width:90%}
+  .tug-player-team .tug-character{min-width:112px;max-width:132px}
+  .tug-player-team .tug-avatar-art{max-height:126px}
+}
