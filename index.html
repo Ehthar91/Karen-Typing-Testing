@@ -23,9 +23,9 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260911-19" />
+  <link rel="stylesheet" href="calculator.css?v=20260911-20" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
-  <link rel="stylesheet" href="rgb-theme.css?v=20260911-7" />
+  <link rel="stylesheet" href="rgb-theme.css?v=20260911-8" />
 </head>
 <body>
   <main class="app-shell">
@@ -292,6 +292,7 @@ Fish = ညၣ်</textarea>
       <div class="calculator-mode-switch" id="classroomToolSwitch" role="group" aria-label="Choose a classroom tool">
         <button id="showCalculator" type="button">Calculator</button>
         <button id="showNumberGenerator" type="button">Number Generator</button>
+        <button id="showScheduleTimer" type="button">Schedule Timer</button>
         <button id="showWheel" type="button">Random Wheel</button>
         <button id="showSeating" type="button">Seating Chart</button>
       </div>
@@ -340,6 +341,47 @@ Fish = ညၣ်</textarea>
               <ol id="numberGeneratorHistory"><li>No numbers yet</li></ol>
             </div>
           </aside>
+        </div>
+      </section>
+      <section class="schedule-timer-card" id="scheduleTimerPanel" aria-labelledby="scheduleTimerTitle" hidden>
+        <div class="schedule-timer-toolbar">
+          <div><p class="eyebrow">AUTOMATIC CLASSROOM TIMER</p><h2 id="scheduleTimerTitle">Schedule Timer</h2></div>
+          <div class="schedule-live-clock"><span>Local time</span><strong id="scheduleClock">--:--:--</strong></div>
+        </div>
+        <div class="schedule-timer-layout">
+          <div class="schedule-timer-main">
+            <section class="schedule-active-card" aria-live="polite" aria-atomic="true">
+              <span class="schedule-active-state" id="scheduleActiveState">WAITING</span>
+              <h3 id="scheduleActiveName">No timer is running</h3>
+              <strong class="schedule-countdown" id="scheduleCountdown">--:--</strong>
+              <p id="scheduleActiveRange">Add a schedule and it will start automatically at the selected time.</p>
+              <div class="schedule-progress" aria-hidden="true"><span id="scheduleProgress"></span></div>
+              <div class="schedule-next"><span>Next</span><strong id="scheduleNext">No upcoming schedule</strong></div>
+              <button class="button ghost" id="stopScheduleTimer" type="button" hidden>Stop current timer</button>
+            </section>
+          </div>
+          <aside class="schedule-editor">
+            <div class="schedule-editor-heading"><strong id="scheduleEditorTitle">Add schedule</strong><button id="cancelScheduleEdit" type="button" hidden>Cancel</button></div>
+            <form id="scheduleTimerForm">
+              <label>Activity name<input id="scheduleName" type="text" maxlength="60" placeholder="Warm-up" required /></label>
+              <div class="schedule-time-row"><label>Start time<input id="scheduleStartTime" type="time" required /></label><label>Duration<input id="scheduleDuration" type="number" min="1" max="480" step="1" value="5" required /><small>minutes</small></label></div>
+              <fieldset class="schedule-days"><legend>Repeat on</legend><div>
+                <label><input type="checkbox" value="1" checked /><span>Mon</span></label>
+                <label><input type="checkbox" value="2" checked /><span>Tue</span></label>
+                <label><input type="checkbox" value="3" checked /><span>Wed</span></label>
+                <label><input type="checkbox" value="4" checked /><span>Thu</span></label>
+                <label><input type="checkbox" value="5" checked /><span>Fri</span></label>
+                <label><input type="checkbox" value="6" /><span>Sat</span></label>
+                <label><input type="checkbox" value="0" /><span>Sun</span></label>
+              </div></fieldset>
+              <label class="schedule-enabled"><input id="scheduleEnabled" type="checkbox" checked /><span><strong>Enabled</strong><small>Run this schedule automatically.</small></span></label>
+              <button class="button primary schedule-save" id="saveScheduleTimer" type="submit">Add schedule</button>
+            </form>
+          </aside>
+        </div>
+        <div class="schedule-list-panel">
+          <div class="schedule-list-heading"><div><strong>Saved schedules</strong><small>Timers run from this device's local clock while the site is open.</small></div><button id="clearScheduleTimers" type="button">Clear all</button></div>
+          <div class="schedule-list" id="scheduleTimerList"><p class="schedule-empty">No schedules yet.</p></div>
         </div>
       </section>
       <section class="wheel-card" id="wheelPanel" aria-labelledby="wheelTitle" hidden>
@@ -461,7 +503,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260911-25"></script>
+  <script src="calculator.js?v=20260911-26"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
