@@ -36,8 +36,10 @@ const loadWheelSeatingClass=document.querySelector('#loadWheelSeatingClass');
 const wheelClassSourceStatus=document.querySelector('#wheelClassSourceStatus');
 const wheelColors=['#2563eb','#ef476f','#06b6d4','#f59e0b','#8b5cf6','#22c55e','#f97316','#ec4899','#0ea5e9','#14b8a6','#6366f1','#eab308'];
 let wheelRotation=0,wheelSpinning=false,lastWheelWinner='',wheelHistory=[];
+const legacyWheelSample=['Alex','Maria','Saw Htoo','Naw Paw','Jordan','Taylor'].join('\n');
 const savedWheelEntries=localStorage.getItem('glnWheelEntries');
-if(savedWheelEntries)wheelEntries.value=savedWheelEntries;
+if(savedWheelEntries===legacyWheelSample){localStorage.removeItem('glnWheelEntries');wheelEntries.value=''}
+else if(savedWheelEntries)wheelEntries.value=savedWheelEntries;
 const savedWheelSpinTime=localStorage.getItem('glnWheelSpinTime');
 if(savedWheelSpinTime&&wheelSpinTime.querySelector(`option[value="${savedWheelSpinTime}"]`))wheelSpinTime.value=savedWheelSpinTime;
 function seatingClassListsForWheel(){

@@ -199,7 +199,6 @@ function openCustomGame(mode){
     customSetup.hidden=true;cq('#tugClassSetup').hidden=false;tugError('');
     cq('#tugConnection').textContent='Connecting…';
     cq('#tugWordsInput').lang=languageTag();
-    if(!cq('#tugWordsInput').value)cq('#tugWordsInput').value=activeGameWords().join('\n');
     cq('#tugCodeInput').value='';cq('#tugNameInput').value='';
     cq('#tugTeamField').hidden=true;cq('#tugJoinTeamNote').textContent='Enter a room code to see how teams are assigned.';
     tugAvatarIndex=0;tugSelectedTeam='';renderTugAvatarPicker();renderTugTeamChoice();
