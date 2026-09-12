@@ -2,10 +2,12 @@ const navTools=document.querySelector('#navTools');
 const calculatorView=document.querySelector('#calculatorView');
 const calculatorPanel=document.querySelector('#calculatorPanel');
 const numberGeneratorPanel=document.querySelector('#numberGeneratorPanel');
+const scheduleTimerPanel=document.querySelector('#scheduleTimerPanel');
 const wheelPanel=document.querySelector('#wheelPanel');
 const seatingPanel=document.querySelector('#seatingPanel');
 const showCalculator=document.querySelector('#showCalculator');
 const showNumberGenerator=document.querySelector('#showNumberGenerator');
+const showScheduleTimer=document.querySelector('#showScheduleTimer');
 const showWheel=document.querySelector('#showWheel');
 const showSeating=document.querySelector('#showSeating');
 const calculatorTitle=document.querySelector('#calculator-title');
@@ -14,24 +16,29 @@ const calculatorEyebrow=document.querySelector('#calculatorEyebrow');
 function setCalculatorMode(mode){
   const calculator=mode==='calculator';
   const numberGenerator=mode==='number-generator';
+  const scheduleTimer=mode==='schedule-timer';
   const wheel=mode==='wheel';
   const seating=mode==='seating';
   calculatorPanel.hidden=!calculator;
   numberGeneratorPanel.hidden=!numberGenerator;
+  scheduleTimerPanel.hidden=!scheduleTimer;
   wheelPanel.hidden=!wheel;
   seatingPanel.hidden=!seating;
   showCalculator.classList.toggle('active',calculator);
   showNumberGenerator.classList.toggle('active',numberGenerator);
+  showScheduleTimer.classList.toggle('active',scheduleTimer);
   showWheel.classList.toggle('active',wheel);
   showSeating.classList.toggle('active',seating);
-  calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':numberGenerator?'Number Generator':'Graphing & Scientific Calculator';
-  calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':numberGenerator?'Generate classroom numbers from any range, with an optional no-repeat mode.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
+  calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':scheduleTimer?'Schedule Timer':numberGenerator?'Number Generator':'Graphing & Scientific Calculator';
+  calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':scheduleTimer?'Create multiple timers that start automatically at their scheduled times.':numberGenerator?'Generate classroom numbers from any range, with an optional no-repeat mode.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
   if(numberGenerator)setTimeout(()=>{numberGeneratorMin.focus();queueFitNumberGeneratorResult()},0);
+  if(scheduleTimer)setTimeout(()=>{renderScheduleTimers();updateScheduleTimerClock()},0);
   if(wheel)setTimeout(()=>{refreshWheelSeatingClasses();drawWheel()},0);
   if(seating)setTimeout(()=>window.renderSeatingChart?.(),0);
 }
 showCalculator.onclick=()=>setCalculatorMode('calculator');
 showNumberGenerator.onclick=()=>setCalculatorMode('number-generator');
+showScheduleTimer.onclick=()=>setCalculatorMode('schedule-timer');
 showWheel.onclick=()=>setCalculatorMode('wheel');
 showSeating.onclick=()=>setCalculatorMode('seating');
 
@@ -187,6 +194,144 @@ document.querySelectorAll('[data-number-max]').forEach(button=>button.addEventLi
 window.addEventListener('resize',queueFitNumberGeneratorResult);
 renderNumberHistory();
 queueFitNumberGeneratorResult();
+
+// Scheduled Classroom Timer
+const SCHEDULE_TIMER_STORAGE_KEY='glnScheduleTimersV1';
+const scheduleClock=document.querySelector('#scheduleClock');
+const scheduleActiveState=document.querySelector('#scheduleActiveState');
+const scheduleActiveName=document.querySelector('#scheduleActiveName');
+const scheduleCountdown=document.querySelector('#scheduleCountdown');
+const scheduleActiveRange=document.querySelector('#scheduleActiveRange');
+const scheduleProgress=document.querySelector('#scheduleProgress');
+const scheduleNext=document.querySelector('#scheduleNext');
+const stopScheduleTimer=document.querySelector('#stopScheduleTimer');
+const scheduleTimerForm=document.querySelector('#scheduleTimerForm');
+const scheduleName=document.querySelector('#scheduleName');
+const scheduleStartTime=document.querySelector('#scheduleStartTime');
+const scheduleDuration=document.querySelector('#scheduleDuration');
+const scheduleEnabled=document.querySelector('#scheduleEnabled');
+const scheduleTimerList=document.querySelector('#scheduleTimerList');
+const scheduleEditorTitle=document.querySelector('#scheduleEditorTitle');
+const saveScheduleTimer=document.querySelector('#saveScheduleTimer');
+const cancelScheduleEdit=document.querySelector('#cancelScheduleEdit');
+const clearScheduleTimers=document.querySelector('#clearScheduleTimers');
+let classroomSchedules=[];
+let editingScheduleId='';
+let manualTimer=null;
+const dismissedScheduleOccurrences=new Set();
+function loadClassroomSchedules(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(SCHEDULE_TIMER_STORAGE_KEY)||'[]');
+    classroomSchedules=Array.isArray(saved)?saved.filter(item=>item&&item.id&&item.time&&item.duration):[];
+  }catch{classroomSchedules=[]}
+}
+function saveClassroomSchedules(){localStorage.setItem(SCHEDULE_TIMER_STORAGE_KEY,JSON.stringify(classroomSchedules))}
+function scheduleDayChecks(){return [...document.querySelectorAll('.schedule-days input[type="checkbox"]')]}
+function selectedScheduleDays(){return scheduleDayChecks().filter(input=>input.checked).map(input=>Number(input.value))}
+function scheduleDayText(days){
+  const normalized=[...new Set(days||[])].sort((a,b)=>a-b);
+  const weekdays=[1,2,3,4,5];
+  if(weekdays.every(day=>normalized.includes(day))&&normalized.length===5)return 'Mon–Fri';
+  if(normalized.length===7)return 'Every day';
+  const names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return normalized.map(day=>names[day]).join(', ');
+}
+function formatScheduleTime(time){
+  const [hourText,minuteText]=String(time||'00:00').split(':');
+  let hour=Number(hourText)||0;const minute=Number(minuteText)||0;const suffix=hour>=12?'PM':'AM';hour=hour%12||12;
+  return `${hour}:${String(minute).padStart(2,'0')} ${suffix}`;
+}
+function formatScheduleClock(date=new Date()){
+  return date.toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+}
+function formatTimerRemaining(ms){
+  const total=Math.max(0,Math.ceil(ms/1000));
+  const hours=Math.floor(total/3600),minutes=Math.floor((total%3600)/60),seconds=total%60;
+  return hours?`${hours}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`:`${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+}
+function occurrenceForSchedule(entry,date){
+  if(!entry.enabled||!(entry.days||[]).includes(date.getDay()))return null;
+  const [hour,minute]=entry.time.split(':').map(Number);
+  const start=new Date(date);start.setHours(hour||0,minute||0,0,0);
+  const end=new Date(start.getTime()+Number(entry.duration)*60000);
+  const key=`${entry.id}:${start.getFullYear()}-${start.getMonth()+1}-${start.getDate()}`;
+  return{entry,start,end,key};
+}
+function getUpcomingSchedule(now=new Date()){
+  for(let add=0;add<8;add++){
+    const date=new Date(now);date.setDate(now.getDate()+add);
+    const candidates=classroomSchedules.map(entry=>occurrenceForSchedule(entry,date)).filter(Boolean).filter(item=>item.start>now&&!dismissedScheduleOccurrences.has(item.key)).sort((a,b)=>a.start-b.start);
+    if(candidates.length)return candidates[0];
+  }
+  return null;
+}
+function getActiveScheduledOccurrence(now=new Date()){
+  return classroomSchedules.map(entry=>occurrenceForSchedule(entry,now)).filter(Boolean).filter(item=>now>=item.start&&now<item.end&&!dismissedScheduleOccurrences.has(item.key)).sort((a,b)=>a.start-b.start)[0]||null;
+}
+function resetScheduleEditor(){
+  editingScheduleId='';scheduleEditorTitle.textContent='Add schedule';saveScheduleTimer.textContent='Add schedule';cancelScheduleEdit.hidden=true;scheduleTimerForm.reset();scheduleDuration.value='5';scheduleEnabled.checked=true;scheduleDayChecks().forEach(input=>input.checked=['1','2','3','4','5'].includes(input.value));scheduleName.focus();
+}
+function editClassroomSchedule(id){
+  const entry=classroomSchedules.find(item=>item.id===id);if(!entry)return;
+  editingScheduleId=id;scheduleEditorTitle.textContent='Edit schedule';saveScheduleTimer.textContent='Update schedule';cancelScheduleEdit.hidden=false;scheduleName.value=entry.name;scheduleStartTime.value=entry.time;scheduleDuration.value=entry.duration;scheduleEnabled.checked=entry.enabled;scheduleDayChecks().forEach(input=>input.checked=(entry.days||[]).includes(Number(input.value)));scheduleName.focus();
+}
+function renderScheduleTimers(){
+  if(!scheduleTimerList)return;
+  scheduleTimerList.innerHTML='';
+  const sorted=[...classroomSchedules].sort((a,b)=>a.time.localeCompare(b.time)||a.name.localeCompare(b.name));
+  if(!sorted.length){scheduleTimerList.innerHTML='<p class="schedule-empty">No schedules yet. Add your first automatic timer.</p>';return}
+  sorted.forEach(entry=>{
+    const row=document.createElement('article');row.className=`schedule-row${entry.enabled?'':' is-disabled'}`;
+    const main=document.createElement('div');main.className='schedule-row-main';
+    const time=document.createElement('strong');time.className='schedule-row-time';time.textContent=formatScheduleTime(entry.time);
+    const copy=document.createElement('div');const name=document.createElement('strong');name.textContent=entry.name;const meta=document.createElement('small');meta.textContent=`${entry.duration} min · ${scheduleDayText(entry.days)}`;copy.append(name,meta);main.append(time,copy);
+    const actions=document.createElement('div');actions.className='schedule-row-actions';
+    const enabled=document.createElement('label');enabled.className='schedule-row-toggle';const check=document.createElement('input');check.type='checkbox';check.checked=entry.enabled;const text=document.createElement('span');text.textContent=entry.enabled?'On':'Off';check.addEventListener('change',()=>{entry.enabled=check.checked;saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock()});enabled.append(check,text);
+    const run=document.createElement('button');run.type='button';run.textContent='Run now';run.addEventListener('click',()=>runScheduleNow(entry));
+    const edit=document.createElement('button');edit.type='button';edit.textContent='Edit';edit.addEventListener('click',()=>editClassroomSchedule(entry.id));
+    const del=document.createElement('button');del.type='button';del.textContent='Delete';del.className='danger';del.addEventListener('click',()=>{classroomSchedules=classroomSchedules.filter(item=>item.id!==entry.id);saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock()});
+    actions.append(enabled,run,edit,del);row.append(main,actions);scheduleTimerList.append(row);
+  });
+}
+function runScheduleNow(entry){
+  const start=new Date();manualTimer={entry,start,end:new Date(start.getTime()+Number(entry.duration)*60000),key:`manual:${entry.id}:${Date.now()}`};updateScheduleTimerClock();
+}
+function activeTimerOccurrence(now){
+  if(manualTimer&&now<manualTimer.end)return manualTimer;
+  if(manualTimer&&now>=manualTimer.end)manualTimer=null;
+  return getActiveScheduledOccurrence(now);
+}
+function updateScheduleTimerClock(){
+  if(!scheduleClock)return;
+  const now=new Date();scheduleClock.textContent=formatScheduleClock(now);
+  const active=activeTimerOccurrence(now);
+  if(active){
+    const remaining=active.end-now;const total=Math.max(1,active.end-active.start);const elapsed=Math.max(0,now-active.start);const pct=Math.min(100,Math.max(0,elapsed/total*100));const remainingText=formatTimerRemaining(remaining);
+    scheduleActiveState.textContent=String(active.key).startsWith('manual:')?'RUNNING NOW':'RUNNING AUTOMATICALLY';scheduleActiveName.textContent=active.entry.name;scheduleCountdown.textContent=remainingText;scheduleActiveRange.textContent=`${formatScheduleTime(`${String(active.start.getHours()).padStart(2,'0')}:${String(active.start.getMinutes()).padStart(2,'0')}`)} – ${formatScheduleTime(`${String(active.end.getHours()).padStart(2,'0')}:${String(active.end.getMinutes()).padStart(2,'0')}`)}`;scheduleProgress.style.width=`${pct}%`;stopScheduleTimer.hidden=false;showScheduleTimer.textContent=`Schedule Timer · ${remainingText}`;
+  }else{
+    scheduleActiveState.textContent='WAITING';scheduleActiveName.textContent='No timer is running';scheduleCountdown.textContent='--:--';scheduleActiveRange.textContent='The next enabled schedule will start automatically.';scheduleProgress.style.width='0%';stopScheduleTimer.hidden=true;showScheduleTimer.textContent='Schedule Timer';
+  }
+  const next=getUpcomingSchedule(now);
+  scheduleNext.textContent=next?`${next.entry.name} · ${formatScheduleTime(next.entry.time)} · ${scheduleDayText(next.entry.days)}`:'No upcoming schedule';
+}
+if(scheduleTimerForm)scheduleTimerForm.addEventListener('submit',event=>{
+  event.preventDefault();
+  const name=scheduleName.value.trim();const time=scheduleStartTime.value;const duration=Math.max(1,Math.min(480,Number(scheduleDuration.value)||1));const days=selectedScheduleDays();
+  if(!name||!time)return;
+  if(!days.length){alert('Choose at least one day for this schedule.');return}
+  if(editingScheduleId){
+    const entry=classroomSchedules.find(item=>item.id===editingScheduleId);if(entry)Object.assign(entry,{name,time,duration,days,enabled:scheduleEnabled.checked});
+  }else classroomSchedules.push({id:`schedule-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name,time,duration,days,enabled:scheduleEnabled.checked});
+  saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock();resetScheduleEditor();
+});
+if(cancelScheduleEdit)cancelScheduleEdit.addEventListener('click',resetScheduleEditor);
+if(clearScheduleTimers)clearScheduleTimers.addEventListener('click',()=>{if(!classroomSchedules.length)return;if(confirm('Clear all saved schedules?')){classroomSchedules=[];manualTimer=null;saveClassroomSchedules();renderScheduleTimers();resetScheduleEditor();updateScheduleTimerClock()}});
+if(stopScheduleTimer)stopScheduleTimer.addEventListener('click',()=>{
+  const now=new Date();
+  if(manualTimer&&now<manualTimer.end){manualTimer=null}else{const active=getActiveScheduledOccurrence(now);if(active)dismissedScheduleOccurrences.add(active.key)}
+  updateScheduleTimerClock();
+});
+loadClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock();setInterval(updateScheduleTimerClock,500);
 
 const wheelCanvas=document.querySelector('#randomWheel');
 const wheelContext=wheelCanvas.getContext('2d');
