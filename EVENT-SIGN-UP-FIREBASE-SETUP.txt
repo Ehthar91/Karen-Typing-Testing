@@ -18,6 +18,8 @@ WHAT CHANGED IN THIS BUILD
 - A participant must claim one available spot with a Firebase transaction before the reservation is saved.
 - One physical spot can hold only one claim, so a 1-person slot cannot become 2/1 even when two people click at nearly the same time.
 - Full slots remain visible for now but are disabled and marked FULL.
+- One device can now keep separate family signups. “Add another student” keeps the same family contact information; “Sign up for another family” starts a separate parent/guardian record without changing the first family.
+- Reservations now use unique reservation IDs under each anonymous device user, so two different families using the same device can even reserve the same time when that slot has capacity greater than 1.
 - Cancelling a reservation releases its claimed spot so it becomes available again.
 - Parent/Guardian Name, Email, optional Phone, Student Name, multiple selected slots, and Schedule Timer linking are preserved.
 
@@ -26,5 +28,8 @@ Events created by the older signup system do not have claimable spot IDs yet. Af
 
 EMAIL NOTE
 This build collects the email address but does not send confirmation emails yet. Automatic confirmation/manage links require the planned secure server-side email service. Do not put a mail API key in the website JavaScript.
+
+IMPORTANT FOR THIS BUILD
+The reservation path changed to support multiple families on one device, so publish the firebase-rules.json included with THIS build before testing the new buttons.
 
 After publishing the rules and uploading the site, hard-refresh the website with Command + Shift + R.
