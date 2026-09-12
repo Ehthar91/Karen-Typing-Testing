@@ -440,3 +440,59 @@ body.theme-rgb .tug-rope-wrap .tug-rope-line{background:linear-gradient(180deg,r
 @media(max-width:1100px){.tug-player-rope .tug-rope-line{width:calc(100% + 420px);margin-left:-210px}.tug-live-avatars>span .tug-character{min-width:104px;max-width:126px}.tug-live-avatars>span .tug-character .tug-avatar-art{max-height:118px}.tug-player-team .tug-character{min-width:118px;max-width:140px}.tug-player-team .tug-character .tug-avatar-art{max-height:154px}}
 @media(max-width:900px){.tug-teacher-arena{grid-template-columns:1fr;gap:12px;padding-bottom:12px}.tug-live-avatars{position:relative;bottom:auto;grid-template-columns:1fr 1fr;margin-top:-42px}.tug-rope-wrap{min-height:210px;padding-top:46px}.tug-rope-wrap .tug-rope-line{width:calc(100% + 220px);margin-left:-110px}.tug-world{grid-template-columns:1fr;gap:10px;min-height:500px;padding:20px 14px 12px}.tug-player-rope{order:2;min-height:180px;padding-bottom:54px}.tug-player-rope .tug-rope-line{width:calc(100% + 180px);margin-left:-90px}.tug-player-team.red{order:1}.tug-player-team.blue{order:3}.tug-player-team>div{min-height:190px;padding:0 8px 14px}.tug-player-team.red>div,.tug-player-team.blue>div{justify-content:center;padding-left:8px;padding-right:8px}.tug-player-team.red .tug-character,.tug-player-team.blue .tug-character{transform:none}.tug-player-team .tug-character{min-width:104px;max-width:122px}.tug-player-team .tug-character .tug-character-stage{min-height:150px}.tug-player-team .tug-character .tug-avatar-art{max-height:146px}}
 @media(max-width:620px){.tug-live-avatars{grid-template-columns:1fr}.tug-live-avatars>span:last-child{justify-content:center;padding-right:8px}.tug-live-avatars>span:first-child{justify-content:center;padding-left:8px}.tug-avatar-picker{grid-template-columns:repeat(2,minmax(0,1fr))}.tug-avatar-choice{min-height:236px}.tug-avatar-choice .tug-character.compact .tug-character-stage{min-height:132px}.tug-avatar-choice .tug-character.compact .tug-avatar-art{max-height:128px}.tug-player-rope p{bottom:10px;font-size:.88rem}.tug-player-rope .tug-rope-line{width:calc(100% + 120px);margin-left:-60px;height:18px}}
+
+
+/* Direction, team color, and hand-rope alignment fixes */
+.tug-character{position:relative}
+.tug-character.team-red::after,.tug-character.team-blue::after{content:'';position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:72%;height:38%;border-radius:999px;filter:blur(14px);opacity:.42;z-index:0;pointer-events:none}
+.tug-character.team-red::after{background:radial-gradient(ellipse at center,rgba(228,59,77,.45),rgba(228,59,77,0) 72%)}
+.tug-character.team-blue::after{background:radial-gradient(ellipse at center,rgba(56,132,255,.45),rgba(56,132,255,0) 72%)}
+.tug-character-stage{position:relative;z-index:1}
+.tug-avatar-art{position:relative;z-index:2}
+.tug-live-avatars .tug-character,.tug-player-team .tug-character{gap:4px}
+.tug-live-avatars .tug-character-stage,.tug-player-team .tug-character-stage{order:1}
+.tug-live-avatars .tug-character-name,.tug-player-team .tug-character-name{order:2;margin-top:4px}
+.tug-live-avatars .tug-character-meta,.tug-player-team .tug-character-meta{order:3}
+
+.tug-teacher-arena .tug-rope-wrap{padding-top:130px;min-height:308px}
+.tug-player-rope{min-height:228px;padding-bottom:84px}
+.tug-player-rope .tug-rope-wrap{justify-content:flex-start;min-height:228px;padding-top:132px}
+.tug-player-rope .tug-rope-line{height:20px}
+.tug-live-avatars{bottom:10px}
+.tug-live-avatars>span{min-height:150px}
+.tug-live-avatars>span .tug-character{min-width:126px;max-width:152px}
+.tug-live-avatars>span .tug-character .tug-character-stage{min-height:146px}
+.tug-live-avatars>span .tug-character .tug-avatar-art{max-height:142px}
+.tug-player-team>div{min-height:222px;padding-bottom:24px}
+.tug-player-team .tug-character{min-width:136px;max-width:162px}
+.tug-player-team .tug-character .tug-character-stage{min-height:184px}
+.tug-player-team .tug-character .tug-avatar-art{max-height:178px}
+.tug-player-team.red>div{justify-content:flex-end;padding-right:20px}
+.tug-player-team.blue>div{justify-content:flex-start;padding-left:20px}
+.tug-player-team.red .tug-character{transform:translate(34px,-14px)}
+.tug-player-team.blue .tug-character{transform:translate(-34px,-14px)}
+.tug-live-avatars>span:first-child .tug-character{transform:translate(18px,-6px)}
+.tug-live-avatars>span:last-child .tug-character{transform:translate(-18px,-6px)}
+
+/* connector rope at hand level */
+.tug-live-avatars .tug-character-stage::after,.tug-player-team .tug-character-stage::after{content:'';position:absolute;top:55px;height:12px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 35%),repeating-linear-gradient(90deg,#d6b178 0 13px,#b57a3c 13px 26px,#dfbc89 26px 39px,#a66b33 39px 52px);box-shadow:inset 0 2px 2px rgba(255,255,255,.18),inset 0 -2px 4px rgba(84,53,24,.26),0 4px 10px rgba(60,38,16,.1);z-index:1}
+.tug-live-avatars .team-red .tug-character-stage::after,.tug-player-team.red .team-red .tug-character-stage::after{left:58%;width:96px}
+.tug-live-avatars .team-blue .tug-character-stage::after,.tug-player-team.blue .team-blue .tug-character-stage::after{right:58%;width:96px}
+.tug-player-team.red .team-red .tug-character-stage::after{left:56%;width:138px}
+.tug-player-team.blue .team-blue .tug-character-stage::after{right:56%;width:138px}
+
+/* clearer side reading */
+.tug-player-team.red .tug-character-name,.tug-live-avatars .team-red .tug-character-name{color:#ffd7db}
+.tug-player-team.blue .tug-character-name,.tug-live-avatars .team-blue .tug-character-name{color:#d4e9ff}
+.tug-player-team.red>span,.tug-score-team.red h3{box-shadow:0 10px 24px rgba(161,30,47,.25)}
+.tug-player-team.blue>span,.tug-score-team.blue h3{box-shadow:0 10px 24px rgba(34,96,191,.24)}
+
+body.theme-rgb .tug-character.team-red::after{background:radial-gradient(ellipse at center,rgba(247,86,104,.42),rgba(247,86,104,0) 72%)}
+body.theme-rgb .tug-character.team-blue::after{background:radial-gradient(ellipse at center,rgba(88,163,255,.4),rgba(88,163,255,0) 72%)}
+body.theme-rgb .tug-player-team.red .tug-character-name,body.theme-rgb .tug-live-avatars .team-red .tug-character-name{color:#ffdce0}
+body.theme-rgb .tug-player-team.blue .tug-character-name,body.theme-rgb .tug-live-avatars .team-blue .tug-character-name{color:#d8ebff}
+body.theme-rgb .tug-live-avatars .tug-character-stage::after,body.theme-rgb .tug-player-team .tug-character-stage::after{background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 35%),repeating-linear-gradient(90deg,#d5b27e 0 13px,#b2773a 13px 26px,#dcb886 26px 39px,#9f6935 39px 52px)}
+
+@media(max-width:1100px){.tug-player-team.red .tug-character{transform:translate(22px,-10px)}.tug-player-team.blue .tug-character{transform:translate(-22px,-10px)}.tug-player-rope .tug-rope-wrap{padding-top:118px}.tug-teacher-arena .tug-rope-wrap{padding-top:118px}.tug-player-team .team-red .tug-character-stage::after{width:112px}.tug-player-team .team-blue .tug-character-stage::after{width:112px}}
+@media(max-width:900px){.tug-player-rope{min-height:180px;padding-bottom:54px}.tug-player-rope .tug-rope-wrap{min-height:180px;padding-top:96px}.tug-teacher-arena .tug-rope-wrap{padding-top:90px;min-height:236px}.tug-live-avatars{position:relative;bottom:auto;margin-top:-28px}.tug-live-avatars>span .tug-character,.tug-player-team .tug-character{transform:none;min-width:104px;max-width:126px}.tug-live-avatars>span .tug-character .tug-avatar-art{max-height:124px}.tug-player-team .tug-character .tug-avatar-art{max-height:150px}.tug-live-avatars .tug-character-stage::after,.tug-player-team .tug-character-stage::after{top:50px;width:88px!important}}
+@media(max-width:620px){.tug-player-rope .tug-rope-wrap{padding-top:86px}.tug-live-avatars .tug-character-stage::after,.tug-player-team .tug-character-stage::after{top:46px;height:10px;width:72px!important}}
