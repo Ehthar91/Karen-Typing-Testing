@@ -176,3 +176,49 @@ body.theme-rgb .wheel-class-source{border-color:#315271;background:linear-gradie
 .schedule-saved-grid .schedule-row-main{width:100%}
 @media(max-width:900px){.schedule-saved-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.schedule-saved-heading{align-items:flex-start}.schedule-saved-heading button{flex:0 0 auto}}
+
+/* Special Schedule groups */
+#scheduleWeeklyEditor[hidden],.schedule-special-editor[hidden]{display:none!important}
+#scheduleWeeklyEditor{display:grid;gap:14px}
+#scheduleWeeklyEditor>label,.schedule-special-editor>label,.special-slot-editor-row label{display:flex;flex-direction:column;gap:6px;color:#526075;font-size:.8rem;font-weight:800}
+.schedule-special-editor{display:grid;gap:14px}
+.special-slots-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:2px}
+.special-slots-heading>div{display:flex;flex-direction:column;gap:2px}
+.special-slots-heading strong{color:#173868;font-size:.84rem}
+.special-slots-heading small{color:#728195;font-size:.7rem}
+.special-slots-heading button{min-height:34px;padding:0 10px;border:1px solid #bdd3e6;border-radius:9px;background:#fff;color:#176b9c;font:800 .7rem Inter,sans-serif;cursor:pointer}
+.special-slot-list{display:grid;gap:9px}
+.special-slot-editor-row{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(105px,.75fr) minmax(82px,.55fr) 34px;gap:8px;align-items:end;padding:10px;border:1px solid #dbe6ef;border-radius:12px;background:#fff}
+.special-slot-editor-row label>span{font-size:.68rem;color:#748397}
+.special-slot-editor-row input{width:100%;min-height:40px;padding:0 9px;border:1px solid #c7d5e4;border-radius:9px;background:#fff;color:#173868;font:800 .82rem Inter,sans-serif}
+.special-slot-remove{width:34px;height:40px;border:1px solid #efc6c2;border-radius:9px;background:#fff7f6;color:#b42318;font:900 1.15rem Inter,sans-serif;cursor:pointer}
+.special-slot-remove:disabled{opacity:.35;cursor:not-allowed}
+.schedule-special-panel .schedule-list-heading{border-bottom:2px solid #edc96d}
+.special-schedule-card{border-top:1px solid #e2ebf3;background:#fff}
+.special-schedule-card:first-child{border-top:0}
+.special-schedule-card.is-disabled{opacity:.58}
+.special-schedule-card.is-expired{background:#fbfbfc}
+.special-schedule-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px}
+.special-schedule-card-head>div:first-child{display:flex;min-width:0;flex-direction:column;gap:4px}
+.special-schedule-card-title{display:flex;align-items:center;gap:7px;min-width:0;flex-wrap:wrap}
+.special-schedule-card-title>strong{color:#26394f;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.special-schedule-card-head small{color:#78879a;font-size:.72rem}
+.special-schedule-slots{display:grid;border-top:1px solid #edf2f7;background:#fbfdff}
+.special-schedule-slot{display:grid;grid-template-columns:92px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid #edf2f7}
+.special-schedule-slot:first-child{border-top:0}
+.special-schedule-slot>strong{color:#173868;font:900 .82rem Inter,sans-serif}
+.special-schedule-slot>div{display:flex;min-width:0;flex-direction:column;gap:2px}
+.special-schedule-slot b{color:#344054;font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.special-schedule-slot small{color:#7a8798;font-size:.68rem}
+.special-schedule-slot>button{min-height:32px;padding:0 9px;border:1px solid #c7d5e4;border-radius:8px;background:#fff;color:#173868;font:800 .68rem Inter,sans-serif;cursor:pointer}
+.schedule-type-switch{grid-template-columns:.8fr 1.2fr}
+.schedule-special-day{max-width:100%;white-space:normal}
+@media(max-width:700px){
+  .special-slot-editor-row{grid-template-columns:1fr 1fr 80px 34px}.special-slot-editor-row label:first-child{grid-column:1/-1}
+  .special-schedule-card-head{flex-direction:column}.special-schedule-card-head .schedule-row-actions{width:100%;justify-content:flex-start}
+}
+@media(max-width:480px){
+  .special-slots-heading{align-items:flex-start;flex-direction:column}.special-slots-heading button{width:100%}
+  .special-slot-editor-row{grid-template-columns:1fr 1fr 34px}.special-slot-editor-row label:first-child{grid-column:1/-1}.special-slot-editor-row label:nth-child(3){grid-column:1/3}.special-slot-remove{grid-column:3;grid-row:2}
+  .special-schedule-slot{grid-template-columns:82px minmax(0,1fr)}.special-schedule-slot>button{grid-column:1/-1;width:100%}
+}

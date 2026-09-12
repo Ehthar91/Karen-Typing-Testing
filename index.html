@@ -23,9 +23,9 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260911-22" />
+  <link rel="stylesheet" href="calculator.css?v=20260911-23" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
-  <link rel="stylesheet" href="rgb-theme.css?v=20260911-10" />
+  <link rel="stylesheet" href="rgb-theme.css?v=20260911-11" />
 </head>
 <body>
   <main class="app-shell">
@@ -356,7 +356,7 @@ Fish = ညၣ်</textarea>
               <strong class="schedule-countdown" id="scheduleCountdown">--:--</strong>
               <p id="scheduleActiveRange">Add a schedule and it will start automatically at the selected time.</p>
               <div class="schedule-progress" aria-hidden="true"><span id="scheduleProgress"></span></div>
-              <div class="schedule-special-day" id="scheduleSpecialDay" hidden>Special one-day schedule active today</div>
+              <div class="schedule-special-day" id="scheduleSpecialDay" hidden>Special schedule active today</div>
               <div class="schedule-next"><span>Next</span><strong id="scheduleNext">No upcoming schedule</strong></div>
               <button class="button ghost" id="stopScheduleTimer" type="button" hidden>Stop current timer</button>
             </section>
@@ -366,36 +366,46 @@ Fish = ညၣ်</textarea>
             <form id="scheduleTimerForm">
               <div class="schedule-type-switch" role="group" aria-label="Schedule type">
                 <button id="scheduleTypeWeekly" type="button" class="active" aria-pressed="true">Weekly</button>
-                <button id="scheduleTypeOneDay" type="button" aria-pressed="false">One Day</button>
+                <button id="scheduleTypeSpecial" type="button" aria-pressed="false">Special Schedule</button>
               </div>
-              <p class="schedule-type-help" id="scheduleTypeHelp">Repeat this timer on selected weekdays.</p>
-              <label>Activity name<input id="scheduleName" type="text" maxlength="60" placeholder="Warm-up" required /></label>
-              <div class="schedule-time-row"><label>Start time<input id="scheduleStartTime" type="time" required /></label><label>Duration<input id="scheduleDuration" type="number" min="1" max="480" step="1" value="5" required /><small>minutes</small></label></div>
-              <fieldset class="schedule-days" id="scheduleWeeklyFields"><legend>Repeat on</legend><div>
-                <label><input type="checkbox" value="1" checked /><span>Mon</span></label>
-                <label><input type="checkbox" value="2" checked /><span>Tue</span></label>
-                <label><input type="checkbox" value="3" checked /><span>Wed</span></label>
-                <label><input type="checkbox" value="4" checked /><span>Thu</span></label>
-                <label><input type="checkbox" value="5" checked /><span>Fri</span></label>
-                <label><input type="checkbox" value="6" /><span>Sat</span></label>
-                <label><input type="checkbox" value="0" /><span>Sun</span></label>
-              </div></fieldset>
-              <label class="schedule-one-day" id="scheduleOneDayFields" hidden>Custom date<input id="scheduleCustomDate" type="date" /></label>
+              <p class="schedule-type-help" id="scheduleTypeHelp">Repeat one activity on selected weekdays.</p>
+
+              <div id="scheduleWeeklyEditor">
+                <label>Activity name<input id="scheduleName" type="text" maxlength="60" placeholder="Warm-up" /></label>
+                <div class="schedule-time-row"><label>Start time<input id="scheduleStartTime" type="time" /></label><label>Duration<input id="scheduleDuration" type="number" min="1" max="480" step="1" value="5" /><small>minutes</small></label></div>
+                <fieldset class="schedule-days" id="scheduleWeeklyFields"><legend>Repeat on</legend><div>
+                  <label><input type="checkbox" value="1" checked /><span>Mon</span></label>
+                  <label><input type="checkbox" value="2" checked /><span>Tue</span></label>
+                  <label><input type="checkbox" value="3" checked /><span>Wed</span></label>
+                  <label><input type="checkbox" value="4" checked /><span>Thu</span></label>
+                  <label><input type="checkbox" value="5" checked /><span>Fri</span></label>
+                  <label><input type="checkbox" value="6" /><span>Sat</span></label>
+                  <label><input type="checkbox" value="0" /><span>Sun</span></label>
+                </div></fieldset>
+              </div>
+
+              <div class="schedule-special-editor" id="scheduleSpecialEditor" hidden>
+                <label>Schedule name<input id="specialScheduleName" type="text" maxlength="60" placeholder="Testing Day" /></label>
+                <label>Special date<input id="specialScheduleDate" type="date" /></label>
+                <div class="special-slots-heading"><div><strong>Time slots</strong><small>Add all activities for this special day.</small></div><button id="addSpecialSlot" type="button">+ Add time slot</button></div>
+                <div class="special-slot-list" id="specialSlotList"></div>
+              </div>
+
               <label class="schedule-enabled"><input id="scheduleEnabled" type="checkbox" checked /><span><strong>Enabled</strong><small>Run this schedule automatically.</small></span></label>
-              <button class="button primary schedule-save" id="saveScheduleTimer" type="submit">Add schedule</button>
+              <button class="button primary schedule-save" id="saveScheduleTimer" type="submit">Add weekly schedule</button>
             </form>
           </aside>
         </div>
         <div class="schedule-saved-wrap">
-          <div class="schedule-saved-heading"><div><strong>Saved schedules</strong><small>Weekly and one-day schedules are separated below.</small></div><button id="clearScheduleTimers" type="button">Clear all</button></div>
+          <div class="schedule-saved-heading"><div><strong>Saved schedules</strong><small>Weekly routines and complete special-day schedules are separated below.</small></div><button id="clearScheduleTimers" type="button">Clear all</button></div>
           <div class="schedule-saved-grid">
             <section class="schedule-list-panel schedule-weekly-panel" aria-labelledby="weeklyScheduleHeading">
               <div class="schedule-list-heading"><div><strong id="weeklyScheduleHeading">Weekly Schedules</strong><small>Repeats automatically on selected weekdays.</small></div></div>
               <div class="schedule-list" id="weeklyScheduleList"><p class="schedule-empty">No weekly schedules yet.</p></div>
             </section>
-            <section class="schedule-list-panel schedule-one-day-panel" aria-labelledby="oneDayScheduleHeading">
-              <div class="schedule-list-heading"><div><strong id="oneDayScheduleHeading">One-Day Schedules</strong><small>Runs only on the selected calendar date.</small></div></div>
-              <div class="schedule-list" id="oneDayScheduleList"><p class="schedule-empty">No one-day schedules yet.</p></div>
+            <section class="schedule-list-panel schedule-special-panel" aria-labelledby="specialScheduleHeading">
+              <div class="schedule-list-heading"><div><strong id="specialScheduleHeading">Special Schedules</strong><small>Each saved special day can contain multiple timed activities.</small></div></div>
+              <div class="schedule-list" id="specialScheduleList"><p class="schedule-empty">No special schedules yet.</p></div>
             </section>
           </div>
         </div>
@@ -519,7 +529,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260911-28"></script>
+  <script src="calculator.js?v=20260911-29"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
