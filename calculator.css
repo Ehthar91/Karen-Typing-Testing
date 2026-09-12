@@ -300,3 +300,51 @@ body.schedule-fullscreen-open{overflow:hidden}
   .schedule-active-card.is-schedule-fullscreen .schedule-progress{width:min(92vw,720px)}
   .schedule-day-drawer{top:132px;left:18px;right:18px;width:auto;max-height:calc(100% - 150px)}
 }
+
+
+/* Full-width Classroom Tools workspace */
+.calculator-view{
+  max-width:none;
+  width:100%;
+  margin:0;
+  padding:20px 18px 48px;
+}
+.calculator-heading{width:100%;margin-bottom:18px}
+.calculator-mode-switch{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  width:100%;
+  max-width:none;
+  margin:0 0 14px;
+  gap:6px;
+}
+.calculator-mode-switch button{width:100%;min-width:0;padding:0 10px;white-space:nowrap}
+.calculator-frame-card,
+.number-generator-card,
+.schedule-timer-card,
+.wheel-card,
+.seating-card,
+.quiz-view.classroom-tool-panel{
+  width:100%;
+  max-width:none;
+  margin-left:0;
+  margin-right:0;
+}
+.number-generator-card,.schedule-timer-card,.wheel-card{max-width:none}
+.quiz-view.classroom-tool-panel{padding:0}
+.quiz-view.classroom-tool-panel>.quiz-heading{display:none}
+.quiz-view.classroom-tool-panel .quiz-builder,
+.quiz-view.classroom-tool-panel .quiz-player,
+.quiz-view.classroom-tool-panel .quiz-results,
+.quiz-view.classroom-tool-panel .quiz-classroom{width:100%;max-width:none}
+
+@media(max-width:1050px){
+  .calculator-mode-switch{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:680px){
+  .calculator-view{padding:12px 10px 32px}
+  .calculator-heading{display:block}
+  .calculator-heading .hint{max-width:none;margin-top:8px;text-align:left}
+  .calculator-mode-switch{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .calculator-mode-switch button{padding:0 6px;font-size:.78rem}
+}

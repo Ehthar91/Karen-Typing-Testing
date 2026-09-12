@@ -2,8 +2,8 @@ const navQuiz=document.querySelector('#navQuiz'),quizView=document.querySelector
 const quizPairs=document.querySelector('#quizPairs'),quizRelation=document.querySelector('#quizRelation'),quizDirection=document.querySelector('#quizDirection'),quizAnswerMode=document.querySelector('#quizAnswerMode'),quizTemplate=document.querySelector('#quizTemplate');
 let generatedQuiz=[],quizIndex=0,quizPoints=0,quizBuffer='',quizSelected='',quizLocked=false,quizAnswers=[];
 
-function openQuiz(){typeView.hidden=true;practiceView.hidden=true;gamesView.hidden=true;quizView.hidden=false;navType.classList.remove('active');navPractice.classList.remove('active');navGames.classList.remove('active');navQuiz.classList.add('active');if(typeof stopGame==='function')stopGame();if(typeof closeRace==='function')closeRace();quizBuilder.hidden=false;quizPlayer.hidden=true;quizResults.hidden=true;const classRoom=document.querySelector('#quizClassroom');if(classRoom)classRoom.hidden=true;window.scrollTo({top:0,behavior:'smooth'})}
-navQuiz.onclick=openQuiz;
+function openQuiz(){if(typeof openCalculator==='function')openCalculator('quiz');else{typeView.hidden=true;practiceView.hidden=true;gamesView.hidden=true;quizView.hidden=false;navType.classList.remove('active');navPractice.classList.remove('active');navGames.classList.remove('active');navQuiz?.classList.add('active')}if(typeof stopGame==='function')stopGame();if(typeof closeRace==='function')closeRace();quizBuilder.hidden=false;quizPlayer.hidden=true;quizResults.hidden=true;const classRoom=document.querySelector('#quizClassroom');if(classRoom)classRoom.hidden=true;window.scrollTo({top:0,behavior:'smooth'})}
+if(navQuiz)navQuiz.onclick=openQuiz;
 quizRelation.onchange=()=>{document.querySelector('#quizTemplateField').hidden=quizRelation.value!=='custom'};
 
 function parseQuizPairs(){return quizPairs.value.split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map((line,index)=>{const divider=line.indexOf('=');if(divider<1||divider===line.length-1)throw new Error(`Line ${index+1} needs an equals sign between the two items.`);return{term:line.slice(0,divider).trim(),answer:line.slice(divider+1).trim()}})}
