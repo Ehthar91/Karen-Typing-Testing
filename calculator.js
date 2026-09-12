@@ -26,7 +26,7 @@ function setCalculatorMode(mode){
   showSeating.classList.toggle('active',seating);
   calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':numberGenerator?'Number Generator':'Graphing & Scientific Calculator';
   calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':numberGenerator?'Generate classroom numbers from any range, with an optional no-repeat mode.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
-  if(numberGenerator)setTimeout(()=>numberGeneratorMin.focus(),0);
+  if(numberGenerator)setTimeout(()=>{numberGeneratorMin.focus();queueFitNumberGeneratorResult()},0);
   if(wheel)setTimeout(()=>{refreshWheelSeatingClasses();drawWheel()},0);
   if(seating)setTimeout(()=>window.renderSeatingChart?.(),0);
 }
@@ -110,6 +110,38 @@ function renderNumberHistory(){
   if(!generatedNumberHistory.length){const li=document.createElement('li');li.textContent='No numbers yet';numberGeneratorHistory.append(li);return}
   generatedNumberHistory.forEach(value=>{const li=document.createElement('li');li.textContent=formatGeneratorNumber(value);numberGeneratorHistory.append(li)});
 }
+function fitNumberGeneratorResult(){
+  if(!numberGeneratorResult)return;
+  const el=numberGeneratorResult;
+  el.classList.add('number-result-fitted');
+  el.style.fontSize='';
+  const minSize=28;
+  const maxWidth=Math.max(0, el.clientWidth-4);
+  if(!maxWidth)return;
+  let current=parseFloat(getComputedStyle(el).fontSize)||72;
+  let measured=el.scrollWidth;
+  if(!measured)return;
+  if(measured>maxWidth){
+    let next=Math.max(minSize, Math.floor(current*((maxWidth)/measured)));
+    el.style.fontSize=`${next}px`;
+    current=next;
+    measured=el.scrollWidth;
+    let guard=0;
+    while(measured>maxWidth && current>minSize && guard<8){
+      current=Math.max(minSize,current-2);
+      el.style.fontSize=`${current}px`;
+      measured=el.scrollWidth;
+      guard++;
+    }
+  }
+}
+const queueFitNumberGeneratorResult=(()=>{
+  let raf=0;
+  return()=>{
+    if(raf)cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>{raf=0;fitNumberGeneratorResult()});
+  };
+})();
 function generateClassroomNumber(){
   const{min,max,size}=normalizedNumberRange();
   if(size<1)return;
@@ -123,11 +155,12 @@ function generateClassroomNumber(){
     numberGeneratorStatus.textContent=`Generated from ${formatGeneratorNumber(min)} to ${formatGeneratorNumber(max)}.`;
   }
   numberGeneratorResult.textContent=formatGeneratorNumber(result);
+  queueFitNumberGeneratorResult();
   generatedNumberHistory.unshift(result);generatedNumberHistory=generatedNumberHistory.slice(0,100);renderNumberHistory();
   numberGeneratorPanel.classList.remove('number-pop');void numberGeneratorPanel.offsetWidth;numberGeneratorPanel.classList.add('number-pop');
 }
 function resetNumberGenerator(){
-  numberGeneratorMin.value='1';numberGeneratorMax.value='30';numberNoRepeats.checked=false;numberUseCommas.checked=true;numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent='Choose a range, then generate a number.';generatedNumberHistory=[];renderNumberHistory();resetNumberPool();
+  numberGeneratorMin.value='1';numberGeneratorMax.value='30';numberNoRepeats.checked=false;numberUseCommas.checked=true;numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent='Choose a range, then generate a number.';generatedNumberHistory=[];renderNumberHistory();resetNumberPool();queueFitNumberGeneratorResult();
 }
 document.querySelector('#generateNumber').onclick=generateClassroomNumber;
 document.querySelector('#resetNumberGenerator').onclick=resetNumberGenerator;
@@ -140,6 +173,7 @@ numberUseCommas.onchange=()=>{
   numberGeneratorMax.value=formatGeneratorNumber(Math.max(-NUMBER_GENERATOR_LIMIT,Math.min(NUMBER_GENERATOR_LIMIT,max)));
   numberGeneratorResult.textContent=currentResult===undefined?'—':formatGeneratorNumber(currentResult);
   renderNumberHistory();
+  queueFitNumberGeneratorResult();
 };
 [numberGeneratorMin,numberGeneratorMax].forEach(input=>{
   input.addEventListener('focus',()=>input.select());
@@ -148,9 +182,11 @@ numberUseCommas.onchange=()=>{
 });
 document.querySelectorAll('[data-number-max]').forEach(button=>button.addEventListener('click',()=>{
   const max=Number(button.dataset.numberMax);
-  numberGeneratorMin.value=formatGeneratorNumber(1);numberGeneratorMax.value=formatGeneratorNumber(max);resetNumberPool();numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent=`Quick range set to ${formatGeneratorNumber(1)}–${formatGeneratorNumber(max)}. Press Generate when ready.`;
+  numberGeneratorMin.value=formatGeneratorNumber(1);numberGeneratorMax.value=formatGeneratorNumber(max);resetNumberPool();numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent=`Quick range set to ${formatGeneratorNumber(1)}–${formatGeneratorNumber(max)}. Press Generate when ready.`;queueFitNumberGeneratorResult();
 }));
+window.addEventListener('resize',queueFitNumberGeneratorResult);
 renderNumberHistory();
+queueFitNumberGeneratorResult();
 
 const wheelCanvas=document.querySelector('#randomWheel');
 const wheelContext=wheelCanvas.getContext('2d');
