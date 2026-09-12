@@ -82,3 +82,11 @@ body.theme-rgb .schedule-editor input[type="date"]{background:#0f2239;border-col
 body.theme-rgb .schedule-special-day{background:#3b3216;border-color:#8d7430;color:#ffe28b}
 body.theme-rgb .schedule-row.is-one-day{background:linear-gradient(90deg,#231f19,#0f2239 28%)}
 body.theme-rgb .schedule-type-badge{background:#3b3216;border-color:#8d7430;color:#ffe28b}
+
+
+/* Split saved schedules - RGB */
+body.theme-rgb .schedule-saved-heading strong{color:#f1f7ff}
+body.theme-rgb .schedule-saved-heading small{color:#a9bdd4}
+body.theme-rgb .schedule-saved-heading button{color:#71e9ff}
+body.theme-rgb .schedule-weekly-panel .schedule-list-heading{border-bottom-color:#315b7c}
+body.theme-rgb .schedule-one-day-panel .schedule-list-heading{border-bottom-color:#8d7430}

@@ -23,9 +23,9 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260911-21" />
+  <link rel="stylesheet" href="calculator.css?v=20260911-22" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
-  <link rel="stylesheet" href="rgb-theme.css?v=20260911-9" />
+  <link rel="stylesheet" href="rgb-theme.css?v=20260911-10" />
 </head>
 <body>
   <main class="app-shell">
@@ -386,9 +386,18 @@ Fish = ညၣ်</textarea>
             </form>
           </aside>
         </div>
-        <div class="schedule-list-panel">
-          <div class="schedule-list-heading"><div><strong>Saved schedules</strong><small>Weekly schedules repeat. One-day schedules run only on their selected date.</small></div><button id="clearScheduleTimers" type="button">Clear all</button></div>
-          <div class="schedule-list" id="scheduleTimerList"><p class="schedule-empty">No schedules yet.</p></div>
+        <div class="schedule-saved-wrap">
+          <div class="schedule-saved-heading"><div><strong>Saved schedules</strong><small>Weekly and one-day schedules are separated below.</small></div><button id="clearScheduleTimers" type="button">Clear all</button></div>
+          <div class="schedule-saved-grid">
+            <section class="schedule-list-panel schedule-weekly-panel" aria-labelledby="weeklyScheduleHeading">
+              <div class="schedule-list-heading"><div><strong id="weeklyScheduleHeading">Weekly Schedules</strong><small>Repeats automatically on selected weekdays.</small></div></div>
+              <div class="schedule-list" id="weeklyScheduleList"><p class="schedule-empty">No weekly schedules yet.</p></div>
+            </section>
+            <section class="schedule-list-panel schedule-one-day-panel" aria-labelledby="oneDayScheduleHeading">
+              <div class="schedule-list-heading"><div><strong id="oneDayScheduleHeading">One-Day Schedules</strong><small>Runs only on the selected calendar date.</small></div></div>
+              <div class="schedule-list" id="oneDayScheduleList"><p class="schedule-empty">No one-day schedules yet.</p></div>
+            </section>
+          </div>
         </div>
       </section>
       <section class="wheel-card" id="wheelPanel" aria-labelledby="wheelTitle" hidden>
@@ -510,7 +519,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260911-27"></script>
+  <script src="calculator.js?v=20260911-28"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
