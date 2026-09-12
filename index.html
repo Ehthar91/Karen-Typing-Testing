@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
   <link rel="stylesheet" href="calculator.css?v=20260912-9" />
-  <link rel="stylesheet" href="event-signup.css?v=20260912-4" />
+  <link rel="stylesheet" href="event-signup.css?v=20260912-5" />
   <link rel="stylesheet" href="seating.css?v=20260912-31" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260912-2" />
 </head>
@@ -569,23 +569,26 @@ Fish = ညၣ်</textarea>
         <section class="event-signup-public" id="eventSignupPublicView" hidden>
           <div class="event-public-hero"><p class="eyebrow">EVENT SIGN UP</p><h2 id="eventPublicTitle">Loading event…</h2><span class="event-public-date" id="eventPublicDate">—</span><p id="eventPublicDescription"></p></div>
           <p class="event-public-message" id="eventPublicMessage">Loading available time slots…</p>
-          <div class="event-public-family-tools" id="eventPublicFamilyTools" hidden>
-            <label><span>Signup on this device</span><select id="eventPublicFamilySelect" aria-label="Choose a saved family signup"></select></label>
-            <div><button class="button ghost" id="eventPublicAddStudent" type="button">＋ Add another student</button><button class="button ghost" id="eventPublicAnotherFamily" type="button">Sign up for another family</button></div>
-          </div>
+          <section class="event-public-success" id="eventPublicSuccess" hidden>
+            <div class="event-public-success-icon">✓</div>
+            <div><h3>Signup confirmed</h3><p id="eventPublicSuccessText">Your appointment was saved.</p></div>
+            <label><span>Private Manage Signup link</span><input id="eventPublicManageLink" readonly aria-label="Private manage signup link" /></label>
+            <div class="event-public-success-actions"><button class="button primary" id="eventPublicCopyManageLink" type="button">Copy private link</button><button class="button ghost" id="eventPublicStartAnother" type="button">Start Another Signup</button></div>
+            <small>Email delivery is not connected yet. For testing, save this private link. Once email sending is connected, this link will be emailed automatically and can be hidden from this confirmation screen.</small>
+          </section>
           <div class="event-public-slots" id="eventPublicSlots"></div>
           <form class="event-public-form" id="eventPublicForm" hidden>
             <div class="event-public-form-heading"><div><h3>Sign up</h3><p>Enter the parent or guardian information once, then add the student name for each selected time.</p></div></div>
             <div class="event-public-contact-grid">
               <label>Parent/Guardian Name<input id="eventPublicParentName" maxlength="60" autocomplete="name" required placeholder="Parent or guardian name" /></label>
-              <label>Email<input id="eventPublicEmail" type="email" maxlength="120" autocomplete="email" required placeholder="name@example.com" /><small>Used for signup contact. Confirmation email delivery will be connected separately.</small></label>
+              <label>Email<input id="eventPublicEmail" type="email" maxlength="120" autocomplete="email" required placeholder="name@example.com" /><small>A private management link will be tied to this email. Automatic email delivery will be connected separately.</small></label>
               <label>Phone <span class="optional">optional</span><input id="eventPublicPhone" type="tel" maxlength="30" autocomplete="tel" placeholder="Phone number" /></label>
             </div>
             <section class="event-public-selected-section" aria-labelledby="eventPublicSelectedSlot">
               <div class="event-public-selected-heading"><strong>Your selected times</strong><p id="eventPublicSelectedSlot">Choose a time slot above.</p></div>
               <div class="event-public-selection-list" id="eventPublicSelectionList"></div>
             </section>
-            <div class="event-public-actions"><button class="button ghost" id="eventPublicCancelSignup" type="button" hidden>Cancel all my signups</button><button class="button primary" id="eventPublicSubmit" type="submit">Save signup</button></div>
+            <div class="event-public-actions"><button class="button ghost" id="eventPublicCancelSignup" type="button" hidden>Cancel appointment</button><button class="button primary" id="eventPublicSubmit" type="submit">Save signup</button></div>
           </form>
         </section>
       </section>
@@ -689,7 +692,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz.js?v=20260912-1"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260912-9"></script>
-  <script src="event-signup.js?v=20260912-6"></script>
+  <script src="event-signup.js?v=20260912-7"></script>
   <script src="seating.js?v=20260912-2"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
