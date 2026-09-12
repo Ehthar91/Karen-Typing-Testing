@@ -1,20 +1,22 @@
-const navCalculator=document.querySelector('#navCalculator');
 const navTools=document.querySelector('#navTools');
 const calculatorView=document.querySelector('#calculatorView');
 const calculatorPanel=document.querySelector('#calculatorPanel');
 const wheelPanel=document.querySelector('#wheelPanel');
 const seatingPanel=document.querySelector('#seatingPanel');
+const showCalculator=document.querySelector('#showCalculator');
 const showWheel=document.querySelector('#showWheel');
 const showSeating=document.querySelector('#showSeating');
 const calculatorTitle=document.querySelector('#calculator-title');
 const calculatorHint=document.querySelector('#calculatorHint');
 const calculatorEyebrow=document.querySelector('#calculatorEyebrow');
 function setCalculatorMode(mode){
+  const calculator=mode==='calculator';
   const wheel=mode==='wheel';
   const seating=mode==='seating';
-  calculatorPanel.hidden=wheel||seating;
+  calculatorPanel.hidden=!calculator;
   wheelPanel.hidden=!wheel;
   seatingPanel.hidden=!seating;
+  showCalculator.classList.toggle('active',calculator);
   showWheel.classList.toggle('active',wheel);
   showSeating.classList.toggle('active',seating);
   calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':'Graphing & Scientific Calculator';
@@ -22,6 +24,7 @@ function setCalculatorMode(mode){
   if(wheel)setTimeout(()=>{refreshWheelSeatingClasses();drawWheel()},0);
   if(seating)setTimeout(()=>window.renderSeatingChart?.(),0);
 }
+showCalculator.onclick=()=>setCalculatorMode('calculator');
 showWheel.onclick=()=>setCalculatorMode('wheel');
 showSeating.onclick=()=>setCalculatorMode('seating');
 const wheelCanvas=document.querySelector('#randomWheel');
@@ -143,11 +146,10 @@ refreshWheelSeatingClasses();
 drawWheel();
 function closeCalculator(){
   calculatorView.hidden=true;
-  navCalculator.classList.remove('active');
   navTools.classList.remove('active');
   document.body.classList.remove('calculator-open');
 }
-function openCalculator(mode='calculator'){
+function openCalculator(mode='wheel'){
   typeView.hidden=true;
   practiceView.hidden=true;
   gamesView.hidden=true;
@@ -157,18 +159,15 @@ function openCalculator(mode='calculator'){
   navPractice.classList.remove('active');
   navGames.classList.remove('active');
   navQuiz.classList.remove('active');
-  const toolsMode=mode!=='calculator';
-  navCalculator.classList.toggle('active',!toolsMode);
-  navTools.classList.toggle('active',toolsMode);
-  document.querySelector('#classroomToolSwitch').hidden=!toolsMode;
-  calculatorEyebrow.textContent=toolsMode?'GLN CLASSROOM TOOLS':'GLN CALCULATOR';
-  setCalculatorMode(toolsMode?mode:'calculator');
+  navTools.classList.add('active');
+  document.querySelector('#classroomToolSwitch').hidden=false;
+  calculatorEyebrow.textContent='GLN CLASSROOM TOOLS';
+  setCalculatorMode(mode);
   document.body.classList.add('calculator-open');
   if(typeof stopGame==='function')stopGame();
   if(typeof closeRace==='function')closeRace();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-navCalculator.onclick=()=>openCalculator('calculator');
 navTools.onclick=()=>openCalculator('wheel');
 navType.addEventListener('click',closeCalculator);
 navPractice.addEventListener('click',closeCalculator);
