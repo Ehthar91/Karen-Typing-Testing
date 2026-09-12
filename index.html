@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260911-16" />
+  <link rel="stylesheet" href="calculator.css?v=20260911-17" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260911-6" />
 </head>
@@ -291,12 +291,51 @@ Fish = ညၣ်</textarea>
       </div>
       <div class="calculator-mode-switch" id="classroomToolSwitch" role="group" aria-label="Choose a classroom tool">
         <button id="showCalculator" type="button">Calculator</button>
+        <button id="showNumberGenerator" type="button">Number Generator</button>
         <button id="showWheel" type="button">Random Wheel</button>
         <button id="showSeating" type="button">Seating Chart</button>
       </div>
       <div class="calculator-frame-card" id="calculatorPanel">
         <iframe id="calculatorFrame" src="calculator.html?v=20260910-11" title="GLN graphing and scientific calculators" loading="lazy" allow="fullscreen"></iframe>
       </div>
+      <section class="number-generator-card" id="numberGeneratorPanel" aria-labelledby="numberGeneratorTitle" hidden>
+        <div class="number-generator-toolbar">
+          <div><p class="eyebrow">CLASSROOM RANDOMIZER</p><h2 id="numberGeneratorTitle">Number Generator</h2></div>
+          <button class="button ghost" id="resetNumberGenerator" type="button">Reset</button>
+        </div>
+        <div class="number-generator-layout">
+          <div class="number-generator-main">
+            <div class="number-range-fields" aria-label="Number range">
+              <label>Minimum<input id="numberGeneratorMin" type="number" inputmode="numeric" value="1" step="1" /></label>
+              <span aria-hidden="true">to</span>
+              <label>Maximum<input id="numberGeneratorMax" type="number" inputmode="numeric" value="30" step="1" /></label>
+            </div>
+            <div class="number-result-card" aria-live="polite" aria-atomic="true">
+              <span>Random number</span>
+              <strong id="numberGeneratorResult">—</strong>
+              <small id="numberGeneratorStatus">Choose a range, then generate a number.</small>
+            </div>
+            <button class="number-generate-button" id="generateNumber" type="button">Generate</button>
+            <label class="number-no-repeat"><input id="numberNoRepeats" type="checkbox" /> <span><strong>No Repeats</strong><small>Use every number once before repeating.</small></span></label>
+          </div>
+          <aside class="number-generator-side">
+            <div class="number-presets">
+              <strong>Quick ranges</strong>
+              <div>
+                <button type="button" data-number-max="10">1–10</button>
+                <button type="button" data-number-max="20">1–20</button>
+                <button type="button" data-number-max="30">1–30</button>
+                <button type="button" data-number-max="40">1–40</button>
+                <button type="button" data-number-max="100">1–100</button>
+              </div>
+            </div>
+            <div class="number-history">
+              <div><strong>History</strong><button id="clearNumberHistory" type="button">Clear history</button></div>
+              <ol id="numberGeneratorHistory"><li>No numbers yet</li></ol>
+            </div>
+          </aside>
+        </div>
+      </section>
       <section class="wheel-card" id="wheelPanel" aria-labelledby="wheelTitle" hidden>
         <div class="wheel-toolbar">
           <div><p class="eyebrow">CLASSROOM PICKER</p><h2 id="wheelTitle">Random Wheel</h2></div>
@@ -416,7 +455,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260911-22"></script>
+  <script src="calculator.js?v=20260911-23"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>

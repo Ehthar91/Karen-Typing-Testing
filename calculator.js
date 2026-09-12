@@ -1,9 +1,11 @@
 const navTools=document.querySelector('#navTools');
 const calculatorView=document.querySelector('#calculatorView');
 const calculatorPanel=document.querySelector('#calculatorPanel');
+const numberGeneratorPanel=document.querySelector('#numberGeneratorPanel');
 const wheelPanel=document.querySelector('#wheelPanel');
 const seatingPanel=document.querySelector('#seatingPanel');
 const showCalculator=document.querySelector('#showCalculator');
+const showNumberGenerator=document.querySelector('#showNumberGenerator');
 const showWheel=document.querySelector('#showWheel');
 const showSeating=document.querySelector('#showSeating');
 const calculatorTitle=document.querySelector('#calculator-title');
@@ -11,22 +13,105 @@ const calculatorHint=document.querySelector('#calculatorHint');
 const calculatorEyebrow=document.querySelector('#calculatorEyebrow');
 function setCalculatorMode(mode){
   const calculator=mode==='calculator';
+  const numberGenerator=mode==='number-generator';
   const wheel=mode==='wheel';
   const seating=mode==='seating';
   calculatorPanel.hidden=!calculator;
+  numberGeneratorPanel.hidden=!numberGenerator;
   wheelPanel.hidden=!wheel;
   seatingPanel.hidden=!seating;
   showCalculator.classList.toggle('active',calculator);
+  showNumberGenerator.classList.toggle('active',numberGenerator);
   showWheel.classList.toggle('active',wheel);
   showSeating.classList.toggle('active',seating);
-  calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':'Graphing & Scientific Calculator';
-  calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
+  calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':numberGenerator?'Number Generator':'Graphing & Scientific Calculator';
+  calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':numberGenerator?'Generate classroom numbers from any range, with an optional no-repeat mode.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
+  if(numberGenerator)setTimeout(()=>numberGeneratorMin.focus(),0);
   if(wheel)setTimeout(()=>{refreshWheelSeatingClasses();drawWheel()},0);
   if(seating)setTimeout(()=>window.renderSeatingChart?.(),0);
 }
 showCalculator.onclick=()=>setCalculatorMode('calculator');
+showNumberGenerator.onclick=()=>setCalculatorMode('number-generator');
 showWheel.onclick=()=>setCalculatorMode('wheel');
 showSeating.onclick=()=>setCalculatorMode('seating');
+
+const numberGeneratorMin=document.querySelector('#numberGeneratorMin');
+const numberGeneratorMax=document.querySelector('#numberGeneratorMax');
+const numberGeneratorResult=document.querySelector('#numberGeneratorResult');
+const numberGeneratorStatus=document.querySelector('#numberGeneratorStatus');
+const numberGeneratorHistory=document.querySelector('#numberGeneratorHistory');
+const numberNoRepeats=document.querySelector('#numberNoRepeats');
+let generatedNumberHistory=[];
+let numberRemainingPool=[];
+let numberPoolSignature='';
+function normalizedNumberRange(){
+  let min=Number(numberGeneratorMin.value),max=Number(numberGeneratorMax.value);
+  if(!Number.isFinite(min))min=1;
+  if(!Number.isFinite(max))max=30;
+  min=Math.trunc(min);max=Math.trunc(max);
+  const hardLimit=100000;
+  min=Math.max(-hardLimit,Math.min(hardLimit,min));
+  max=Math.max(-hardLimit,Math.min(hardLimit,max));
+  if(min>max)[min,max]=[max,min];
+  numberGeneratorMin.value=String(min);numberGeneratorMax.value=String(max);
+  return{min,max,size:max-min+1};
+}
+function secureRandomInt(min,max){
+  const range=max-min+1;
+  if(range<=1)return min;
+  if(window.crypto?.getRandomValues&&range<=0x100000000){
+    const limit=Math.floor(0x100000000/range)*range;
+    const values=new Uint32Array(1);let value;
+    do{window.crypto.getRandomValues(values);value=values[0]}while(value>=limit);
+    return min+(value%range);
+  }
+  return min+Math.floor(Math.random()*range);
+}
+function resetNumberPool(){numberRemainingPool=[];numberPoolSignature=''}
+function prepareNumberPool(min,max){
+  const signature=`${min}:${max}`;
+  if(numberPoolSignature===signature&&numberRemainingPool.length)return;
+  const size=max-min+1;
+  if(size>10000){numberRemainingPool=[];numberPoolSignature=signature;return}
+  numberRemainingPool=Array.from({length:size},(_,i)=>min+i);
+  for(let i=numberRemainingPool.length-1;i>0;i--){const j=secureRandomInt(0,i);[numberRemainingPool[i],numberRemainingPool[j]]=[numberRemainingPool[j],numberRemainingPool[i]]}
+  numberPoolSignature=signature;
+}
+function renderNumberHistory(){
+  numberGeneratorHistory.innerHTML='';
+  if(!generatedNumberHistory.length){const li=document.createElement('li');li.textContent='No numbers yet';numberGeneratorHistory.append(li);return}
+  generatedNumberHistory.forEach(value=>{const li=document.createElement('li');li.textContent=String(value);numberGeneratorHistory.append(li)});
+}
+function generateClassroomNumber(){
+  const{min,max,size}=normalizedNumberRange();
+  if(size<1)return;
+  let result;
+  if(numberNoRepeats.checked){
+    if(size>10000){numberGeneratorStatus.textContent='No Repeats supports ranges up to 10,000 numbers.';return}
+    prepareNumberPool(min,max);
+    if(!numberRemainingPool.length){resetNumberPool();prepareNumberPool(min,max)}
+    result=numberRemainingPool.pop();
+    const left=numberRemainingPool.length;
+    numberGeneratorStatus.textContent=left?`${left} number${left===1?'':'s'} remaining before reset.`:'All numbers in this range have now been used. The next Generate starts a new round.';
+  }else{
+    result=secureRandomInt(min,max);
+    numberGeneratorStatus.textContent=`Generated from ${min} to ${max}.`;
+  }
+  numberGeneratorResult.textContent=String(result);
+  generatedNumberHistory.unshift(result);generatedNumberHistory=generatedNumberHistory.slice(0,100);renderNumberHistory();
+  numberGeneratorPanel.classList.remove('number-pop');void numberGeneratorPanel.offsetWidth;numberGeneratorPanel.classList.add('number-pop');
+}
+function resetNumberGenerator(){
+  numberGeneratorMin.value='1';numberGeneratorMax.value='30';numberNoRepeats.checked=false;numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent='Choose a range, then generate a number.';generatedNumberHistory=[];renderNumberHistory();resetNumberPool();
+}
+document.querySelector('#generateNumber').onclick=generateClassroomNumber;
+document.querySelector('#resetNumberGenerator').onclick=resetNumberGenerator;
+document.querySelector('#clearNumberHistory').onclick=()=>{generatedNumberHistory=[];renderNumberHistory()};
+numberNoRepeats.onchange=()=>{resetNumberPool();numberGeneratorStatus.textContent=numberNoRepeats.checked?'No Repeats is on. Each number will be used once per round.':'Repeats are allowed.'};
+[numberGeneratorMin,numberGeneratorMax].forEach(input=>{input.addEventListener('change',()=>{normalizedNumberRange();resetNumberPool()});input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();generateClassroomNumber()}})});
+document.querySelectorAll('[data-number-max]').forEach(button=>button.addEventListener('click',()=>{numberGeneratorMin.value='1';numberGeneratorMax.value=button.dataset.numberMax;resetNumberPool();numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent=`Quick range set to 1–${button.dataset.numberMax}. Press Generate when ready.`;}));
+renderNumberHistory();
+
 const wheelCanvas=document.querySelector('#randomWheel');
 const wheelContext=wheelCanvas.getContext('2d');
 const wheelEntries=document.querySelector('#wheelEntries');
