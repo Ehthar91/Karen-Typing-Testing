@@ -15,6 +15,8 @@ The new rules add an eventSignups section that:
 - lets anyone authenticated by Firebase read an event when they have its link;
 - lets only the event owner edit/delete the event;
 - lets each participant create/update/cancel only their own signup;
-- enforces each slot's capacity.
+- enforces each slot's capacity, including simultaneous signups;
+- blocks new registrations when an event is closed while still allowing a participant to cancel;
+- prevents an organizer from lowering a slot limit below the number already signed up.
 
 After publishing the rules, hard-refresh the website (Command + Shift + R).
