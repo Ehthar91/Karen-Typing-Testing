@@ -12,6 +12,13 @@ const eventSignupOpen=document.querySelector('#eventSignupOpen');
 const eventSignupActivityMode=document.querySelector('#eventSignupActivityMode');
 const eventSignupSlotEditor=document.querySelector('#eventSignupSlotEditor');
 const addEventSignupSlot=document.querySelector('#addEventSignupSlot');
+const eventSlotGeneratorStart=document.querySelector('#eventSlotGeneratorStart');
+const eventSlotGeneratorDuration=document.querySelector('#eventSlotGeneratorDuration');
+const eventSlotGeneratorCount=document.querySelector('#eventSlotGeneratorCount');
+const eventSlotGeneratorCapacity=document.querySelector('#eventSlotGeneratorCapacity');
+const eventSlotGeneratorLabel=document.querySelector('#eventSlotGeneratorLabel');
+const generateEventSignupSlots=document.querySelector('#generateEventSignupSlots');
+const eventSlotGeneratorPreview=document.querySelector('#eventSlotGeneratorPreview');
 const saveEventSignup=document.querySelector('#saveEventSignup');
 const clearEventSignupForm=document.querySelector('#clearEventSignupForm');
 const cancelEventSignupEdit=document.querySelector('#cancelEventSignupEdit');
@@ -48,6 +55,28 @@ function eventSignupId(){
 }
 function eventSlotId(){return `slot-${Date.now()}-${Math.random().toString(36).slice(2,7)}`}
 function defaultEventSlot(){return{id:eventSlotId(),label:'',time:'',duration:15,capacity:1}}
+function eventTimeToMinutes(value){const match=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));if(!match)return null;const hour=Number(match[1]),minute=Number(match[2]);if(hour<0||hour>23||minute<0||minute>59)return null;return hour*60+minute}
+function eventMinutesToTime(value){const minutes=Math.max(0,Math.min(1439,Math.floor(Number(value)||0)));return `${String(Math.floor(minutes/60)).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`}
+function eventTimePlusMinutes(time,minutes){const start=eventTimeToMinutes(time);if(start===null)return'';const next=start+Math.max(1,Number(minutes)||15);return next>=1440?'':eventMinutesToTime(next)}
+function nextEventSlot(){
+  const next=defaultEventSlot();const existing=[...eventSignupEditorSlots].filter(slot=>slot.time).sort((a,b)=>a.time.localeCompare(b.time));const last=existing.at(-1);if(!last)return next;
+  next.label=last.label||'';next.duration=Math.max(1,Math.min(480,Number(last.duration)||15));next.capacity=Math.max(1,Math.min(100,Number(last.capacity)||1));next.time=eventTimePlusMinutes(last.time,next.duration);return next;
+}
+function updateEventSlotGeneratorPreview(){
+  if(!eventSlotGeneratorPreview)return;const start=eventSlotGeneratorStart?.value||'';const duration=Math.max(1,Math.min(480,Number(eventSlotGeneratorDuration?.value)||15));const count=Math.max(1,Math.min(96,Number(eventSlotGeneratorCount?.value)||1));const capacity=Math.max(1,Math.min(100,Number(eventSlotGeneratorCapacity?.value)||1));const startMinutes=eventTimeToMinutes(start);
+  if(startMinutes===null){eventSlotGeneratorPreview.textContent='Choose a first start time to preview the schedule.';return}
+  const lastStart=startMinutes+(count-1)*duration;const end=lastStart+duration;if(end>1440){eventSlotGeneratorPreview.textContent='This batch would run past midnight. Reduce the slot count or length.';return}
+  eventSlotGeneratorPreview.textContent=`${count} slot${count===1?'':'s'} · ${formatScheduleTime(start)}–${formatScheduleTime(eventMinutesToTime(end%1440||0))} · ${duration} min · max ${capacity} per slot`;
+}
+function generateEventSlotsFromBuilder(){
+  const start=eventSlotGeneratorStart?.value||'';const duration=Math.max(1,Math.min(480,Number(eventSlotGeneratorDuration?.value)||15));const count=Math.max(1,Math.min(96,Number(eventSlotGeneratorCount?.value)||1));const capacity=Math.max(1,Math.min(100,Number(eventSlotGeneratorCapacity?.value)||1));const label=String(eventSlotGeneratorLabel?.value||'').trim().slice(0,50);const startMinutes=eventTimeToMinutes(start);
+  if(startMinutes===null){alert('Choose the first start time.');eventSlotGeneratorStart?.focus();return}
+  if(startMinutes+count*duration>1440){alert('Those slots would run past midnight. Reduce the number of slots or the slot length.');return}
+  const current=eventSignupEditorSlots.filter(slot=>slot.time||String(slot.label||'').trim());const existingTimes=new Set(current.filter(slot=>slot.time).map(slot=>slot.time));const generated=[];let skipped=0;
+  for(let i=0;i<count;i++){const time=eventMinutesToTime(startMinutes+i*duration);if(existingTimes.has(time)){skipped++;continue}generated.push({id:eventSlotId(),label,time,duration,capacity});existingTimes.add(time)}
+  if(!generated.length){alert('Those start times are already in the slot list.');return}
+  eventSignupEditorSlots=[...current,...generated];renderEventSlotEditor();updateEventSlotGeneratorPreview();showToast(`${generated.length} slot${generated.length===1?'':'s'} generated${skipped?` · ${skipped} duplicate${skipped===1?'':'s'} skipped`:''}`);
+}
 function safeEventIds(value){return [...new Set((Array.isArray(value)?value:[]).map(v=>String(v||'').trim()).filter(Boolean))].slice(0,100)}
 function loadEventSignupIds(){try{eventSignupIds=safeEventIds(JSON.parse(localStorage.getItem(EVENT_SIGNUP_IDS_KEY)||'[]'))}catch{eventSignupIds=[]}}
 function saveEventSignupIds(){localStorage.setItem(EVENT_SIGNUP_IDS_KEY,JSON.stringify(eventSignupIds));if(!window.__classroomToolsApplyingCloud)window.queueClassroomToolsCloudSync?.()}
@@ -92,17 +121,17 @@ function renderEventSlotEditor(){
     const labelField=document.createElement('label');labelField.innerHTML='<span>Label (optional)</span>';const label=document.createElement('input');label.type='text';label.maxLength=50;label.placeholder='Conference';label.value=slot.label||'';label.addEventListener('input',()=>slot.label=label.value);labelField.append(label);
     const timeField=document.createElement('label');timeField.innerHTML='<span>Start</span>';const time=document.createElement('input');time.type='time';time.required=true;time.value=slot.time||'';time.addEventListener('change',()=>{slot.time=time.value;renderEventSlotEditor()});timeField.append(time);
     const durationField=document.createElement('label');durationField.innerHTML='<span>Minutes</span>';const duration=document.createElement('input');duration.type='number';duration.min='1';duration.max='480';duration.value=slot.duration||15;duration.addEventListener('input',()=>slot.duration=Math.max(1,Math.min(480,Number(duration.value)||15)));durationField.append(duration);
-    const capField=document.createElement('label');capField.innerHTML='<span>Spots</span>';const cap=document.createElement('input');cap.type='number';cap.min='1';cap.max='20';cap.value=slot.capacity||1;cap.addEventListener('input',()=>slot.capacity=Math.max(1,Math.min(20,Number(cap.value)||1)));capField.append(cap);
+    const capField=document.createElement('label');capField.innerHTML='<span>Max signups</span>';const cap=document.createElement('input');cap.type='number';cap.min='1';cap.max='100';cap.value=slot.capacity||1;cap.addEventListener('input',()=>slot.capacity=Math.max(1,Math.min(100,Number(cap.value)||1)));capField.append(cap);
     const remove=document.createElement('button');remove.type='button';remove.className='event-slot-editor-remove';remove.setAttribute('aria-label',`Remove time slot ${index+1}`);remove.textContent='×';remove.disabled=eventSignupEditorSlots.length===1;remove.addEventListener('click',()=>{eventSignupEditorSlots=eventSignupEditorSlots.filter(item=>item.id!==slot.id);renderEventSlotEditor()});
     row.append(labelField,timeField,durationField,capField,remove);eventSignupSlotEditor.append(row);
   });
 }
 function resetEventSignupEditor(){
-  editingEventSignupId='';eventSignupEditorTitle.textContent='Create Event';cancelEventSignupEdit.hidden=true;saveEventSignup.textContent='Create Event';eventSignupForm.reset();eventSignupLinkSchedule.checked=true;eventSignupOpen.checked=true;eventSignupActivityMode.value='participant';eventSignupDate.value=localScheduleDateKey(new Date());eventSignupEditorSlots=[defaultEventSlot()];renderEventSlotEditor();
+  editingEventSignupId='';eventSignupEditorTitle.textContent='Create Event';cancelEventSignupEdit.hidden=true;saveEventSignup.textContent='Create Event';eventSignupForm.reset();eventSignupLinkSchedule.checked=true;eventSignupOpen.checked=true;eventSignupActivityMode.value='participant';eventSignupDate.value=localScheduleDateKey(new Date());eventSignupEditorSlots=[defaultEventSlot()];if(eventSlotGeneratorStart)eventSlotGeneratorStart.value='';if(eventSlotGeneratorDuration)eventSlotGeneratorDuration.value='15';if(eventSlotGeneratorCount)eventSlotGeneratorCount.value='8';if(eventSlotGeneratorCapacity)eventSlotGeneratorCapacity.value='1';if(eventSlotGeneratorLabel)eventSlotGeneratorLabel.value='';renderEventSlotEditor();updateEventSlotGeneratorPreview();
 }
 function editEventSignup(id){
   const event=eventSignupCache.get(id);if(!event)return;
-  editingEventSignupId=id;eventSignupEditorTitle.textContent='Edit Event';cancelEventSignupEdit.hidden=false;saveEventSignup.textContent='Update Event';eventSignupName.value=event.title||'';eventSignupDate.value=event.date||'';eventSignupDescription.value=event.description||'';eventSignupLinkSchedule.checked=event.linkedSchedule!==false;eventSignupOpen.checked=event.status!=='closed';eventSignupActivityMode.value=event.activityMode||'participant';eventSignupEditorSlots=eventSlotsArray(event).map(slot=>({...slot}));if(!eventSignupEditorSlots.length)eventSignupEditorSlots=[defaultEventSlot()];renderEventSlotEditor();eventSignupName.focus();
+  editingEventSignupId=id;eventSignupEditorTitle.textContent='Edit Event';cancelEventSignupEdit.hidden=false;saveEventSignup.textContent='Update Event';eventSignupName.value=event.title||'';eventSignupDate.value=event.date||'';eventSignupDescription.value=event.description||'';eventSignupLinkSchedule.checked=event.linkedSchedule!==false;eventSignupOpen.checked=event.status!=='closed';eventSignupActivityMode.value=event.activityMode||'participant';eventSignupEditorSlots=eventSlotsArray(event).map(slot=>({...slot}));if(!eventSignupEditorSlots.length)eventSignupEditorSlots=[defaultEventSlot()];const firstSlot=eventSignupEditorSlots.find(slot=>slot.time)||eventSignupEditorSlots[0];if(eventSlotGeneratorStart)eventSlotGeneratorStart.value=firstSlot?.time||'';if(eventSlotGeneratorDuration)eventSlotGeneratorDuration.value=String(firstSlot?.duration||15);if(eventSlotGeneratorCapacity)eventSlotGeneratorCapacity.value=String(firstSlot?.capacity||1);if(eventSlotGeneratorLabel)eventSlotGeneratorLabel.value=firstSlot?.label||'';updateEventSlotGeneratorPreview();renderEventSlotEditor();eventSignupName.focus();
 }
 function copyEventLink(id){const link=eventPublicLink(id);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(link).then(()=>showToast('Signup link copied')).catch(()=>window.prompt('Copy this signup link:',link));else window.prompt('Copy this signup link:',link)}
 function openEventLink(id){window.open(eventPublicLink(id),'_blank','noopener')}
@@ -132,10 +161,11 @@ async function refreshEventSignupManager(){
   catch(error){setEventStatus(error?.message||'Could not connect to Event Sign Up.','error')}
 }
 async function saveEventFromForm(event){
-  event.preventDefault();const title=eventSignupName.value.trim();const date=eventSignupDate.value;const description=eventSignupDescription.value.trim();const slots=eventSignupEditorSlots.map(slot=>({...slot,label:String(slot.label||'').trim(),duration:Math.max(1,Math.min(480,Number(slot.duration)||15)),capacity:Math.max(1,Math.min(20,Number(slot.capacity)||1))})).filter(slot=>slot.time);
+  event.preventDefault();const title=eventSignupName.value.trim();const date=eventSignupDate.value;const description=eventSignupDescription.value.trim();const slots=eventSignupEditorSlots.map(slot=>({...slot,label:String(slot.label||'').trim(),duration:Math.max(1,Math.min(480,Number(slot.duration)||15)),capacity:Math.max(1,Math.min(100,Number(slot.capacity)||1))})).filter(slot=>slot.time);
   if(!title||!date){alert('Enter an event name and date.');return}if(!slots.length||slots.length!==eventSignupEditorSlots.length){alert('Add a start time for every signup slot.');return}
   try{
     await initRaceFirebase();const id=editingEventSignupId||eventSignupId();const ref=fb.ref(db,`eventSignups/${id}`);let existing={};if(editingEventSignupId){const snap=await fb.get(ref);if(snap.exists())existing=snap.val()}
+    const overCapacity=slots.find(slot=>Object.values(existing.signups?.[slot.id]||{}).filter(Boolean).length>slot.capacity);if(overCapacity){const filled=Object.values(existing.signups?.[overCapacity.id]||{}).filter(Boolean).length;alert(`${formatScheduleTime(overCapacity.time)} already has ${filled} signup${filled===1?'':'s'}. Its maximum cannot be reduced below ${filled}.`);return}
     const slotMap={};slots.forEach(slot=>slotMap[slot.id]=slot);const filteredSignups={};Object.entries(existing.signups||{}).forEach(([slotId,value])=>{if(slotMap[slotId])filteredSignups[slotId]=value});
     const data={ownerUid:existing.ownerUid||currentUser.uid,title,date,description,status:eventSignupOpen.checked?'open':'closed',linkedSchedule:eventSignupLinkSchedule.checked,activityMode:eventSignupActivityMode.value||'participant',slots:slotMap,signups:filteredSignups,createdAt:existing.createdAt||Date.now(),updatedAt:Date.now()};
     await fb.set(ref,data);if(!eventSignupIds.includes(id)){eventSignupIds.push(id);saveEventSignupIds()}eventSignupCache.set(id,data);subscribeTeacherEvent(id);syncEventToSpecialSchedule(id,data);renderEventSignupList();resetEventSignupEditor();setEventStatus(`Saved “${title}”. Copy the public link when you are ready to share it.`,'ok');showToast('Event saved');
@@ -152,7 +182,7 @@ function renderPublicEvent(){
   const mySignup=publicCurrentSignup();if(mySignup){if(!publicSelectedSlotId)publicSelectedSlotId=mySignup.slot.id;if(!eventPublicName.value)eventPublicName.value=mySignup.signup.name||'';if(!eventPublicNote.value)eventPublicNote.value=mySignup.signup.note||'';eventPublicCancelSignup.hidden=false}else eventPublicCancelSignup.hidden=true;
   if(event.status==='closed')publicMessage('This event is closed for new signups.','error');else if(mySignup)publicMessage(`You are signed up for ${formatScheduleTime(mySignup.slot.time)}. You can change your time or cancel below.`,'ok');else publicMessage('Choose a time slot, then enter your name. Availability is confirmed when you save.');
   for(const slot of eventSlotsArray(event)){
-    const mine=publicOwnSignups.has(slot.id);const row=document.createElement('div');row.className=`event-public-slot${publicSelectedSlotId===slot.id?' is-selected':''}`;const time=document.createElement('strong');time.textContent=formatScheduleTime(slot.time);const copy=document.createElement('div');const label=document.createElement('b');label.textContent=slot.label||`${slot.duration||15} minute appointment`;const availability=document.createElement('small');availability.textContent=`${slot.capacity||1} signup spot${Number(slot.capacity||1)===1?'':'s'} · availability confirmed when saved`;copy.append(label,availability);const choose=document.createElement('button');choose.type='button';choose.textContent=mine?'Selected':'Choose';choose.disabled=event.status==='closed';choose.addEventListener('click',()=>{publicSelectedSlotId=slot.id;eventPublicForm.hidden=false;eventPublicSelectedSlot.textContent=`Selected: ${formatScheduleTime(slot.time)} · ${slot.duration||15} minutes`;renderPublicEvent();setTimeout(()=>eventPublicName.focus(),0)});row.append(time,copy,choose);eventPublicSlots.append(row)
+    const mine=publicOwnSignups.has(slot.id);const row=document.createElement('div');row.className=`event-public-slot${publicSelectedSlotId===slot.id?' is-selected':''}`;const time=document.createElement('strong');time.textContent=formatScheduleTime(slot.time);const copy=document.createElement('div');const label=document.createElement('b');label.textContent=slot.label||`${slot.duration||15} minute appointment`;const availability=document.createElement('small');availability.textContent=`Up to ${slot.capacity||1} signup${Number(slot.capacity||1)===1?'':'s'} · availability confirmed when saved`;copy.append(label,availability);const choose=document.createElement('button');choose.type='button';choose.textContent=mine?'Selected':'Choose';choose.disabled=event.status==='closed';choose.addEventListener('click',()=>{publicSelectedSlotId=slot.id;eventPublicForm.hidden=false;eventPublicSelectedSlot.textContent=`Selected: ${formatScheduleTime(slot.time)} · ${slot.duration||15} minutes`;renderPublicEvent();setTimeout(()=>eventPublicName.focus(),0)});row.append(time,copy,choose);eventPublicSlots.append(row)
   }
   if(publicSelectedSlotId){const slot=eventSlotsArray(event).find(item=>item.id===publicSelectedSlotId);if(slot){eventPublicForm.hidden=false;eventPublicSelectedSlot.textContent=`Selected: ${formatScheduleTime(slot.time)} · ${slot.duration||15} minutes`}}else eventPublicForm.hidden=true;
 }
@@ -161,7 +191,7 @@ async function savePublicSignup(event){
   try{
     await initRaceFirebase();const uid=currentUser.uid;const slot=eventSlotsArray(publicEventData).find(item=>item.id===publicSelectedSlotId);if(!slot)throw new Error('Choose a valid time slot.');
     const previous=publicCurrentSignup();const updates={};if(previous&&previous.slot.id!==slot.id)updates[`signups/${previous.slot.id}/${uid}`]=null;updates[`signups/${slot.id}/${uid}`]={uid,name,note,createdAt:previous?.signup?.createdAt||Date.now(),updatedAt:Date.now()};await fb.update(fb.ref(db,`eventSignups/${publicEventSignupId}`),updates);publicOwnSignups.clear();publicOwnSignups.set(slot.id,updates[`signups/${slot.id}/${uid}`]);renderPublicEvent();publicMessage(`Saved! You are signed up for ${formatScheduleTime(slot.time)}.`,'ok')
-  }catch(error){publicMessage(error?.code==='PERMISSION_DENIED'?'This event is not accepting signups yet. The organizer may need to update the Event Sign Up Firebase rules.':(error?.message||'Could not save your signup.'),'error')}
+  }catch(error){publicMessage(error?.code==='PERMISSION_DENIED'?'That time slot may already be full, or the event may have just closed. Choose another slot and try again. If every slot fails, the organizer may need to publish the Event Sign Up Firebase rules.':(error?.message||'Could not save your signup.'),'error')}
 }
 async function cancelPublicSignup(){
   const existing=publicCurrentSignup();if(!existing||!confirm('Cancel your signup?'))return;
@@ -194,7 +224,9 @@ async function openPublicEvent(id){
 }
 window.openEventSignupById=id=>{setCalculatorMode('event-signup');setTimeout(()=>{editEventSignup(id);document.querySelector('#eventSignupPanel')?.scrollIntoView({behavior:'smooth',block:'start'})},0)};
 window.refreshEventSignupManager=refreshEventSignupManager;
-if(addEventSignupSlot)addEventSignupSlot.addEventListener('click',()=>{eventSignupEditorSlots.push(defaultEventSlot());renderEventSlotEditor()});
+if(addEventSignupSlot)addEventSignupSlot.addEventListener('click',()=>{eventSignupEditorSlots.push(nextEventSlot());renderEventSlotEditor()});
+if(generateEventSignupSlots)generateEventSignupSlots.addEventListener('click',generateEventSlotsFromBuilder);
+[eventSlotGeneratorStart,eventSlotGeneratorDuration,eventSlotGeneratorCount,eventSlotGeneratorCapacity].forEach(input=>{input?.addEventListener('input',updateEventSlotGeneratorPreview);input?.addEventListener('change',updateEventSlotGeneratorPreview)});
 if(eventSignupForm)eventSignupForm.addEventListener('submit',saveEventFromForm);
 if(clearEventSignupForm)clearEventSignupForm.addEventListener('click',resetEventSignupEditor);
 if(cancelEventSignupEdit)cancelEventSignupEdit.addEventListener('click',resetEventSignupEditor);
