@@ -6,18 +6,14 @@ const customListKey='glnCustomGameListsV1';
 const cq=s=>document.querySelector(s);
 
 const tugAvatars=[
-  {name:'Headband Hero',skin:'#F3C7A6',hair:'#3B2417',shirt:'#FFB347',pants:'#355070',accent:'#F97316',accessory:'headband'},
-  {name:'Ponytail Pro',skin:'#EDC4A2',hair:'#5B3524',shirt:'#8B5CF6',pants:'#334155',accent:'#A855F7',accessory:'ponytail'},
-  {name:'Glasses Ace',skin:'#F1C19C',hair:'#201A18',shirt:'#38BDF8',pants:'#1E3A5F',accent:'#0EA5E9',accessory:'glasses'},
-  {name:'Hoodie Champ',skin:'#DCA882',hair:'#4A2C1F',shirt:'#22C55E',pants:'#374151',accent:'#16A34A',accessory:'hood'},
-  {name:'Sporty Star',skin:'#E7B893',hair:'#111827',shirt:'#F43F5E',pants:'#1F2937',accent:'#FB7185',accessory:'headband2'},
-  {name:'Gamer Kid',skin:'#F5C9AA',hair:'#2B1F1A',shirt:'#EAB308',pants:'#4338CA',accent:'#2563EB',accessory:'headphones'},
-  {name:'Ninja Friend',skin:'#E0AF89',hair:'#231815',shirt:'#6B7280',pants:'#111827',accent:'#EF4444',accessory:'mask'},
-  {name:'Astronaut Buddy',skin:'#F2C6A4',hair:'#583F2E',shirt:'#E5E7EB',pants:'#64748B',accent:'#60A5FA',accessory:'helmet'},
-  {name:'Robot Spark',skin:'#D7E2F0',hair:'#94A3B8',shirt:'#CBD5E1',pants:'#475569',accent:'#38BDF8',accessory:'robot'},
-  {name:'Wizard Wonder',skin:'#F0C4A0',hair:'#4C1D95',shirt:'#A78BFA',pants:'#4338CA',accent:'#7C3AED',accessory:'wizard'},
-  {name:'Cap Leader',skin:'#F1C8A7',hair:'#2D1F1A',shirt:'#FB7185',pants:'#3F3F46',accent:'#2563EB',accessory:'cap'},
-  {name:'Explorer Go',skin:'#C98C63',hair:'#5A341E',shirt:'#2DD4BF',pants:'#1F2937',accent:'#14B8A6',accessory:'satchel'}
+  {key:'headband-boy',name:'Headband Boy'},
+  {key:'ponytail-girl',name:'Ponytail Girl'},
+  {key:'curly-student',name:'Curly-Hair Student'},
+  {key:'glasses-boy',name:'Glasses Boy'},
+  {key:'cap-boy',name:'Cap Boy'},
+  {key:'hoodie-girl',name:'Hoodie Girl'},
+  {key:'sporty-girl',name:'Sporty Girl'},
+  {key:'blue-hoodie-student',name:'Blue-Hoodie Student'}
 ];
 const TUG_CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const TUG_WIN_LEAD=5;
@@ -80,6 +76,11 @@ function teamLabel(team){return team==='red'?'Team Red':team==='blue'?'Team Blue
 function teamDot(team){return team==='red'?'🔴':team==='blue'?'🔵':'⚪'}
 function speedBonusWpm(){return customDifficulty()==='easy'?20:customDifficulty()==='hard'?40:30}
 function tugAvatarData(index){return tugAvatars[((Number(index)||0)%tugAvatars.length+tugAvatars.length)%tugAvatars.length]}
+function tugAvatarSrc(index,team='neutral'){
+  const data=tugAvatarData(index);
+  const side=(team==='red'||team==='blue')?team:'neutral';
+  return `tug-avatars/${data.key}-${side}.svg`;
+}
 function tugAvatarPose(player,base='idle'){if(base!=='pull')return base;if(player?.finished)return'hold';return'pull'}
 function tugConsumeScoreBursts(players){
   const bursts={},next={};
@@ -96,26 +97,40 @@ function renderTugAvatarFigure(playerOrIndex,options={}){
   const player=typeof playerOrIndex==='object'&&playerOrIndex?playerOrIndex:{avatar:playerOrIndex,name:options.name||''};
   const avatarIndex=((Number(player.avatar)||0)%tugAvatars.length+tugAvatars.length)%tugAvatars.length;
   const data=tugAvatarData(avatarIndex);
-  const root=document.createElement(options.tag||'div');
   const team=options.team||player.team||'';
   const facing=options.facing||((team==='blue'||options.side==='blue')?'left':'right');
   const state=options.state||'idle';
-  root.className=['tug-character',`avatar-${avatarIndex}`,team?`team-${team}`:'',`facing-${facing}`,`state-${state}`,options.compact?'compact':'',options.mini?'mini':'',options.highlight?'is-me':'',options.pulse?`pulse-${options.pulse}`:'',options.stack?'stack':''].filter(Boolean).join(' ');
-  root.style.setProperty('--skin',data.skin);
-  root.style.setProperty('--hair',data.hair);
-  root.style.setProperty('--shirt',data.shirt);
-  root.style.setProperty('--pants',data.pants);
-  root.style.setProperty('--accent',data.accent);
-  root.dataset.accessory=data.accessory||'none';
+  const root=document.createElement(options.tag||'div');
+  root.className=['tug-character',team?`team-${team}`:'',`facing-${facing}`,`state-${state}`,options.compact?'compact':'',options.mini?'mini':'',options.highlight?'is-me':'',options.pulse?`pulse-${options.pulse}`:''].filter(Boolean).join(' ');
   root.setAttribute('aria-label',player.name?`${player.name} avatar: ${data.name}`:data.name);
-  if(options.showName){const name=document.createElement('span');name.className='tug-character-name';name.textContent=player.name||data.name;root.appendChild(name)}
-  const stage=document.createElement('span');stage.className='tug-character-stage';
-  if(options.pulse){const pop=document.createElement('b');pop.className='tug-character-pop';pop.textContent=options.pulse==='power'?'+2 PULL':'PULL!';stage.appendChild(pop)}
-  const body=document.createElement('span');body.className='tug-character-body';
-  body.innerHTML='<i class="tug-shadow"></i><i class="tug-rope-link"></i><i class="tug-leg back"></i><i class="tug-leg front"></i><i class="tug-torso"></i><i class="tug-arm back"></i><i class="tug-arm front"></i><i class="tug-head"></i><i class="tug-face"></i><i class="tug-band"></i><i class="tug-hair"></i><i class="tug-glasses"></i><i class="tug-hood"></i><i class="tug-headphones"></i><i class="tug-mask"></i><i class="tug-helmet"></i><i class="tug-robot-eye"></i><i class="tug-hat"></i><i class="tug-cape"></i><i class="tug-satchel"></i><i class="tug-dust"></i>';
-  stage.appendChild(body);
+  if(options.showName){
+    const name=document.createElement('span');
+    name.className='tug-character-name';
+    name.textContent=player.name||data.name;
+    root.appendChild(name);
+  }
+  const stage=document.createElement('span');
+  stage.className='tug-character-stage';
+  const img=document.createElement('img');
+  img.className='tug-avatar-art';
+  img.alt='';
+  img.decoding='async';
+  img.loading='lazy';
+  img.src=tugAvatarSrc(avatarIndex,team||'neutral');
+  stage.appendChild(img);
+  if(options.pulse){
+    const pop=document.createElement('b');
+    pop.className='tug-character-pop';
+    pop.textContent=options.pulse==='power'?'+2 PULL':'PULL!';
+    stage.appendChild(pop);
+  }
   root.appendChild(stage);
-  if(options.caption){const meta=document.createElement('span');meta.className='tug-character-meta';meta.textContent=options.caption;root.appendChild(meta)}
+  if(options.caption){
+    const meta=document.createElement('span');
+    meta.className='tug-character-meta';
+    meta.textContent=options.caption;
+    root.appendChild(meta);
+  }
   return root;
 }
 function renderTugAvatarPicker(){
@@ -131,8 +146,11 @@ function renderTugAvatarPicker(){
     const selected=index===tugAvatarIndex;
     button.classList.toggle('selected',selected);
     button.setAttribute('aria-checked',selected?'true':'false');
-    button.appendChild(renderTugAvatarFigure(index,{compact:true,showLabel:false,state:selected?'ready':'idle',facing:'right'}));
-    const label=document.createElement('span');label.className='tug-avatar-choice-label';label.textContent=avatar.name;button.appendChild(label);
+    button.appendChild(renderTugAvatarFigure(index,{compact:true,state:selected?'ready':'idle',facing:'right'}));
+    const label=document.createElement('span');
+    label.className='tug-avatar-choice-label';
+    label.textContent=avatar.name;
+    button.appendChild(label);
     box.appendChild(button);
   });
 }
