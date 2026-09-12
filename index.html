@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="quiz.css?v=20260912-1" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
-  <link rel="stylesheet" href="calculator.css?v=20260912-7" />
+  <link rel="stylesheet" href="calculator.css?v=20260912-8" />
   <link rel="stylesheet" href="seating.css?v=20260912-31" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260912-2" />
 </head>
@@ -495,7 +495,10 @@ Fish = ညၣ်</textarea>
       <section class="wheel-card" id="wheelPanel" aria-labelledby="wheelTitle" hidden>
         <div class="wheel-toolbar">
           <div><p class="eyebrow">CLASSROOM PICKER</p><h2 id="wheelTitle">Random Wheel</h2></div>
-          <button class="button ghost" id="wheelFullscreen" type="button">⛶ Full screen</button>
+          <div class="wheel-toolbar-actions">
+            <button class="button ghost" id="wheelTogglePanel" type="button" aria-controls="wheelControls" aria-expanded="true">Hide panel</button>
+            <button class="button ghost" id="wheelFullscreen" type="button">⛶ Full screen</button>
+          </div>
         </div>
         <div class="wheel-layout">
           <div class="wheel-stage">
@@ -503,7 +506,7 @@ Fish = ညၣ်</textarea>
             <canvas id="randomWheel" width="640" height="640" aria-label="Random selection wheel"></canvas>
             <button class="wheel-spin" id="spinWheel" type="button">SPIN</button>
           </div>
-          <div class="wheel-controls">
+          <div class="wheel-controls" id="wheelControls">
             <div class="wheel-class-source" aria-labelledby="wheelClassSourceTitle">
               <div class="wheel-class-source-copy"><strong id="wheelClassSourceTitle">Seating Chart Class List</strong><small>Load student names from one of your saved seating-chart classes.</small></div>
               <div class="wheel-class-source-actions"><select id="wheelSeatingClass" aria-label="Choose a seating chart class"><option value="">Choose a class…</option></select><button class="button primary" id="loadWheelSeatingClass" type="button">Load Names</button></div>
@@ -619,7 +622,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260912-1"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260912-7"></script>
+  <script src="calculator.js?v=20260912-8"></script>
   <script src="seating.js?v=20260912-2"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
