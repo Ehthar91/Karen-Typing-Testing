@@ -55,3 +55,13 @@ body.theme-rgb .race-live:not(.teacher-view) > .race-passage .current{color:#071
 body.theme-rgb .race-live:not(.teacher-view) > .race-key-instruction{background:#122845!important;border:1px solid #30577d!important;color:#eef4ff!important;box-shadow:0 12px 24px rgba(0,0,0,.22)!important}
 body.theme-rgb .race-live:not(.teacher-view) > .race-key-instruction.needs-shift{background:#243f67!important;color:#fff!important}
 body.theme-rgb .race-live:not(.teacher-view) > .race-prompt{color:#cad9ee!important}
+
+/* Classroom Number Generator - RGB theme */
+body.theme-rgb .number-generator-card{background:#0d1a2d;border-color:#2b4566;box-shadow:0 22px 65px rgba(0,0,0,.38)}
+body.theme-rgb .number-generator-toolbar{border-color:#2d4667}body.theme-rgb .number-generator-toolbar h2{color:#eef5ff}
+body.theme-rgb .number-range-fields label{color:#b8c9dc}body.theme-rgb .number-range-fields>span{color:#8399b2}
+body.theme-rgb .number-range-fields input{border-color:#355777;background:#10243c;color:#f3f8ff}body.theme-rgb .number-range-fields input:focus{border-color:#5ce5ff;box-shadow:0 0 0 4px rgba(92,229,255,.12)}
+body.theme-rgb .number-result-card{border-color:#315271;background:radial-gradient(circle at 50% 15%,#18304e 0,#11253e 48%,#0b1b2f 100%)}body.theme-rgb .number-result-card>span{color:#9eb3ca}body.theme-rgb .number-result-card>strong{color:#fff;text-shadow:0 0 26px rgba(92,229,255,.2)}body.theme-rgb .number-result-card>small{color:#b7c8dc}
+body.theme-rgb .number-generate-button{background:linear-gradient(135deg,#153c64,#40235f);box-shadow:0 0 0 1px #5ce5ff,0 0 20px rgba(22,224,255,.18)}
+body.theme-rgb .number-no-repeat,body.theme-rgb .number-presets,body.theme-rgb .number-history{background:#101f35;border-color:#2d4968}body.theme-rgb .number-no-repeat span,body.theme-rgb .number-presets>strong,body.theme-rgb .number-history>div strong,body.theme-rgb .number-history ol{color:#eef5ff}body.theme-rgb .number-no-repeat small{color:#9fb3ca}
+body.theme-rgb .number-presets button{border-color:#355777;background:#10243c;color:#eef5ff}body.theme-rgb .number-presets button:hover{border-color:#5ce5ff;background:#17314f}body.theme-rgb .number-history>div{background:#122640}body.theme-rgb .number-history>div button{color:#71e9ff}
