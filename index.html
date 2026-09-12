@@ -23,9 +23,9 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260911-23" />
+  <link rel="stylesheet" href="calculator.css?v=20260912-1" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
-  <link rel="stylesheet" href="rgb-theme.css?v=20260911-11" />
+  <link rel="stylesheet" href="rgb-theme.css?v=20260912-1" />
 </head>
 <body>
   <main class="app-shell">
@@ -350,7 +350,11 @@ Fish = ညၣ်</textarea>
         </div>
         <div class="schedule-timer-layout">
           <div class="schedule-timer-main">
-            <section class="schedule-active-card" aria-live="polite" aria-atomic="true">
+            <section class="schedule-active-card" id="scheduleActiveCard" aria-live="polite" aria-atomic="true">
+              <div class="schedule-fullscreen-controls">
+                <button class="button ghost" id="scheduleFullscreen" type="button">⛶ Full screen</button>
+                <button class="button ghost schedule-today-toggle" id="scheduleTodayToggle" type="button" aria-expanded="false" hidden>Show today’s schedule</button>
+              </div>
               <span class="schedule-active-state" id="scheduleActiveState">WAITING</span>
               <h3 id="scheduleActiveName">No timer is running</h3>
               <strong class="schedule-countdown" id="scheduleCountdown">--:--</strong>
@@ -358,6 +362,10 @@ Fish = ညၣ်</textarea>
               <div class="schedule-progress" aria-hidden="true"><span id="scheduleProgress"></span></div>
               <div class="schedule-special-day" id="scheduleSpecialDay" hidden>Special schedule active today</div>
               <div class="schedule-next"><span>Next</span><strong id="scheduleNext">No upcoming schedule</strong></div>
+              <aside class="schedule-day-drawer" id="scheduleDayDrawer" hidden aria-label="Today’s upcoming schedule">
+                <div class="schedule-day-drawer-heading"><div><span>Today</span><strong>Upcoming schedule</strong></div><button id="scheduleDayDrawerClose" type="button" aria-label="Hide today’s schedule">×</button></div>
+                <div class="schedule-day-list" id="scheduleDayList"><p>No more scheduled activities today.</p></div>
+              </aside>
               <button class="button ghost" id="stopScheduleTimer" type="button" hidden>Stop current timer</button>
             </section>
           </div>
@@ -529,7 +537,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260911-29"></script>
+  <script src="calculator.js?v=20260912-1"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
