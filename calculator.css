@@ -380,3 +380,17 @@ body.schedule-fullscreen-open{overflow:hidden}
 @media(max-width:1100px){.dashboard-class-card{grid-column:span 6}.dashboard-picker-card{grid-column:span 6}.dashboard-account-card{grid-column:span 12}.dashboard-schedule-card{grid-column:span 6}.dashboard-tools-card{grid-column:span 6}.dashboard-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.dashboard-hero{grid-template-columns:1fr;padding:18px}.dashboard-date{justify-items:start;min-width:0}.dashboard-grid{grid-template-columns:1fr}.dashboard-class-card,.dashboard-picker-card,.dashboard-account-card,.dashboard-schedule-card,.dashboard-tools-card{grid-column:1}.dashboard-tools-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:500px){.dashboard-class-actions,.dashboard-tools-grid{grid-template-columns:1fr}.dashboard-schedule-now{grid-template-columns:1fr}.dashboard-schedule-now>b{font-size:1.1rem}.dashboard-next-row{grid-template-columns:1fr}.dashboard-next-row strong{white-space:normal}}
+
+
+/* Random Wheel collapsible controls panel */
+.wheel-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.wheel-card.controls-collapsed .wheel-layout{grid-template-columns:1fr}
+.wheel-card.controls-collapsed .wheel-controls{display:none!important}
+.wheel-card.controls-collapsed .wheel-stage{width:min(100%,900px)}
+.wheel-card:fullscreen.controls-collapsed .wheel-layout{max-width:none;grid-template-columns:1fr}
+.wheel-card:fullscreen.controls-collapsed .wheel-stage{width:min(88vh,calc(100vw - 80px),1000px)}
+@media(max-width:620px){
+  .wheel-toolbar-actions{width:100%;justify-content:flex-start}
+  .wheel-toolbar-actions .button{flex:1 1 auto}
+  .wheel-card.controls-collapsed .wheel-stage{width:100%}
+}

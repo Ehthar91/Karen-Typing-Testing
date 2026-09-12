@@ -620,6 +620,8 @@ window.addEventListener('gln:seating-classes-updated',()=>{refreshDashboardClass
 setTimeout(()=>{refreshDashboardClasses();updateClassroomDashboard()},0);setInterval(()=>{if(dashboardPanel&&!dashboardPanel.hidden)updateClassroomDashboard()},1000);
 
 const wheelCanvas=document.querySelector('#randomWheel');
+const wheelTogglePanel=document.querySelector('#wheelTogglePanel');
+const wheelControls=document.querySelector('#wheelControls');
 const wheelContext=wheelCanvas.getContext('2d');
 const wheelEntries=document.querySelector('#wheelEntries');
 const wheelResults=document.querySelector('#wheelResults');
@@ -735,6 +737,13 @@ document.querySelector('#clearWheel').onclick=()=>{wheelEntries.value='';saveAnd
 document.querySelector('#clearWheelResults').onclick=()=>{wheelHistory=[];renderWheelHistory()};
 document.querySelector('#keepWheelWinner').onclick=()=>{wheelWinner.hidden=true};
 document.querySelector('#removeWheelWinner').onclick=()=>{const entries=wheelEntries.value.split(/\r?\n/),index=entries.findIndex(item=>item.trim()===lastWheelWinner);if(index>=0)entries.splice(index,1);wheelEntries.value=entries.join('\n').replace(/^\s+|\s+$/g,'');saveAndDrawWheel();wheelWinner.hidden=true};
+wheelTogglePanel.onclick=()=>{
+  const collapsed=wheelPanel.classList.toggle('controls-collapsed');
+  wheelTogglePanel.textContent=collapsed?'Show panel':'Hide panel';
+  wheelTogglePanel.setAttribute('aria-expanded',String(!collapsed));
+  if(wheelControls)wheelControls.setAttribute('aria-hidden',String(collapsed));
+  requestAnimationFrame(()=>{drawWheel();setTimeout(drawWheel,180)});
+};
 document.querySelector('#wheelFullscreen').onclick=()=>{if(!document.fullscreenElement)wheelPanel.requestFullscreen?.();else document.exitFullscreen?.()};
 window.addEventListener('resize',()=>{if(!wheelPanel.hidden)drawWheel()});
 refreshWheelSeatingClasses();
