@@ -1,35 +1,18 @@
-EVENT SIGN UP — FIREBASE SETUP (CLAIMABLE SPOTS)
+EVENT SIGN UP — FIREBASE SETUP
 
-The Event Sign Up tool uses Firebase Realtime Database so a student/parent can open a public signup link and reserve one or more time slots.
+This build uses private-link-only participant management.
 
-IMPORTANT: Uploading the website to GitHub Pages does NOT update Firebase Realtime Database rules.
+1. Firebase Console > Realtime Database > Rules
+2. Replace the current rules with firebase-rules.json from this build.
+3. Click Publish.
+4. Test with a NEW event after publishing.
 
-Before testing public signup links:
-1. Open Firebase Console for the gln-karen-typing-center project.
-2. Go to Realtime Database -> Rules.
-3. Replace ALL current rules with the project's updated firebase-rules.json file.
-4. Click Publish.
-5. Confirm Anonymous Authentication is enabled (the Car Race already uses it).
-6. Google Authentication can remain enabled for the teacher Classroom Tools account.
+How participant management works
+- The normal public signup link can create a signup but cannot reopen or edit an earlier signup, even on the same device/browser.
+- Each new signup gets a 64-character private management token.
+- The private Manage Signup URL is the only participant link that can read/change/cancel that signup.
+- Claims containing the private token are NOT publicly readable. Public availability is stored separately as booleans.
+- Teacher/organizer access still works through the event owner account.
 
-WHAT CHANGED IN THIS BUILD
-- Event Sign Up no longer tries to count signup children inside Security Rules.
-- Every time slot now contains a fixed set of claimable spot IDs equal to its capacity.
-- A participant must claim one available spot with a Firebase transaction before the reservation is saved.
-- One physical spot can hold only one claim, so a 1-person slot cannot become 2/1 even when two people click at nearly the same time.
-- Full slots remain visible for now but are disabled and marked FULL.
-- One device can now keep separate family signups. “Add another student” keeps the same family contact information; “Sign up for another family” starts a separate parent/guardian record without changing the first family.
-- Reservations now use unique reservation IDs under each anonymous device user, so two different families using the same device can even reserve the same time when that slot has capacity greater than 1.
-- Cancelling a reservation releases its claimed spot so it becomes available again.
-- Parent/Guardian Name, Email, optional Phone, Student Name, multiple selected slots, and Schedule Timer linking are preserved.
-
-OLD TEST EVENTS
-Events created by the older signup system do not have claimable spot IDs yet. After publishing these rules, create a NEW test event for the cleanest test. An older event can be migrated by editing and updating it only when its current signup count does not exceed its configured capacity. If an old test event already shows 2/1, delete it or create a fresh event rather than trying to preserve the invalid overbooked state.
-
-EMAIL NOTE
-This build collects the email address but does not send confirmation emails yet. Automatic confirmation/manage links require the planned secure server-side email service. Do not put a mail API key in the website JavaScript.
-
-IMPORTANT FOR THIS BUILD
-The reservation path changed to support multiple families on one device, so publish the firebase-rules.json included with THIS build before testing the new buttons.
-
-After publishing the rules and uploading the site, hard-refresh the website with Command + Shift + R.
+EMAIL STATUS
+Automatic confirmation email delivery is NOT connected yet. During testing, the confirmation screen shows the private link once so you can copy/save it. After a secure email service is connected, that same private link can be emailed automatically and removed from the confirmation screen.
