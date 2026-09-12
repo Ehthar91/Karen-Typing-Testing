@@ -206,6 +206,12 @@ const scheduleProgress=document.querySelector('#scheduleProgress');
 const scheduleNext=document.querySelector('#scheduleNext');
 const scheduleSpecialDay=document.querySelector('#scheduleSpecialDay');
 const stopScheduleTimer=document.querySelector('#stopScheduleTimer');
+const scheduleActiveCard=document.querySelector('#scheduleActiveCard');
+const scheduleFullscreen=document.querySelector('#scheduleFullscreen');
+const scheduleTodayToggle=document.querySelector('#scheduleTodayToggle');
+const scheduleDayDrawer=document.querySelector('#scheduleDayDrawer');
+const scheduleDayDrawerClose=document.querySelector('#scheduleDayDrawerClose');
+const scheduleDayList=document.querySelector('#scheduleDayList');
 const scheduleTimerForm=document.querySelector('#scheduleTimerForm');
 const scheduleName=document.querySelector('#scheduleName');
 const scheduleStartTime=document.querySelector('#scheduleStartTime');
@@ -424,6 +430,49 @@ function formatUpcomingSchedule(occurrence){
   if(occurrence.type==='special')return `${occurrence.displayName} · ${formatScheduleTime(occurrence.time)} · ${occurrence.entry.name} · ${formatScheduleDate(occurrence.entry.date)}`;
   return `${occurrence.displayName} · ${formatScheduleTime(occurrence.time)} · ${scheduleDayText(occurrence.entry.days)}`;
 }
+function upcomingSchedulesForToday(now=new Date()){
+  return allOccurrencesForDate(now).filter(occurrence=>occurrence.start>now&&!dismissedScheduleOccurrences.has(occurrence.key)).sort((a,b)=>a.start-b.start);
+}
+function renderScheduleDayDrawer(now=new Date()){
+  if(!scheduleDayList)return;
+  const upcoming=upcomingSchedulesForToday(now);scheduleDayList.innerHTML='';
+  if(!upcoming.length){const empty=document.createElement('p');empty.className='schedule-day-empty';empty.textContent='No more scheduled activities today.';scheduleDayList.append(empty);return}
+  upcoming.forEach(occurrence=>{
+    const row=document.createElement('div');row.className='schedule-day-item';
+    const time=document.createElement('strong');time.textContent=formatScheduleTime(occurrence.time);
+    const copy=document.createElement('div');const name=document.createElement('b');name.textContent=occurrence.displayName;
+    const meta=document.createElement('small');meta.textContent=`${occurrence.duration} min${occurrence.type==='special'&&occurrence.entry?.name?` · ${occurrence.entry.name}`:''}`;
+    copy.append(name,meta);row.append(time,copy);scheduleDayList.append(row);
+  });
+}
+function setScheduleDayDrawer(open){
+  if(!scheduleDayDrawer||!scheduleTodayToggle)return;
+  const show=Boolean(open)&&scheduleActiveCard?.classList.contains('is-schedule-fullscreen');
+  scheduleDayDrawer.hidden=!show;scheduleTodayToggle.setAttribute('aria-expanded',String(show));scheduleTodayToggle.textContent=show?'Hide today’s schedule':'Show today’s schedule';
+  if(show)renderScheduleDayDrawer(new Date());
+}
+function syncScheduleFullscreenUI(){
+  if(!scheduleActiveCard||!scheduleFullscreen)return;
+  const active=scheduleActiveCard.classList.contains('is-schedule-fullscreen');
+  scheduleFullscreen.textContent=active?'× Exit full screen':'⛶ Full screen';
+  if(scheduleTodayToggle)scheduleTodayToggle.hidden=!active;
+  if(!active)setScheduleDayDrawer(false);else if(scheduleDayDrawer&&!scheduleDayDrawer.hidden)renderScheduleDayDrawer(new Date());
+}
+async function enterScheduleFullscreen(){
+  if(!scheduleActiveCard)return;
+  scheduleActiveCard.classList.add('is-schedule-fullscreen');document.body.classList.add('schedule-fullscreen-open');syncScheduleFullscreenUI();
+  if(document.fullscreenElement!==scheduleActiveCard&&scheduleActiveCard.requestFullscreen){
+    try{await scheduleActiveCard.requestFullscreen({navigationUI:'hide'})}catch{}
+  }
+}
+async function exitScheduleFullscreen(){
+  if(!scheduleActiveCard)return;
+  if(document.fullscreenElement===scheduleActiveCard&&document.exitFullscreen){try{await document.exitFullscreen()}catch{}}
+  scheduleActiveCard.classList.remove('is-schedule-fullscreen');document.body.classList.remove('schedule-fullscreen-open');setScheduleDayDrawer(false);syncScheduleFullscreenUI();
+}
+async function toggleScheduleFullscreen(){
+  if(scheduleActiveCard?.classList.contains('is-schedule-fullscreen'))await exitScheduleFullscreen();else await enterScheduleFullscreen();
+}
 function updateScheduleTimerClock(){
   if(!scheduleClock)return;const now=new Date();scheduleClock.textContent=formatScheduleClock(now);if(deactivateExpiredSpecialSchedules(now))renderScheduleTimers();const specialToday=specialScheduleExistsToday(now);
   if(scheduleSpecialDay){scheduleSpecialDay.hidden=!specialToday;scheduleSpecialDay.textContent=specialToday?`Special schedule active today · ${formatScheduleDate(localScheduleDateKey(now))} · Weekly schedule paused for today`:''}
@@ -435,7 +484,17 @@ function updateScheduleTimerClock(){
     scheduleActiveState.textContent=specialToday?'SPECIAL SCHEDULE TODAY':'WAITING';scheduleActiveName.textContent='No timer is running';scheduleCountdown.textContent='--:--';scheduleActiveRange.textContent=specialToday?'The special schedule will run its next saved time slot automatically.':'The next enabled schedule will start automatically.';scheduleProgress.style.width='0%';stopScheduleTimer.hidden=true;showScheduleTimer.textContent='Schedule Timer';
   }
   scheduleNext.textContent=formatUpcomingSchedule(getUpcomingSchedule(now));
+  if(scheduleActiveCard?.classList.contains('is-schedule-fullscreen')&&scheduleDayDrawer&&!scheduleDayDrawer.hidden)renderScheduleDayDrawer(now);
 }
+if(scheduleFullscreen)scheduleFullscreen.addEventListener('click',toggleScheduleFullscreen);
+if(scheduleTodayToggle)scheduleTodayToggle.addEventListener('click',()=>setScheduleDayDrawer(scheduleDayDrawer?.hidden));
+if(scheduleDayDrawerClose)scheduleDayDrawerClose.addEventListener('click',()=>setScheduleDayDrawer(false));
+document.addEventListener('fullscreenchange',()=>{
+  if(!scheduleActiveCard)return;
+  if(document.fullscreenElement===scheduleActiveCard){scheduleActiveCard.classList.add('is-schedule-fullscreen');document.body.classList.add('schedule-fullscreen-open')}
+  else if(scheduleActiveCard.classList.contains('is-schedule-fullscreen')){scheduleActiveCard.classList.remove('is-schedule-fullscreen');document.body.classList.remove('schedule-fullscreen-open');setScheduleDayDrawer(false)}
+  syncScheduleFullscreenUI();
+});
 if(scheduleTypeWeekly)scheduleTypeWeekly.addEventListener('click',()=>setScheduleEditorType('weekly'));
 if(scheduleTypeSpecial)scheduleTypeSpecial.addEventListener('click',()=>setScheduleEditorType('special'));
 if(addSpecialSlot)addSpecialSlot.addEventListener('click',()=>{specialEditorSlots.push(defaultSpecialSlot());renderSpecialSlotEditor();const last=specialSlotList.lastElementChild?.querySelector('input[type="text"]');last?.focus()});
@@ -462,7 +521,7 @@ if(clearScheduleTimers)clearScheduleTimers.addEventListener('click',()=>{if(!cla
 if(stopScheduleTimer)stopScheduleTimer.addEventListener('click',()=>{
   const now=new Date();if(manualTimer&&now<manualTimer.end){manualTimer=null}else{const active=getActiveScheduledOccurrence(now);if(active)dismissedScheduleOccurrences.add(active.key)}updateScheduleTimerClock();
 });
-loadClassroomSchedules();specialEditorSlots=[defaultSpecialSlot()];setScheduleEditorType('weekly',{keepSpecial:true});renderSpecialSlotEditor();renderScheduleTimers();updateScheduleTimerClock();setInterval(updateScheduleTimerClock,500);
+loadClassroomSchedules();specialEditorSlots=[defaultSpecialSlot()];setScheduleEditorType('weekly',{keepSpecial:true});renderSpecialSlotEditor();renderScheduleTimers();updateScheduleTimerClock();syncScheduleFullscreenUI();setInterval(updateScheduleTimerClock,500);
 
 const wheelCanvas=document.querySelector('#randomWheel');
 const wheelContext=wheelCanvas.getContext('2d');
