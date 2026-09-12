@@ -40,6 +40,10 @@ const eventPublicPhone=document.querySelector('#eventPublicPhone');
 const eventPublicSelectionList=document.querySelector('#eventPublicSelectionList');
 const eventPublicSubmit=document.querySelector('#eventPublicSubmit');
 const eventPublicCancelSignup=document.querySelector('#eventPublicCancelSignup');
+const eventPublicFamilyTools=document.querySelector('#eventPublicFamilyTools');
+const eventPublicFamilySelect=document.querySelector('#eventPublicFamilySelect');
+const eventPublicAddStudent=document.querySelector('#eventPublicAddStudent');
+const eventPublicAnotherFamily=document.querySelector('#eventPublicAnotherFamily');
 let eventSignupIds=[];
 let eventSignupCache=new Map();
 let eventSignupWatchers=new Map();
@@ -52,6 +56,9 @@ let publicSelectionInitialized=false;
 let publicEventData=null;
 let publicEventUnsubscribe=null;
 let publicOwnSignups=new Map();
+let publicDeviceReservations=new Map();
+let publicActiveFamilyId='';
+let publicStartingNewFamily=false;
 function eventSignupId(){
   const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let text='';
@@ -61,6 +68,8 @@ function eventSignupId(){
 }
 function eventSlotId(){return `slot-${Date.now()}-${Math.random().toString(36).slice(2,7)}`}
 function eventSpotId(){return `spot-${Date.now()}-${Math.random().toString(36).slice(2,9)}`}
+function eventFamilyId(){return `fam-${Date.now()}-${Math.random().toString(36).slice(2,10)}`}
+function eventReservationId(){return `res-${Date.now()}-${Math.random().toString(36).slice(2,10)}`}
 function defaultEventSlot(){return{id:eventSlotId(),label:'',time:'',duration:15,capacity:1}}
 function eventTimeToMinutes(value){const match=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));if(!match)return null;const hour=Number(match[1]),minute=Number(match[2]);if(hour<0||hour>23||minute<0||minute>59)return null;return hour*60+minute}
 function eventMinutesToTime(value){const minutes=Math.max(0,Math.min(1439,Math.floor(Number(value)||0)));return `${String(Math.floor(minutes/60)).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`}
@@ -95,7 +104,11 @@ function eventSpotIds(slot){return Object.keys(slot?.spots||{}).filter(id=>slot.
 function eventClaimsForSlot(event,slotId){return Object.entries(event?.claims?.[slotId]||{}).filter(([,uid])=>typeof uid==='string'&&uid).map(([spotId,uid])=>({spotId,uid}))}
 function modernReservationsForSlot(event,slotId){
   const results=[];
-  for(const userSlots of Object.values(event?.reservations||{})){const item=userSlots?.[slotId];if(item)results.push(item)}
+  for(const userReservations of Object.values(event?.reservations||{})){
+    for(const [reservationId,item] of Object.entries(userReservations||{})){
+      if(!item)continue;const actualSlotId=String(item.slotId||reservationId);if(actualSlotId===slotId)results.push(item);
+    }
+  }
   return results.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
 }
 function legacySignupsForSlot(event,slotId){return Object.values(event?.signups?.[slotId]||{}).filter(Boolean).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0))}
@@ -103,8 +116,9 @@ function eventSignupsForSlot(event,slotId){const modern=modernReservationsForSlo
 function eventFilledCount(event,slotId){const claims=eventClaimsForSlot(event,slotId);return claims.length||(!event?.claims?.[slotId]?legacySignupsForSlot(event,slotId).length:0)}
 function eventSignupCount(event){return eventSlotsArray(event).reduce((sum,slot)=>sum+eventFilledCount(event,slot.id),0)}
 function currentParticipantSignups(event,uid){
-  const own=event?.reservations?.[uid]||{};
-  return eventSlotsArray(event).map(slot=>({slot,signup:own?.[slot.id]})).filter(item=>item.signup);
+  const own=event?.reservations?.[uid]||{};const bySlot=new Map();
+  for(const [reservationId,item] of Object.entries(own)){if(!item)continue;const slotId=String(item.slotId||reservationId);if(!bySlot.has(slotId))bySlot.set(slotId,item)}
+  return eventSlotsArray(event).map(slot=>({slot,signup:bySlot.get(slot.id)})).filter(item=>item.signup);
 }
 function publicCurrentSignups(){return eventSlotsArray(publicEventData).map(slot=>({slot,signup:publicOwnSignups.get(slot.id)})).filter(item=>item.signup)}
 function signupStudentName(item){return String(item?.studentName||item?.name||'').trim()}
@@ -127,19 +141,19 @@ function normalizeExistingSignupData(existing,slotMap){
     const sourceClaims=existing?.claims?.[slotId]||{};
     for(const [spotId,uid] of Object.entries(sourceClaims)){if(allowedSpots.has(spotId)&&typeof uid==='string'&&uid){claims[slotId]??={};claims[slotId][spotId]=uid}}
   }
-  for(const [uid,userSlots] of Object.entries(existing?.reservations||{})){
-    for(const [slotId,item] of Object.entries(userSlots||{})){
-      if(!slotMap[slotId]||!item)continue;const spotId=String(item.spotId||'');
+  for(const [uid,userReservations] of Object.entries(existing?.reservations||{})){
+    for(const [reservationId,item] of Object.entries(userReservations||{})){
+      if(!item)continue;const slotId=String(item.slotId||reservationId);if(!slotMap[slotId])continue;const spotId=String(item.spotId||'');
       if(!spotId||claims?.[slotId]?.[spotId]!==uid)continue;
-      reservations[uid]??={};reservations[uid][slotId]={...item,uid,slotId,spotId};
+      reservations[uid]??={};reservations[uid][reservationId]={...item,uid,slotId,spotId};
     }
   }
   for(const [slotId,legacyMap] of Object.entries(existing?.signups||{})){
     if(!slotMap[slotId])continue;
     const free=eventSpotIds(slotMap[slotId]).filter(spotId=>!claims?.[slotId]?.[spotId]);
     for(const [uid,item] of Object.entries(legacyMap||{})){
-      if(!item||reservations?.[uid]?.[slotId])continue;const spotId=free.shift();if(!spotId)throw new Error(`${formatScheduleTime(slotMap[slotId].time)} has more existing signups than available spots.`);
-      claims[slotId]??={};claims[slotId][spotId]=uid;reservations[uid]??={};reservations[uid][slotId]={...item,uid,slotId,spotId};
+      if(!item)continue;const already=Object.values(reservations?.[uid]||{}).some(res=>res&&String(res.slotId||'')===slotId);if(already)continue;const spotId=free.shift();if(!spotId)throw new Error(`${formatScheduleTime(slotMap[slotId].time)} has more existing signups than available spots.`);
+      const reservationId=`legacy-${slotId}`;claims[slotId]??={};claims[slotId][spotId]=uid;reservations[uid]??={};reservations[uid][reservationId]={...item,uid,slotId,spotId,familyId:item.familyId||`legacy-${uid}`};
     }
   }
   return{claims,reservations};
@@ -227,7 +241,7 @@ async function saveEventFromForm(event){
     if(editingEventSignupId){const snap=await fb.get(ref);if(snap.exists())existing=snap.val()}
     const slotMap={};for(const slot of slots){slot.spots=buildSlotSpots(slot,existing);slotMap[slot.id]=slot}
     const migrated=normalizeExistingSignupData(existing,slotMap);
-    const data={ownerUid:existing.ownerUid||currentUser.uid,title,date,description,status:eventSignupOpen.checked?'open':'closed',linkedSchedule:eventSignupLinkSchedule.checked,allowMultiple:eventSignupAllowMultiple?eventSignupAllowMultiple.checked:true,activityMode:eventSignupActivityMode.value||'participant',slots:slotMap,claims:migrated.claims,reservations:migrated.reservations,createdAt:existing.createdAt||Date.now(),updatedAt:Date.now(),capacityModel:'claimable-spots-v1'};
+    const data={ownerUid:existing.ownerUid||currentUser.uid,title,date,description,status:eventSignupOpen.checked?'open':'closed',linkedSchedule:eventSignupLinkSchedule.checked,allowMultiple:eventSignupAllowMultiple?eventSignupAllowMultiple.checked:true,activityMode:eventSignupActivityMode.value||'participant',slots:slotMap,claims:migrated.claims,reservations:migrated.reservations,createdAt:existing.createdAt||Date.now(),updatedAt:Date.now(),capacityModel:'claimable-spots-v2-multi-family'};
     await fb.set(ref,data);
     if(!eventSignupIds.includes(id)){eventSignupIds.push(id);saveEventSignupIds()}
     eventSignupCache.set(id,data);subscribeTeacherEvent(id);syncEventToSpecialSchedule(id,data);renderEventSignupList();resetEventSignupEditor();setEventStatus(`Saved “${title}”. Capacity is protected with claimable spots.`,'ok');showToast('Event saved');
@@ -239,14 +253,40 @@ async function deleteEventSignup(id,event){
   catch(error){setEventStatus(error?.message||'Could not delete the event.','error')}
 }
 function publicMessage(text,type=''){eventPublicMessage.textContent=text;eventPublicMessage.classList.toggle('is-ok',type==='ok');eventPublicMessage.classList.toggle('is-error',type==='error')}
+function publicFamilyIdForReservation(item){return String(item?.familyId||`legacy-${currentUser?.uid||'device'}`)}
+function publicFamilyGroups(){
+  const groups=new Map();
+  for(const [reservationId,item] of publicDeviceReservations){if(!item)continue;const familyId=publicFamilyIdForReservation(item);let group=groups.get(familyId);if(!group){group={familyId,parentName:'',email:'',phone:'',items:[],updatedAt:0};groups.set(familyId,group)}group.items.push({...item,_reservationId:reservationId});group.parentName=group.parentName||String(item.parentName||'');group.email=group.email||String(item.email||'');group.phone=group.phone||String(item.phone||'');group.updatedAt=Math.max(group.updatedAt,Number(item.updatedAt||item.createdAt||0))}
+  return [...groups.values()].sort((a,b)=>b.updatedAt-a.updatedAt);
+}
+function populatePublicActiveFamily(){
+  publicOwnSignups=new Map();publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();
+  if(publicActiveFamilyId){for(const [reservationId,item] of publicDeviceReservations){if(!item||publicFamilyIdForReservation(item)!==publicActiveFamilyId)continue;const slotId=String(item.slotId||'');if(!slotId||!publicEventData?.slots?.[slotId])continue;const record={...item,_reservationId:reservationId};publicOwnSignups.set(slotId,record);publicSelectedSlotIds.add(slotId);publicDraftStudentNames.set(slotId,signupStudentName(record))}}
+  const first=publicOwnSignups.values().next().value;if(first){eventPublicParentName.value=first.parentName||'';eventPublicEmail.value=first.email||'';eventPublicPhone.value=first.phone||''}else if(publicStartingNewFamily){eventPublicParentName.value='';eventPublicEmail.value='';eventPublicPhone.value=''}
+  publicSelectionInitialized=true;
+}
 function initializePublicSelection(){
   if(publicSelectionInitialized)return;
-  publicSelectedSlotIds=new Set(publicOwnSignups.keys());
-  publicDraftStudentNames=new Map();
-  for(const [slotId,signup] of publicOwnSignups)publicDraftStudentNames.set(slotId,signupStudentName(signup));
-  const first=publicOwnSignups.values().next().value;
-  if(first){eventPublicParentName.value=first.parentName||'';eventPublicEmail.value=first.email||'';eventPublicPhone.value=first.phone||''}
-  publicSelectionInitialized=true;
+  const groups=publicFamilyGroups();
+  if(!publicActiveFamilyId){if(groups.length){publicActiveFamilyId=groups[0].familyId;publicStartingNewFamily=false}else{publicActiveFamilyId=eventFamilyId();publicStartingNewFamily=true}}
+  if(!publicStartingNewFamily&&!groups.some(group=>group.familyId===publicActiveFamilyId)){if(groups.length)publicActiveFamilyId=groups[0].familyId;else{publicActiveFamilyId=eventFamilyId();publicStartingNewFamily=true}}
+  populatePublicActiveFamily();
+}
+function renderPublicFamilyTools(){
+  if(!eventPublicFamilyTools||!eventPublicFamilySelect)return;const groups=publicFamilyGroups();const hasSaved=groups.length>0;
+  eventPublicFamilyTools.hidden=!hasSaved;eventPublicFamilySelect.innerHTML='';
+  if(publicStartingNewFamily){const option=document.createElement('option');option.value=publicActiveFamilyId;option.textContent='New family signup';eventPublicFamilySelect.append(option)}
+  for(const group of groups){const option=document.createElement('option');option.value=group.familyId;const label=group.parentName||group.email||'Saved family';option.textContent=`${label} · ${group.items.length} appointment${group.items.length===1?'':'s'}`;eventPublicFamilySelect.append(option)}
+  eventPublicFamilySelect.value=publicActiveFamilyId;eventPublicAddStudent.hidden=!publicOwnSignups.size||publicEventData?.allowMultiple===false||publicEventData?.status==='closed';eventPublicAnotherFamily.hidden=publicEventData?.status==='closed';
+}
+function switchPublicFamily(familyId){
+  if(!familyId||familyId===publicActiveFamilyId)return;publicActiveFamilyId=familyId;publicStartingNewFamily=!publicFamilyGroups().some(group=>group.familyId===familyId);populatePublicActiveFamily();renderPublicEvent();const first=publicOwnSignups.values().next().value;publicMessage(first?`Managing ${first.parentName||'this family'}'s saved signup on this device.`:'Starting a new family signup.','ok');
+}
+function startPublicAnotherFamily(){
+  if(publicEventData?.status==='closed')return;publicActiveFamilyId=eventFamilyId();publicStartingNewFamily=true;publicOwnSignups=new Map();publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicSelectionInitialized=true;eventPublicParentName.value='';eventPublicEmail.value='';eventPublicPhone.value='';renderPublicEvent();publicMessage('New family signup started. Choose a time, then enter that parent or guardian’s information.','ok');eventPublicSlots?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function addPublicStudent(){
+  if(!publicOwnSignups.size||publicEventData?.allowMultiple===false)return;publicMessage('Choose another available time for this family, then enter the student name.','ok');eventPublicSlots?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderPublicSelection(){
   if(!eventPublicSelectionList)return;eventPublicSelectionList.innerHTML='';
@@ -263,7 +303,7 @@ function renderPublicSelection(){
 }
 function renderPublicEvent(){
   const event=publicEventData;if(!event)return;initializePublicSelection();eventPublicTitle.textContent=event.title||'Event Sign Up';eventPublicDate.textContent=eventDateText(event.date);eventPublicDescription.textContent=event.description||'Choose an available time slot below.';eventPublicSlots.innerHTML='';
-  const own=publicCurrentSignups();eventPublicCancelSignup.hidden=!own.length;
+  const own=publicCurrentSignups();eventPublicCancelSignup.hidden=!own.length;eventPublicCancelSignup.textContent=own.length?'Cancel this family’s signups':'Cancel signup';renderPublicFamilyTools();
   if(event.status==='closed')publicMessage('This event is closed for new signups. Existing appointments can still be reviewed.','error');else if(own.length)publicMessage(`You currently have ${own.length} saved appointment${own.length===1?'':'s'}. You can update the selections below.`,'ok');else publicMessage(event.allowMultiple===false?'Choose one time slot, then enter the parent/guardian and student information.':'Choose one or more time slots. Parent/guardian information is entered once; each time gets its own student name.');
   for(const slot of eventSlotsArray(event)){
     const selected=publicSelectedSlotIds.has(slot.id);const mine=publicOwnSignups.has(slot.id);const spotIds=eventSpotIds(slot);const filled=eventClaimsForSlot(event,slot.id).length;const capacity=spotIds.length||Number(slot.capacity||1);const full=capacity>0&&filled>=capacity&&!mine;const needsUpgrade=!spotIds.length;
@@ -294,30 +334,36 @@ async function savePublicSignup(event){
   if(!parentName){eventPublicParentName.focus();return}if(!email||!eventPublicEmail.checkValidity()){eventPublicEmail.focus();return}
   const selectedSlots=eventSlotsArray(publicEventData).filter(slot=>publicSelectedSlotIds.has(slot.id));if(!selectedSlots.length)return;
   const students=new Map();for(const slot of selectedSlots){const raw=String(publicDraftStudentNames.get(slot.id)||signupStudentName(publicOwnSignups.get(slot.id))).trim().replace(/\s+/g,' ').slice(0,60);if(!raw){const input=eventPublicSelectionList.querySelector(`[data-slot-id="${slot.id}"] input`);input?.focus();publicMessage(`Enter the student name for ${formatScheduleTime(slot.time)}.`,'error');return}students.set(slot.id,raw)}
-  const newlyClaimed=[];
+  if(!publicActiveFamilyId)publicActiveFamilyId=eventFamilyId();const newlyClaimed=[];
   try{
     await initRaceFirebase();const uid=currentUser.uid;const now=Date.now();const claimedBySlot=new Map();
     for(const slot of selectedSlots){const previous=publicOwnSignups.get(slot.id);if(previous?.spotId){claimedBySlot.set(slot.id,previous.spotId);continue}const spotId=await claimEventSpot(slot);claimedBySlot.set(slot.id,spotId);newlyClaimed.push({slotId:slot.id,spotId})}
-    const updates={};
-    for(const [slotId,previous] of publicOwnSignups){if(publicSelectedSlotIds.has(slotId))continue;updates[`reservations/${uid}/${slotId}`]=null;if(previous?.spotId&&publicEventData?.claims?.[slotId]?.[previous.spotId]===uid)updates[`claims/${slotId}/${previous.spotId}`]=null}
-    for(const slot of selectedSlots){const previous=publicOwnSignups.get(slot.id);const studentName=students.get(slot.id);const spotId=claimedBySlot.get(slot.id);updates[`reservations/${uid}/${slot.id}`]={uid,slotId:slot.id,spotId,name:studentName,studentName,parentName,email,phone,createdAt:previous?.createdAt||now,updatedAt:now}}
+    const updates={};const nextRecords=[];
+    for(const [slotId,previous] of publicOwnSignups){if(publicSelectedSlotIds.has(slotId))continue;const reservationId=previous?._reservationId;if(reservationId)updates[`reservations/${uid}/${reservationId}`]=null;if(previous?.spotId&&publicEventData?.claims?.[slotId]?.[previous.spotId]===uid)updates[`claims/${slotId}/${previous.spotId}`]=null}
+    for(const slot of selectedSlots){const previous=publicOwnSignups.get(slot.id);const studentName=students.get(slot.id);const spotId=claimedBySlot.get(slot.id);const reservationId=previous?._reservationId||eventReservationId();const record={uid,slotId:slot.id,spotId,familyId:publicActiveFamilyId,name:studentName,studentName,parentName,email,phone,createdAt:previous?.createdAt||now,updatedAt:now};updates[`reservations/${uid}/${reservationId}`]=record;nextRecords.push([reservationId,record])}
     await fb.update(fb.ref(db,`eventSignups/${publicEventSignupId}`),updates);
-    publicOwnSignups=new Map();for(const slot of selectedSlots)publicOwnSignups.set(slot.id,updates[`reservations/${uid}/${slot.id}`]);publicSelectionInitialized=false;initializePublicSelection();renderPublicEvent();publicMessage(`Saved ${selectedSlots.length} appointment${selectedSlots.length===1?'':'s'} for ${parentName}.`,'ok');
-  }catch(error){for(const item of newlyClaimed)await releaseClaim(item.slotId,item.spotId);const message=error?.code==='SLOT_FULL'?'One of the selected times was just taken. Choose another available time and try again.':error?.code==='PERMISSION_DENIED'?'Firebase blocked the reservation. Publish the updated Event Sign Up database rules, or the event may have just closed.':(error?.message||'Could not save your signup.');publicMessage(message,'error')}
+    for(const [slotId,previous] of publicOwnSignups){if(publicSelectedSlotIds.has(slotId))continue;if(previous?._reservationId)publicDeviceReservations.delete(previous._reservationId)}for(const [reservationId,record] of nextRecords)publicDeviceReservations.set(reservationId,record);
+    publicStartingNewFamily=false;populatePublicActiveFamily();renderPublicEvent();publicMessage(`Saved ${selectedSlots.length} appointment${selectedSlots.length===1?'':'s'} for ${parentName}. You can add another student or start a separate signup for another family.`,'ok');
+  }catch(error){for(const item of newlyClaimed)await releaseClaim(item.slotId,item.spotId);const message=error?.code==='SLOT_FULL'?'One of the selected times was just taken. Choose another available time and try again.':error?.code==='PERMISSION_DENIED'?'Firebase blocked the reservation. Publish the updated Event Sign Up database rules included with this build, or the event may have just closed.':(error?.message||'Could not save your signup.');publicMessage(message,'error')}
 }
 async function cancelPublicSignup(){
-  const existing=publicCurrentSignups();if(!existing.length||!confirm(`Cancel ${existing.length===1?'your signup':`all ${existing.length} of your signups`}?`))return;
+  const existing=publicCurrentSignups();if(!existing.length||!confirm(`Cancel ${existing.length===1?'this family’s signup':`all ${existing.length} signups for this family`}?`))return;
   try{
-    const uid=currentUser.uid;const updates={};for(const item of existing){updates[`reservations/${uid}/${item.slot.id}`]=null;if(item.signup?.spotId&&publicEventData?.claims?.[item.slot.id]?.[item.signup.spotId]===uid)updates[`claims/${item.slot.id}/${item.signup.spotId}`]=null}
-    await fb.update(fb.ref(db,`eventSignups/${publicEventSignupId}`),updates);publicOwnSignups.clear();publicSelectedSlotIds.clear();publicDraftStudentNames.clear();publicSelectionInitialized=true;eventPublicParentName.value='';eventPublicEmail.value='';eventPublicPhone.value='';renderPublicEvent();publicMessage('Your signup was cancelled and the spot is available again.','ok');
-  }catch(error){publicMessage(error?.message||'Could not cancel your signup.','error')}
+    const uid=currentUser.uid;const updates={};for(const item of existing){const reservationId=item.signup?._reservationId;if(reservationId)updates[`reservations/${uid}/${reservationId}`]=null;if(item.signup?.spotId&&publicEventData?.claims?.[item.slot.id]?.[item.signup.spotId]===uid)updates[`claims/${item.slot.id}/${item.signup.spotId}`]=null}
+    await fb.update(fb.ref(db,`eventSignups/${publicEventSignupId}`),updates);for(const item of existing)if(item.signup?._reservationId)publicDeviceReservations.delete(item.signup._reservationId);
+    const remaining=publicFamilyGroups();if(remaining.length){publicActiveFamilyId=remaining[0].familyId;publicStartingNewFamily=false}else{publicActiveFamilyId=eventFamilyId();publicStartingNewFamily=true}populatePublicActiveFamily();renderPublicEvent();publicMessage('That family’s signup was cancelled. The released spots are available again.','ok');
+  }catch(error){publicMessage(error?.message||'Could not cancel this family’s signup.','error')}
+}
+function applyPublicReservationData(raw){
+  publicDeviceReservations=new Map();for(const [reservationId,item] of Object.entries(raw||{})){if(!item)continue;const slotId=String(item.slotId||reservationId);if(publicEventData?.slots?.[slotId])publicDeviceReservations.set(reservationId,{...item,slotId})}
+  const groups=publicFamilyGroups();if(publicStartingNewFamily&&publicActiveFamilyId){populatePublicActiveFamily();return}if(!publicActiveFamilyId||!groups.some(group=>group.familyId===publicActiveFamilyId)){if(groups.length){publicActiveFamilyId=groups[0].familyId;publicStartingNewFamily=false}else{publicActiveFamilyId=eventFamilyId();publicStartingNewFamily=true}}populatePublicActiveFamily();
 }
 async function loadPublicOwnSignups(id,event){
-  publicOwnSignups=new Map();if(!currentUser)return;
-  try{const snap=await fb.get(fb.ref(db,`eventSignups/${id}/reservations/${currentUser.uid}`));if(snap.exists())for(const [slotId,item] of Object.entries(snap.val()||{}))if(item&&event?.slots?.[slotId])publicOwnSignups.set(slotId,item)}catch{}
+  publicDeviceReservations=new Map();publicOwnSignups=new Map();if(!currentUser)return;
+  try{const snap=await fb.get(fb.ref(db,`eventSignups/${id}/reservations/${currentUser.uid}`));applyPublicReservationData(snap.exists()?snap.val():{})}catch{}
 }
 async function openPublicEvent(id){
-  publicEventSignupId=id;publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicSelectionInitialized=false;document.body.classList.add('event-signup-public-mode');openCalculator('event-signup');eventSignupTeacherView.hidden=true;eventSignupPublicView.hidden=false;
+  publicEventSignupId=id;publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicSelectionInitialized=false;publicDeviceReservations=new Map();publicOwnSignups=new Map();publicActiveFamilyId='';publicStartingNewFamily=false;document.body.classList.add('event-signup-public-mode');openCalculator('event-signup');eventSignupTeacherView.hidden=true;eventSignupPublicView.hidden=false;
   try{
     await initRaceFirebase();
     const base=`eventSignups/${id}`;
@@ -335,7 +381,7 @@ async function openPublicEvent(id){
     const unsubAllowMultiple=fb.onValue(fb.ref(db,`${base}/allowMultiple`),snap=>{publicEventData.allowMultiple=snap.exists()?snap.val():true;if(publicEventData.allowMultiple===false&&publicSelectedSlotIds.size>1){const keep=publicSelectedSlotIds.values().next().value;publicSelectedSlotIds=new Set(keep?[keep]:[])}renderPublicEvent()});
     const unsubSlots=fb.onValue(fb.ref(db,`${base}/slots`),snap=>{publicEventData.slots=snap.val()||{};renderPublicEvent()});
     const unsubClaims=fb.onValue(fb.ref(db,`${base}/claims`),snap=>{publicEventData.claims=snap.val()||{};renderPublicEvent()});
-    const unsubOwn=fb.onValue(fb.ref(db,`${base}/reservations/${currentUser.uid}`),snap=>{publicOwnSignups=new Map();if(snap.exists())for(const [slotId,item] of Object.entries(snap.val()||{}))if(item&&publicEventData?.slots?.[slotId])publicOwnSignups.set(slotId,item);publicSelectionInitialized=false;initializePublicSelection();renderPublicEvent()});
+    const unsubOwn=fb.onValue(fb.ref(db,`${base}/reservations/${currentUser.uid}`),snap=>{applyPublicReservationData(snap.exists()?snap.val():{});renderPublicEvent()});
     publicEventUnsubscribe=()=>{unsubTitle();unsubDate();unsubDescription();unsubStatus();unsubAllowMultiple();unsubSlots();unsubClaims();unsubOwn()};
   }catch(error){publicMessage(error?.code==='PERMISSION_DENIED'?'This Event Sign Up needs the updated Firebase database rules before the public link can open.':(error?.message||'Could not load this event.'),'error')}
 }
@@ -351,6 +397,9 @@ if(newEventSignup)newEventSignup.addEventListener('click',()=>{resetEventSignupE
 if(refreshEventSignups)refreshEventSignups.addEventListener('click',refreshEventSignupManager);
 if(eventPublicForm)eventPublicForm.addEventListener('submit',savePublicSignup);
 if(eventPublicCancelSignup)eventPublicCancelSignup.addEventListener('click',cancelPublicSignup);
+if(eventPublicFamilySelect)eventPublicFamilySelect.addEventListener('change',()=>switchPublicFamily(eventPublicFamilySelect.value));
+if(eventPublicAddStudent)eventPublicAddStudent.addEventListener('click',addPublicStudent);
+if(eventPublicAnotherFamily)eventPublicAnotherFamily.addEventListener('click',startPublicAnotherFamily);
 loadEventSignupIds();resetEventSignupEditor();renderEventSignupList();
 // Add Event Sign Up references to the shared Classroom Tools Google-sync payload.
 const previousGetClassroomToolsSyncData=window.getClassroomToolsSyncData;
