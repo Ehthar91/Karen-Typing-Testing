@@ -23,9 +23,9 @@
   <link rel="stylesheet" href="quiz.css?v=20260912-1" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
-  <link rel="stylesheet" href="calculator.css?v=20260912-6" />
+  <link rel="stylesheet" href="calculator.css?v=20260912-7" />
   <link rel="stylesheet" href="seating.css?v=20260912-31" />
-  <link rel="stylesheet" href="rgb-theme.css?v=20260912-1" />
+  <link rel="stylesheet" href="rgb-theme.css?v=20260912-2" />
 </head>
 <body>
   <main class="app-shell">
@@ -207,6 +207,7 @@
         <p class="hint" id="calculatorHint">Choose GLN TI-84 or GLN TI-30XS inside the calculator.</p>
       </div>
       <div class="calculator-mode-switch" id="classroomToolSwitch" role="group" aria-label="Choose a classroom tool">
+        <button id="showDashboard" type="button">Dashboard</button>
         <button id="showCalculator" type="button">Calculator</button>
         <button id="showNumberGenerator" type="button">Number Generator</button>
         <button id="showScheduleTimer" type="button">Schedule Timer</button>
@@ -230,6 +231,61 @@
             <button class="button ghost" id="seatingGoogleSignOut" type="button" hidden>Sign out</button>
           </div>
           <small id="seatingStorageStatus">Classroom Tools are saved locally on this device</small>
+        </div>
+      </section>
+      <section class="classroom-dashboard" id="classroomDashboardPanel" aria-labelledby="dashboardTitle" hidden>
+        <div class="dashboard-hero">
+          <div>
+            <p class="eyebrow">TEACHER CONTROL CENTER</p>
+            <h2 id="dashboardTitle">Classroom Dashboard</h2>
+            <p>Choose a class, see what is happening now, and jump into any classroom tool.</p>
+          </div>
+          <div class="dashboard-date" aria-live="polite"><span id="dashboardDay">Today</span><strong id="dashboardDate">—</strong><small id="dashboardClock">—</small></div>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="dashboard-card dashboard-class-card">
+            <div class="dashboard-card-heading"><div><span>CURRENT CLASS</span><h3>Class roster</h3></div><strong id="dashboardClassCount">0 students</strong></div>
+            <label class="dashboard-class-picker">Class<select id="dashboardClassSelect" aria-label="Choose classroom class"><option value="">Loading classes…</option></select></label>
+            <div class="dashboard-class-actions">
+              <button class="button primary" id="dashboardOpenSeating" type="button">Open Seating Chart</button>
+              <button class="button ghost" id="dashboardLoadWheel" type="button">Use in Random Wheel</button>
+            </div>
+            <p class="dashboard-class-note" id="dashboardClassNote">Class lists come from Seating Chart.</p>
+          </section>
+
+          <section class="dashboard-card dashboard-picker-card">
+            <div class="dashboard-card-heading"><div><span>QUICK PICK</span><h3>Random student</h3></div><button class="dashboard-mini-button" id="dashboardResetPicker" type="button">Reset</button></div>
+            <div class="dashboard-student-result" id="dashboardStudentResult" aria-live="polite">
+              <small>Ready to pick</small><strong>—</strong><span>Select a class and pick a student.</span>
+            </div>
+            <button class="dashboard-pick-button" id="dashboardPickStudent" type="button">Pick a Student</button>
+          </section>
+
+          <section class="dashboard-card dashboard-schedule-card">
+            <div class="dashboard-card-heading"><div><span>TODAY</span><h3>Schedule</h3></div><button class="dashboard-mini-button" data-dashboard-tool="schedule-timer" type="button">Open Timer</button></div>
+            <div class="dashboard-schedule-now"><span id="dashboardScheduleState">WAITING</span><strong id="dashboardScheduleCurrent">No timer is running</strong><b id="dashboardScheduleRemaining">--:--</b></div>
+            <div class="dashboard-next-row"><span>Next</span><strong id="dashboardScheduleNext">No upcoming schedule</strong></div>
+            <div class="dashboard-agenda" id="dashboardAgenda"><p>No more activities today.</p></div>
+          </section>
+
+          <section class="dashboard-card dashboard-account-card">
+            <div class="dashboard-card-heading"><div><span>ACCOUNT</span><h3>Classroom Tools sync</h3></div><span class="dashboard-sync-dot" id="dashboardSyncDot" aria-hidden="true"></span></div>
+            <strong class="dashboard-sync-text" id="dashboardSyncText">Saved on this device</strong>
+            <p id="dashboardSyncDetail">Your Classroom Tools data remains available locally.</p>
+          </section>
+
+          <section class="dashboard-card dashboard-tools-card">
+            <div class="dashboard-card-heading"><div><span>QUICK ACTIONS</span><h3>Classroom Tools</h3></div></div>
+            <div class="dashboard-tools-grid">
+              <button type="button" data-dashboard-tool="calculator"><span>⌗</span><strong>Calculator</strong><small>Graphing &amp; scientific</small></button>
+              <button type="button" data-dashboard-tool="number-generator"><span>#</span><strong>Number Generator</strong><small>Random classroom numbers</small></button>
+              <button type="button" data-dashboard-tool="schedule-timer"><span>◷</span><strong>Schedule Timer</strong><small>Automatic class timers</small></button>
+              <button type="button" data-dashboard-tool="quiz"><span>?</span><strong>Quiz</strong><small>Create &amp; run quizzes</small></button>
+              <button type="button" data-dashboard-tool="wheel"><span>◉</span><strong>Random Wheel</strong><small>Pick names at random</small></button>
+              <button type="button" data-dashboard-tool="seating"><span>▦</span><strong>Seating Chart</strong><small>Classes &amp; room layout</small></button>
+            </div>
+          </section>
         </div>
       </section>
     <section class="quiz-view classroom-tool-panel" id="quizView" aria-labelledby="quiz-title" hidden>
@@ -563,8 +619,8 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260912-1"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260912-6"></script>
-  <script src="seating.js?v=20260912-1"></script>
+  <script src="calculator.js?v=20260912-7"></script>
+  <script src="seating.js?v=20260912-2"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
 </html>
