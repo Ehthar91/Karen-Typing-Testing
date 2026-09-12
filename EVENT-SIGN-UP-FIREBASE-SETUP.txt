@@ -1,6 +1,6 @@
 EVENT SIGN UP — FIREBASE SETUP
 
-The Event Sign Up tool uses Firebase Realtime Database so a student/parent can open a public signup link and reserve a time slot.
+The Event Sign Up tool uses Firebase Realtime Database so a student/parent can open a public signup link and reserve one or more time slots.
 
 IMPORTANT: Uploading the website to GitHub Pages does NOT automatically update Firebase Realtime Database rules.
 
@@ -11,12 +11,17 @@ Before testing public signup links:
 4. Confirm Anonymous Authentication is enabled (the Car Race already uses it).
 5. Google Authentication can remain enabled for the teacher Classroom Tools account.
 
-The new rules add an eventSignups section that:
-- lets anyone authenticated by Firebase read an event when they have its link;
-- lets only the event owner edit/delete the event;
-- lets each participant create/update/cancel only their own signup;
-- enforces each slot's capacity, including simultaneous signups;
-- blocks new registrations when an event is closed while still allowing a participant to cancel;
-- prevents an organizer from lowering a slot limit below the number already signed up.
+The updated rules:
+- let anyone authenticated by Firebase read the public event details when they have its link;
+- let only the event owner edit/delete the event;
+- let each participant create/update/cancel only their own signup records;
+- support multiple time slots for the same family while keeping each slot separate;
+- accept Parent/Guardian Name, Email, optional Phone, and Student Name fields;
+- enforce each slot's capacity, including simultaneous signups;
+- block new registrations when an event is closed while still allowing a participant to cancel;
+- prevent an organizer from lowering a slot limit below the number already signed up.
+
+EMAIL NOTE:
+This build collects the email address but does not send confirmation emails yet. Automatic confirmation/manage links require the planned secure server-side email service (for example a Firebase Cloud Function + mail provider). Do not put a mail API key in the website JavaScript.
 
 After publishing the rules, hard-refresh the website (Command + Shift + R).
