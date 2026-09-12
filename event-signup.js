@@ -45,6 +45,14 @@ const eventPublicSuccessText=document.querySelector('#eventPublicSuccessText');
 const eventPublicManageLink=document.querySelector('#eventPublicManageLink');
 const eventPublicCopyManageLink=document.querySelector('#eventPublicCopyManageLink');
 const eventPublicStartAnother=document.querySelector('#eventPublicStartAnother');
+const eventSignupSharedEditorView=document.querySelector('#eventSignupSharedEditorView');
+const eventSharedEditorTitle=document.querySelector('#eventSharedEditorTitle');
+const eventSharedEditorDate=document.querySelector('#eventSharedEditorDate');
+const eventSharedEditorDescription=document.querySelector('#eventSharedEditorDescription');
+const eventSharedEditorMessage=document.querySelector('#eventSharedEditorMessage');
+const eventSharedEditorSlots=document.querySelector('#eventSharedEditorSlots');
+const eventSharedCopySignup=document.querySelector('#eventSharedCopySignup');
+const eventSharedSchedule=document.querySelector('#eventSharedSchedule');
 let eventSignupIds=[];
 let eventSignupCache=new Map();
 let eventSignupWatchers=new Map();
@@ -61,6 +69,10 @@ let publicManageToken='';
 let publicManageMode=false;
 let publicSubmissionComplete=false;
 let publicSubmittedManageLink='';
+let sharedEditorEventId='';
+let sharedEditorToken='';
+let sharedEditorEventData=null;
+let sharedEditorUnsubscribe=null;
 function eventSignupId(){
   const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let text='';
@@ -77,6 +89,7 @@ function eventManageToken(){
   let token='';for(let i=0;i<64;i++)token+='abcdef0123456789'[Math.floor(Math.random()*16)];return token;
 }
 function eventManageLink(id,token){const url=new URL(eventPublicLink(id));url.searchParams.set('manage',token);return url.toString()}
+function eventEditorLink(id,token){const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('eventEditor',id);url.searchParams.set('editor',token);return url.toString()}
 function defaultEventSlot(){return{id:eventSlotId(),label:'',time:'',duration:15,capacity:1}}
 function eventTimeToMinutes(value){const match=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));if(!match)return null;const hour=Number(match[1]),minute=Number(match[2]);if(hour<0||hour>23||minute<0||minute>59)return null;return hour*60+minute}
 function eventMinutesToTime(value){const minutes=Math.max(0,Math.min(1439,Math.floor(Number(value)||0)));return `${String(Math.floor(minutes/60)).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`}
@@ -113,9 +126,9 @@ function eventClaimsForSlot(event,slotId){return Object.entries(event?.claims?.[
 function eventPublicFilledCount(event,slotId){return Object.values(event?.availability?.[slotId]||{}).filter(value=>value===true).length}
 function modernReservationsForSlot(event,slotId){
   const results=[];
-  for(const userReservations of Object.values(event?.reservations||{})){
+  for(const [manageToken,userReservations] of Object.entries(event?.reservations||{})){
     for(const [reservationId,item] of Object.entries(userReservations||{})){
-      if(!item)continue;const actualSlotId=String(item.slotId||reservationId);if(actualSlotId===slotId)results.push(item);
+      if(!item)continue;const actualSlotId=String(item.slotId||reservationId);if(actualSlotId===slotId)results.push({...item,_manageToken:manageToken,_reservationId:reservationId});
     }
   }
   return results.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
@@ -193,6 +206,19 @@ function syncEventToSpecialSchedule(id,event){
   saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock();
 }
 function removeLinkedEventSchedule(id){const before=classroomSchedules.length;classroomSchedules=classroomSchedules.filter(item=>item.linkedEventId!==id);if(classroomSchedules.length!==before){saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock()}}
+function sharedEditorScheduleIndex(id){return classroomSchedules.findIndex(item=>item.type==='special'&&item.source==='event-signup-shared-editor'&&item.linkedEventId===id)}
+function syncSharedEditorSchedule(id,event){
+  if(!id||!event?.date)return;const index=sharedEditorScheduleIndex(id);if(index<0)return;
+  const slots=eventSlotsArray(event).map(slot=>{const participants=eventSignupsForSlot(event,slot.id);if(!participants.length)return null;return{id:`shared-event-${id}-${slot.id}`,name:activityNameForEvent(event,participants),time:slot.time,duration:Math.max(1,Math.min(480,Number(slot.duration)||15))}}).filter(Boolean).sort((a,b)=>a.time.localeCompare(b.time));
+  const existing=classroomSchedules[index];const next={...existing,name:String(event.title||'Event Sign Up'),date:event.date,enabled:true,slots};if(JSON.stringify(existing)!==JSON.stringify(next)){classroomSchedules[index]=next;saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock()}
+}
+function updateSharedScheduleButton(){if(!eventSharedSchedule)return;const linked=sharedEditorScheduleIndex(sharedEditorEventId)>=0;eventSharedSchedule.textContent=linked?'Unlink from My Schedule Timer':'Link to My Schedule Timer';eventSharedSchedule.classList.toggle('danger',linked)}
+function toggleSharedEditorSchedule(){
+  if(!sharedEditorEventId||!sharedEditorEventData)return;const index=sharedEditorScheduleIndex(sharedEditorEventId);
+  if(index>=0){classroomSchedules.splice(index,1);saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock();updateSharedScheduleButton();sharedEditorMessage('Removed this event from your Schedule Timer.','ok');return}
+  const slots=eventSlotsArray(sharedEditorEventData).map(slot=>{const participants=eventSignupsForSlot(sharedEditorEventData,slot.id);if(!participants.length)return null;return{id:`shared-event-${sharedEditorEventId}-${slot.id}`,name:activityNameForEvent(sharedEditorEventData,participants),time:slot.time,duration:Math.max(1,Math.min(480,Number(slot.duration)||15))}}).filter(Boolean).sort((a,b)=>a.time.localeCompare(b.time));
+  classroomSchedules.push({id:`shared-event-special-${sharedEditorEventId}-${Date.now()}`,type:'special',source:'event-signup-shared-editor',linkedEventId:sharedEditorEventId,name:String(sharedEditorEventData.title||'Event Sign Up'),date:sharedEditorEventData.date,enabled:true,slots});saveClassroomSchedules();renderScheduleTimers();updateScheduleTimerClock();updateSharedScheduleButton();sharedEditorMessage('Linked to your Schedule Timer. Signup changes will keep this Special Schedule updated while this editor link is open.','ok')
+}
 function renderEventSlotEditor(){
   if(!eventSignupSlotEditor)return;eventSignupSlotEditor.innerHTML='';
   eventSignupEditorSlots.sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
@@ -215,18 +241,30 @@ function editEventSignup(id){
 }
 function copyEventLink(id){const link=eventPublicLink(id);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(link).then(()=>showToast('Signup link copied')).catch(()=>window.prompt('Copy this signup link:',link));else window.prompt('Copy this signup link:',link)}
 function openEventLink(id){window.open(eventPublicLink(id),'_blank','noopener')}
+async function copyEventEditorLink(id,event,forceNew=false){
+  try{await initRaceFirebase();let token=event?.editorAccess?.active&&!forceNew?String(event.editorAccess.token||''):'';if(!/^[a-f0-9]{64}$/i.test(token)){token=eventManageToken();await fb.set(fb.ref(db,`eventSignups/${id}/editorAccess`),{token,active:true,createdAt:event?.editorAccess?.createdAt||Date.now(),updatedAt:Date.now()})}const link=eventEditorLink(id,token);if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(link);else window.prompt('Copy this editor link:',link);showToast(forceNew?'New editor link copied':'Editor link copied')}catch(error){setEventStatus(error?.message||'Could not create the editor link.','error')}}
+async function revokeEventEditorLink(id,event){if(!event?.editorAccess?.active)return;if(!confirm('Revoke the shared editor link? Anyone using the current editor link will lose access.'))return;try{await initRaceFirebase();await fb.update(fb.ref(db,`eventSignups/${id}/editorAccess`),{active:false,updatedAt:Date.now()});showToast('Editor link revoked')}catch(error){setEventStatus(error?.message||'Could not revoke the editor link.','error')}}
+async function removeManagedReservation(eventId,reservation,source='owner'){
+  const manageToken=String(reservation?._manageToken||reservation?.manageToken||'');const reservationId=String(reservation?._reservationId||'');const slotId=String(reservation?.slotId||'');const spotId=String(reservation?.spotId||'');if(!eventId||!manageToken||!reservationId||!slotId)return;const student=signupStudentName(reservation)||'this participant';if(!confirm(`Remove ${student} from this time slot?`))return;
+  try{await initRaceFirebase();await fb.remove(fb.ref(db,`eventSignups/${eventId}/reservations/${manageToken}/${reservationId}`));if(spotId){await fb.set(fb.ref(db,`eventSignups/${eventId}/claims/${slotId}/${spotId}`),{token:manageToken,active:false,releasedAt:Date.now()});await fb.set(fb.ref(db,`eventSignups/${eventId}/availability/${slotId}/${spotId}`),false)}if(source==='editor')sharedEditorMessage(`${student} was removed. The time slot is available again.`,'ok');else showToast(`${student} removed`)}catch(error){const message=error?.code==='PERMISSION_DENIED'?'Firebase blocked this removal. Publish the Editor Link Firebase rules included with this build.':(error?.message||'Could not remove this signup.');if(source==='editor')sharedEditorMessage(message,'error');else setEventStatus(message,'error')}
+}
+function makeSignupManagerList(eventId,slot,signups,source='owner'){
+  const list=document.createElement('div');list.className='event-manager-people';if(!signups.length){const empty=document.createElement('small');empty.className='event-manager-empty';empty.textContent='No one signed up yet';list.append(empty);return list}
+  for(const item of signups){const row=document.createElement('div');row.className='event-manager-person';const copy=document.createElement('div');const student=document.createElement('b');student.textContent=signupStudentName(item)||'Unnamed student';const details=document.createElement('small');const parts=[];if(item.parentName)parts.push(`Parent/Guardian: ${item.parentName}`);if(item.email)parts.push(item.email);if(item.phone)parts.push(item.phone);details.textContent=parts.join(' · ')||'Participant';copy.append(student,details);const remove=document.createElement('button');remove.type='button';remove.className='event-manager-remove';remove.textContent='Remove';remove.addEventListener('click',()=>removeManagedReservation(eventId,item,source));row.append(copy,remove);list.append(row)}return list
+}
 function renderEventSignupList(){
   if(!eventSignupList)return;eventSignupList.innerHTML='';
   const events=eventSignupIds.map(id=>[id,eventSignupCache.get(id)]).filter(([,event])=>event).sort((a,b)=>`${a[1].date||''}:${a[1].title||''}`.localeCompare(`${b[1].date||''}:${b[1].title||''}`));
   if(!events.length){eventSignupList.innerHTML='<p class="event-signup-empty">No events yet. Create your first event.</p>';return}
   for(const [id,event] of events){
     const card=document.createElement('article');card.className=`event-card${event.status==='closed'?' is-closed':''}`;
-    const head=document.createElement('div');head.className='event-card-head';const copy=document.createElement('div');const title=document.createElement('div');title.className='event-card-title';const name=document.createElement('strong');name.textContent=event.title||'Untitled Event';const status=document.createElement('span');status.className=`event-badge${event.status==='closed'?' is-closed':''}`;status.textContent=event.status==='closed'?'Closed':'Open';title.append(name,status);if(event.linkedSchedule){const linked=document.createElement('span');linked.className='event-badge is-linked';linked.textContent='Schedule linked';title.append(linked)}const meta=document.createElement('small');meta.textContent=`${eventDateText(event.date)} · ${eventSlotsArray(event).length} slots · ${eventSignupCount(event)} signup${eventSignupCount(event)===1?'':'s'}`;copy.append(title,meta);
-    const actions=document.createElement('div');actions.className='event-card-actions';const share=document.createElement('button');share.type='button';share.className='primary';share.textContent='Copy link';share.addEventListener('click',()=>copyEventLink(id));const open=document.createElement('button');open.type='button';open.textContent='Open signup';open.addEventListener('click',()=>openEventLink(id));const edit=document.createElement('button');edit.type='button';edit.textContent='Edit';edit.addEventListener('click',()=>editEventSignup(id));const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='Delete';del.addEventListener('click',()=>deleteEventSignup(id,event));actions.append(share,open,edit,del);head.append(copy,actions);
-    const slots=document.createElement('div');slots.className='event-slot-summary';for(const slot of eventSlotsArray(event)){const signups=eventSignupsForSlot(event,slot.id);const row=document.createElement('div');row.className='event-slot-row';const time=document.createElement('strong');time.textContent=formatScheduleTime(slot.time);const slotCopy=document.createElement('div');slotCopy.className='event-slot-copy';const label=document.createElement('b');label.textContent=slot.label||`${slot.duration||15} min slot`;const people=document.createElement('small');people.textContent=signups.length?signups.map(item=>{const student=signupStudentName(item)||'Unnamed';const parent=String(item.parentName||'').trim();return parent&&parent!==student?`${student} — ${parent}`:student}).join(', '):'No one signed up yet';slotCopy.append(label,people);const filled=eventFilledCount(event,slot.id);const availability=document.createElement('span');availability.className=`event-slot-availability${filled>=Number(slot.capacity||1)?' full':''}`;availability.textContent=`${filled}/${slot.capacity||1} filled`;row.append(time,slotCopy,availability);slots.append(row)}
+    const head=document.createElement('div');head.className='event-card-head';const copy=document.createElement('div');const title=document.createElement('div');title.className='event-card-title';const name=document.createElement('strong');name.textContent=event.title||'Untitled Event';const status=document.createElement('span');status.className=`event-badge${event.status==='closed'?' is-closed':''}`;status.textContent=event.status==='closed'?'Closed':'Open';title.append(name,status);if(event.linkedSchedule){const linked=document.createElement('span');linked.className='event-badge is-linked';linked.textContent='Schedule linked';title.append(linked)}if(event.editorAccess?.active){const editorBadge=document.createElement('span');editorBadge.className='event-badge is-editor';editorBadge.textContent='Editor shared';title.append(editorBadge)}const meta=document.createElement('small');meta.textContent=`${eventDateText(event.date)} · ${eventSlotsArray(event).length} slots · ${eventSignupCount(event)} signup${eventSignupCount(event)===1?'':'s'}`;copy.append(title,meta);
+    const actions=document.createElement('div');actions.className='event-card-actions';const share=document.createElement('button');share.type='button';share.className='primary';share.textContent='Copy signup link';share.addEventListener('click',()=>copyEventLink(id));const open=document.createElement('button');open.type='button';open.textContent='Open signup';open.addEventListener('click',()=>openEventLink(id));const editorLink=document.createElement('button');editorLink.type='button';editorLink.className='editor-link';editorLink.textContent=event.editorAccess?.active?'Copy editor link':'Create editor link';editorLink.addEventListener('click',()=>copyEventEditorLink(id,event));const edit=document.createElement('button');edit.type='button';edit.textContent='Edit';edit.addEventListener('click',()=>editEventSignup(id));actions.append(share,open,editorLink);if(event.editorAccess?.active){const regenerate=document.createElement('button');regenerate.type='button';regenerate.textContent='New editor link';regenerate.addEventListener('click',()=>{if(confirm('Generate a new editor link? The old editor link will stop working.'))copyEventEditorLink(id,event,true)});const revoke=document.createElement('button');revoke.type='button';revoke.className='danger';revoke.textContent='Revoke editor';revoke.addEventListener('click',()=>revokeEventEditorLink(id,event));actions.append(regenerate,revoke)}const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='Delete';del.addEventListener('click',()=>deleteEventSignup(id,event));actions.append(edit,del);head.append(copy,actions);
+    const slots=document.createElement('div');slots.className='event-slot-summary';for(const slot of eventSlotsArray(event)){const signups=eventSignupsForSlot(event,slot.id);const row=document.createElement('div');row.className='event-slot-row event-slot-row-manager';const time=document.createElement('strong');time.textContent=formatScheduleTime(slot.time);const slotCopy=document.createElement('div');slotCopy.className='event-slot-copy';const label=document.createElement('b');label.textContent=slot.label||`${slot.duration||15} min slot`;slotCopy.append(label,makeSignupManagerList(id,slot,signups,'owner'));const filled=eventFilledCount(event,slot.id);const availability=document.createElement('span');availability.className=`event-slot-availability${filled>=Number(slot.capacity||1)?' full':''}`;availability.textContent=`${filled}/${slot.capacity||1} filled`;row.append(time,slotCopy,availability);slots.append(row)}
     card.append(head,slots);eventSignupList.append(card);
   }
 }
+
 function subscribeTeacherEvent(id){
   if(eventSignupWatchers.has(id)||!fb||!db)return;
   const unsub=fb.onValue(fb.ref(db,`eventSignups/${id}`),snapshot=>{
@@ -236,7 +274,7 @@ function subscribeTeacherEvent(id){
   eventSignupWatchers.set(id,unsub);
 }
 async function refreshEventSignupManager(){
-  if(publicEventSignupId)return;
+  if(publicEventSignupId||sharedEditorEventId)return;
   try{await initRaceFirebase();eventSignupIds.forEach(subscribeTeacherEvent);setEventStatus(eventSignupIds.length?'Events are live. Signup changes will appear automatically.':'Ready. Create an event to get a public signup link.','ok');renderEventSignupList()}
   catch(error){setEventStatus(error?.message||'Could not connect to Event Sign Up.','error')}
 }
@@ -251,7 +289,7 @@ async function saveEventFromForm(event){
     if(editingEventSignupId){const snap=await fb.get(ref);if(snap.exists())existing=snap.val()}
     const slotMap={};for(const slot of slots){slot.spots=buildSlotSpots(slot,existing);slotMap[slot.id]=slot}
     const migrated=normalizeExistingSignupData(existing,slotMap);const availability=buildEventAvailability(slotMap,migrated.claims);
-    const data={ownerUid:existing.ownerUid||currentUser.uid,title,date,description,status:eventSignupOpen.checked?'open':'closed',linkedSchedule:eventSignupLinkSchedule.checked,allowMultiple:eventSignupAllowMultiple?eventSignupAllowMultiple.checked:true,activityMode:eventSignupActivityMode.value||'participant',slots:slotMap,claims:migrated.claims,availability,reservations:migrated.reservations,createdAt:existing.createdAt||Date.now(),updatedAt:Date.now(),capacityModel:'claimable-spots-v3-private-link'};
+    const data={ownerUid:existing.ownerUid||currentUser.uid,title,date,description,status:eventSignupOpen.checked?'open':'closed',linkedSchedule:eventSignupLinkSchedule.checked,allowMultiple:eventSignupAllowMultiple?eventSignupAllowMultiple.checked:true,activityMode:eventSignupActivityMode.value||'participant',slots:slotMap,claims:migrated.claims,availability,reservations:migrated.reservations,...(existing.editorAccess?{editorAccess:existing.editorAccess}:{}),...(existing.editorSessions?{editorSessions:existing.editorSessions}:{}),createdAt:existing.createdAt||Date.now(),updatedAt:Date.now(),capacityModel:'claimable-spots-v4-editor-link'};
     await fb.set(ref,data);
     if(!eventSignupIds.includes(id)){eventSignupIds.push(id);saveEventSignupIds()}
     eventSignupCache.set(id,data);subscribeTeacherEvent(id);syncEventToSpecialSchedule(id,data);renderEventSignupList();resetEventSignupEditor();setEventStatus(`Saved “${title}”. Capacity is protected with claimable spots.`,'ok');showToast('Event saved');
@@ -261,6 +299,17 @@ async function deleteEventSignup(id,event){
   if(!confirm(`Delete ${event.title||'this event'} and all of its signups?`))return;
   try{await initRaceFirebase();await fb.remove(fb.ref(db,`eventSignups/${id}`));eventSignupIds=eventSignupIds.filter(item=>item!==id);saveEventSignupIds();eventSignupCache.delete(id);eventSignupWatchers.get(id)?.();eventSignupWatchers.delete(id);removeLinkedEventSchedule(id);renderEventSignupList();if(editingEventSignupId===id)resetEventSignupEditor();showToast('Event deleted')}
   catch(error){setEventStatus(error?.message||'Could not delete the event.','error')}
+}
+function sharedEditorMessage(text,type=''){if(!eventSharedEditorMessage)return;eventSharedEditorMessage.textContent=text;eventSharedEditorMessage.classList.toggle('is-ok',type==='ok');eventSharedEditorMessage.classList.toggle('is-error',type==='error')}
+function renderSharedEditor(){
+  const event=sharedEditorEventData;if(!event||!eventSharedEditorSlots)return;eventSharedEditorTitle.textContent=event.title||'Event Sign Up';eventSharedEditorDate.textContent=eventDateText(event.date);eventSharedEditorDescription.textContent=event.description||'Manage participant signups for this event.';eventSharedEditorSlots.innerHTML='';
+  for(const slot of eventSlotsArray(event)){const signups=eventSignupsForSlot(event,slot.id);const card=document.createElement('article');card.className='event-shared-slot';const head=document.createElement('div');head.className='event-shared-slot-head';const time=document.createElement('strong');time.textContent=formatScheduleTime(slot.time);const copy=document.createElement('div');const label=document.createElement('b');label.textContent=slot.label||`${slot.duration||15} minute appointment`;const filled=document.createElement('small');filled.textContent=`${eventFilledCount(event,slot.id)}/${slot.capacity||1} filled`;copy.append(label,filled);head.append(time,copy);card.append(head,makeSignupManagerList(sharedEditorEventId,slot,signups,'editor'));eventSharedEditorSlots.append(card)}
+  updateSharedScheduleButton();
+}
+async function openSharedEventEditor(id,token){
+  sharedEditorEventId=id;sharedEditorToken=token;sharedEditorEventData=null;publicEventSignupId='';if(publicEventUnsubscribe){publicEventUnsubscribe();publicEventUnsubscribe=null}if(sharedEditorUnsubscribe){sharedEditorUnsubscribe();sharedEditorUnsubscribe=null}document.body.classList.add('event-signup-public-mode');openCalculator('event-signup');eventSignupTeacherView.hidden=true;eventSignupPublicView.hidden=true;eventSignupSharedEditorView.hidden=false;sharedEditorMessage('Verifying editor link…');
+  try{await initRaceFirebase();if(!currentUser)throw new Error('Firebase sign-in is not ready.');const base=`eventSignups/${id}`;await fb.set(fb.ref(db,`${base}/editorSessions/${currentUser.uid}`),{token,createdAt:Date.now(),lastUsedAt:Date.now()});const snap=await fb.get(fb.ref(db,base));if(!snap.exists())throw new Error('This event no longer exists.');sharedEditorEventData=snap.val();renderSharedEditor();sharedEditorMessage('Editor access verified. You can view signups and remove participants, but only the event owner can edit or delete the event.','ok');sharedEditorUnsubscribe=fb.onValue(fb.ref(db,base),next=>{if(!next.exists()){sharedEditorMessage('This event was deleted by the owner.','error');sharedEditorEventData=null;eventSharedEditorSlots.innerHTML='';return}sharedEditorEventData=next.val();renderSharedEditor();syncSharedEditorSchedule(id,sharedEditorEventData)},error=>sharedEditorMessage(error?.code==='PERMISSION_DENIED'?'This editor link was revoked or is no longer valid.':(error?.message||'Editor access was lost.'),'error'))}
+  catch(error){sharedEditorMessage(error?.code==='PERMISSION_DENIED'?'This editor link is invalid, expired, or has been revoked.':(error?.message||'Could not open the shared editor link.'),'error');eventSharedEditorSlots.innerHTML=''}
 }
 function publicMessage(text,type=''){eventPublicMessage.textContent=text;eventPublicMessage.classList.toggle('is-ok',type==='ok');eventPublicMessage.classList.toggle('is-error',type==='error')}
 function resetPublicFormFields(){eventPublicParentName.value='';eventPublicEmail.value='';eventPublicPhone.value='';publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicOwnSignups=new Map();publicSelectionInitialized=true}
@@ -339,7 +388,7 @@ async function loadPrivateSignup(id,token){
   publicOwnSignups=new Map();if(!token)return;try{const snap=await fb.get(fb.ref(db,`eventSignups/${id}/reservations/${token}`));if(snap.exists())applyPrivateReservationData(snap.val());else{publicSelectionInitialized=true;publicMessage('This private management link has no active appointments.','error')}}catch(error){publicSelectionInitialized=true;publicMessage(error?.code==='PERMISSION_DENIED'?'This private management link is not valid for the current Event Sign Up rules.':(error?.message||'Could not open this private management link.'),'error')}
 }
 async function openPublicEvent(id,manageToken=''){
-  publicEventSignupId=id;publicManageToken=manageToken;publicManageMode=Boolean(manageToken);publicSubmissionComplete=false;publicSubmittedManageLink='';publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicSelectionInitialized=false;publicOwnSignups=new Map();if(eventPublicSuccess)eventPublicSuccess.hidden=true;document.body.classList.add('event-signup-public-mode');openCalculator('event-signup');eventSignupTeacherView.hidden=true;eventSignupPublicView.hidden=false;
+  publicEventSignupId=id;sharedEditorEventId='';publicManageToken=manageToken;publicManageMode=Boolean(manageToken);publicSubmissionComplete=false;publicSubmittedManageLink='';publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicSelectionInitialized=false;publicOwnSignups=new Map();if(eventPublicSuccess)eventPublicSuccess.hidden=true;document.body.classList.add('event-signup-public-mode');openCalculator('event-signup');eventSignupTeacherView.hidden=true;eventSignupSharedEditorView.hidden=true;eventSignupPublicView.hidden=false;
   try{
     await initRaceFirebase();const base=`eventSignups/${id}`;const [titleSnap,dateSnap,descriptionSnap,statusSnap,allowMultipleSnap,slotsSnap,availabilitySnap]=await Promise.all([fb.get(fb.ref(db,`${base}/title`)),fb.get(fb.ref(db,`${base}/date`)),fb.get(fb.ref(db,`${base}/description`)),fb.get(fb.ref(db,`${base}/status`)),fb.get(fb.ref(db,`${base}/allowMultiple`)),fb.get(fb.ref(db,`${base}/slots`)),fb.get(fb.ref(db,`${base}/availability`))]);
     if(!titleSnap.exists()){eventPublicTitle.textContent='Event not found';eventPublicSlots.innerHTML='';publicMessage('This signup link is no longer available.','error');return}
@@ -363,11 +412,13 @@ if(eventPublicForm)eventPublicForm.addEventListener('submit',savePublicSignup);
 if(eventPublicCancelSignup)eventPublicCancelSignup.addEventListener('click',cancelPublicSignup);
 if(eventPublicCopyManageLink)eventPublicCopyManageLink.addEventListener('click',copyPrivateManageLink);
 if(eventPublicStartAnother)eventPublicStartAnother.addEventListener('click',startFreshPublicSignup);
+if(eventSharedCopySignup)eventSharedCopySignup.addEventListener('click',()=>{if(sharedEditorEventId)copyEventLink(sharedEditorEventId)});
+if(eventSharedSchedule)eventSharedSchedule.addEventListener('click',toggleSharedEditorSchedule);
 loadEventSignupIds();resetEventSignupEditor();renderEventSignupList();
 // Add Event Sign Up references to the shared Classroom Tools Google-sync payload.
 const previousGetClassroomToolsSyncData=window.getClassroomToolsSyncData;
 window.getClassroomToolsSyncData=()=>{const base=previousGetClassroomToolsSyncData?previousGetClassroomToolsSyncData():{};return{...base,eventSignup:{eventIds:[...eventSignupIds]}}};
 const previousApplyClassroomToolsSyncData=window.applyClassroomToolsSyncData;
-window.applyClassroomToolsSyncData=data=>{previousApplyClassroomToolsSyncData?.(data);if(data?.eventSignup&&Array.isArray(data.eventSignup.eventIds)){eventSignupIds=safeEventIds(data.eventSignup.eventIds);localStorage.setItem(EVENT_SIGNUP_IDS_KEY,JSON.stringify(eventSignupIds));if(!publicEventSignupId)refreshEventSignupManager()}};
-const eventUrlParams=new URLSearchParams(location.search);const signupParam=eventUrlParams.get('signup');const manageParam=eventUrlParams.get('manage')||'';
-if(signupParam&&/^[A-Z2-9]{6,20}$/i.test(signupParam)){const safeManage=/^[a-f0-9]{64}$/i.test(manageParam)?manageParam.toLowerCase():'';setTimeout(()=>openPublicEvent(signupParam.toUpperCase(),safeManage),0)}else if(eventSignupIds.length)setTimeout(refreshEventSignupManager,350);
+window.applyClassroomToolsSyncData=data=>{previousApplyClassroomToolsSyncData?.(data);if(data?.eventSignup&&Array.isArray(data.eventSignup.eventIds)){eventSignupIds=safeEventIds(data.eventSignup.eventIds);localStorage.setItem(EVENT_SIGNUP_IDS_KEY,JSON.stringify(eventSignupIds));if(!publicEventSignupId&&!sharedEditorEventId)refreshEventSignupManager()}};
+const eventUrlParams=new URLSearchParams(location.search);const signupParam=eventUrlParams.get('signup');const manageParam=eventUrlParams.get('manage')||'';const editorEventParam=eventUrlParams.get('eventEditor');const editorTokenParam=eventUrlParams.get('editor')||'';
+if(editorEventParam&&/^[A-Z2-9]{6,20}$/i.test(editorEventParam)&&/^[a-f0-9]{64}$/i.test(editorTokenParam)){setTimeout(()=>openSharedEventEditor(editorEventParam.toUpperCase(),editorTokenParam.toLowerCase()),0)}else if(signupParam&&/^[A-Z2-9]{6,20}$/i.test(signupParam)){const safeManage=/^[a-f0-9]{64}$/i.test(manageParam)?manageParam.toLowerCase():'';setTimeout(()=>openPublicEvent(signupParam.toUpperCase(),safeManage),0)}else if(eventSignupIds.length)setTimeout(refreshEventSignupManager,350);

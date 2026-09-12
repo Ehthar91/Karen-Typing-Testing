@@ -1,18 +1,14 @@
 EVENT SIGN UP — FIREBASE SETUP
 
-This build uses private-link-only participant management.
+1. Open Firebase Console > Realtime Database > Rules.
+2. Replace the rules with firebase-rules.json from this build.
+3. Publish the rules.
 
-1. Firebase Console > Realtime Database > Rules
-2. Replace the current rules with firebase-rules.json from this build.
-3. Click Publish.
-4. Test with a NEW event after publishing.
+This version adds:
+- claimable signup spots / capacity protection
+- private participant management links
+- shareable editor links
+- editor sessions that can view the signup list and remove registrations
+- owner-only event editing/deletion and editor-link creation/revocation
 
-How participant management works
-- The normal public signup link can create a signup but cannot reopen or edit an earlier signup, even on the same device/browser.
-- Each new signup gets a 64-character private management token.
-- The private Manage Signup URL is the only participant link that can read/change/cancel that signup.
-- Claims containing the private token are NOT publicly readable. Public availability is stored separately as booleans.
-- Teacher/organizer access still works through the event owner account.
-
-EMAIL STATUS
-Automatic confirmation email delivery is NOT connected yet. During testing, the confirmation screen shows the private link once so you can copy/save it. After a secure email service is connected, that same private link can be emailed automatically and removed from the confirmation screen.
+The shared editor can optionally link the event to that browser/account's own Schedule Timer Special Schedule.
