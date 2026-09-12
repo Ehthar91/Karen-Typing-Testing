@@ -24,7 +24,7 @@ let customIndex=0;
 let customScore=0;
 let customLives=3;
 let customValue='';
-let customDifficultyMode='normal';
+let customDifficultyMode='medium',customKeyboardShifted=false;
 let customLanguage=typingLanguage;
 
 let tugCode='';
@@ -60,7 +60,8 @@ function refreshCustomLists(){
 }
 function languageTagFor(language){return language==='en'?'en':language==='pwo'?'kjp':'ksw'}
 function customGameLanguage(){return customMode==='tug'&&tugRole==='player'?customLanguage:typingLanguage}
-function customDifficulty(){return customMode==='tug'&&tugRole==='player'?customDifficultyMode:cq('#customDifficulty').value}
+function normalizeTugDifficulty(value){const mode=String(value||'medium').toLowerCase();return mode==='normal'?'medium':(['easy','medium','hard'].includes(mode)?mode:'medium')}
+function customDifficulty(){return customMode==='tug'&&tugRole==='player'?normalizeTugDifficulty(customDifficultyMode):cq('#customDifficulty').value}
 function shuffledChallenges(source,count){
   const items=Array.from({length:count},(_,i)=>source[i%source.length]);
   for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]]}
@@ -72,8 +73,8 @@ function tugRoomRef(code){return fb.ref(db,`tugRooms/${code}`)}
 function tugPlayerRef(code,uid){return fb.ref(db,`tugRooms/${code}/players/${uid}`)}
 function makeTugCode(){return Array.from({length:5},()=>TUG_CODE_CHARS[Math.floor(Math.random()*TUG_CODE_CHARS.length)]).join('')}
 function tugError(message){cq('#tugClassError').textContent=message||''}
-function teamLabel(team){return team==='red'?'Team Red':team==='blue'?'Team Blue':'Unassigned'}
-function teamDot(team){return team==='red'?'🔴':team==='blue'?'🔵':'⚪'}
+function teamLabel(team){return team==='red'?'Team A':team==='blue'?'Team B':'Unassigned'}
+function teamDot(team){return team==='red'?'Ⓐ':team==='blue'?'Ⓑ':'○'}
 function speedBonusWpm(){return customDifficulty()==='easy'?20:customDifficulty()==='hard'?40:30}
 function tugAvatarData(index){return tugAvatars[((Number(index)||0)%tugAvatars.length+tugAvatars.length)%tugAvatars.length]}
 function tugAvatarSrc(index,team='neutral'){
@@ -249,7 +250,7 @@ function nextCustomChallenge(){
     cq('#customLives').className='';cq('#customLives').textContent='★'.repeat(customLives)+'☆'.repeat(3-customLives);
     cq('#adventurePlayer').style.left=`${(customIndex/customItems.length)*100}%`;
   }else{
-    cq('#customLives').textContent=tugTeam==='red'?'RED':'BLUE';
+    cq('#customLives').textContent=tugTeam==='red'?'A':'B';
     cq('#customLives').className=tugTeam==='red'?'team-red-text':'team-blue-text';
     tugPromptStartedAt=performance.now();tugPromptErrors=0;
   }
@@ -268,11 +269,43 @@ function customExpected(){
   return mappingsForLanguage(customGameLanguage()).find(m=>target.startsWith(m.value,customValue.length))||null;
 }
 function customControl(label,action,active=false){const b=document.createElement('button');b.type='button';b.className='key wide game-control';b.textContent=label;b.onclick=action;if(active)b.classList.add('shift-required');return b}
-function renderCustomKeyboard(){
-  const box=cq('#customGameKeyboard');box.innerHTML='';
+function makeCustomTypeControl(label,display,action,className=''){
+  const button=document.createElement('button');button.type='button';button.className='key modifier';
+  if(className)button.classList.add(...className.split(' ').filter(Boolean));
+  button.dataset.code=label;button.innerHTML=`<small>${label}</small>${display}`;button.onclick=action;return button
+}
+function makeCustomTypeKey(label,char,value=char){
+  const button=document.createElement('button');button.type='button';button.className='key';button.dataset.code=label;button.dataset.value=value;
+  button.innerHTML=`<small>${label==='Space'?'':label}</small>${char}`;button.onclick=()=>acceptCustomInput(value);return button
+}
+function setCustomKeyboardShift(on){customKeyboardShifted=!!on;renderCustomKeyboard()}
+function renderMediumCustomKeyboard(box){
+  const mobile=phoneKeyboard(),layout=rowsForLanguage(customGameLanguage());
+  box.classList.toggle('real-keyboard',!mobile);
+  layout.forEach((row,rowIndex)=>{
+    const line=document.createElement('div');line.className=`key-row keyboard-row-${rowIndex}`;
+    if(!mobile&&rowIndex===1)line.appendChild(makeCustomTypeControl('Tab','Tab',()=>{},'tab-key'));
+    if(!mobile&&rowIndex===2)line.appendChild(makeCustomTypeControl('Caps Lock','Caps',()=>setCustomKeyboardShift(!customKeyboardShifted),'caps-key'));
+    if(rowIndex===layout.length-1)line.appendChild(makeCustomTypeControl('Shift',mobile?'Shift':'⇧ Shift',()=>setCustomKeyboardShift(!customKeyboardShifted),'shift-key'));
+    row.forEach(([key,normal,shift])=>line.appendChild(makeCustomTypeKey(key,customKeyboardShifted?shift:normal,customKeyboardShifted?shift:normal)));
+    if(!mobile&&rowIndex===0)line.appendChild(makeCustomTypeControl('Backspace','⌫ Backspace',customBackspace,'backspace-key'));
+    if(!mobile&&rowIndex===2)line.appendChild(makeCustomTypeControl('Enter','↵ Enter',()=>{},'enter-key'));
+    if(rowIndex===layout.length-1){
+      if(mobile)line.appendChild(makeCustomTypeControl('Backspace','⌫',customBackspace,'backspace-key'));
+      else line.appendChild(makeCustomTypeControl('Shift','Shift ⇧',()=>setCustomKeyboardShift(!customKeyboardShifted),'shift-key'));
+    }
+    box.appendChild(line)
+  });
+  const bottom=document.createElement('div');bottom.className='key-row phone-bottom-row keyboard-row-bottom';
+  if(!mobile){[['Ctrl','Ctrl'],['Alt','Alt']].forEach(([label,display])=>bottom.appendChild(makeCustomTypeControl(label,display,()=>{},'system-key')))}
+  const space=makeCustomTypeKey('Space','Space',' ');space.classList.add('wide','space');bottom.appendChild(space);
+  if(mobile){const enter=makeCustomTypeControl('Enter','↵',()=>{},'enter-key');enter.classList.add('wide');bottom.appendChild(enter)}
+  else [['Alt','Alt'],['Ctrl','Ctrl']].forEach(([label,display])=>bottom.appendChild(makeCustomTypeControl(label,display,()=>{},'system-key')));
+  box.appendChild(bottom)
+}
+function renderEasyCustomKeyboard(box){
+  box.classList.remove('real-keyboard');
   const expected=customExpected(),needShift=expected?.shift||false;
-  if(customDifficulty()==='hard'){box.hidden=true;return}
-  box.hidden=false;
   rowsForLanguage(customGameLanguage()).forEach((row,rowIndex)=>{
     const line=document.createElement('div');line.className='key-row';
     row.forEach(([key,normal,shift])=>{const b=document.createElement('button');b.type='button';b.className='key';b.dataset.code=key;b.innerHTML=`<small>${key}</small>${needShift?shift:normal}`;if(expected?.key===key)b.classList.add('expected');b.onclick=()=>acceptCustomInput(needShift?shift:normal);line.appendChild(b)});
@@ -281,6 +314,14 @@ function renderCustomKeyboard(){
   const bottom=document.createElement('div');bottom.className='key-row';bottom.appendChild(customControl('Shift',()=>{},needShift));
   const space=customControl('Space',()=>acceptCustomInput(' '));space.classList.add('space');if(expected?.key==='Space')space.classList.add('expected');
   bottom.append(space,customControl('Shift',()=>{},needShift));box.appendChild(bottom);
+}
+function renderCustomKeyboard(){
+  const box=cq('#customGameKeyboard');box.innerHTML='';
+  const mode=customMode==='tug'?normalizeTugDifficulty(customDifficulty()):customDifficulty();
+  if(mode==='hard'){box.hidden=true;box.classList.remove('real-keyboard');return}
+  box.hidden=false;
+  if(customMode==='tug'&&mode==='medium'){renderMediumCustomKeyboard(box);return}
+  renderEasyCustomKeyboard(box)
 }
 function customBackspace(){
   if(!customValue)return;
@@ -380,7 +421,7 @@ cq('#tugCreateForm').onsubmit=async event=>{
       const code=makeTugCode(),ref=tugRoomRef(code),existing=await fb.get(ref);
       if(existing.exists())continue;
       const now=Date.now(),items=shuffledChallenges(source,count);
-      await fb.set(ref,{hostUid:currentUser.uid,items,difficulty:cq('#tugDifficulty').value,challengeCount:items.length,language:typingLanguage,teamMode:cq('#tugTeamMode').value,winLead:TUG_WIN_LEAD,status:'waiting',winner:'',createdAt:now,expiresAt:now+14400000,startedAt:0,finishedAt:0,players:{}});
+      await fb.set(ref,{hostUid:currentUser.uid,items,difficulty:normalizeTugDifficulty(cq('#tugDifficulty').value),challengeCount:items.length,language:typingLanguage,teamMode:cq('#tugTeamMode').value,winLead:TUG_WIN_LEAD,status:'waiting',winner:'',createdAt:now,expiresAt:now+14400000,startedAt:0,finishedAt:0,players:{}});
       tugCode=code;created=true;
     }
     if(!created)throw new Error('Could not create a room. Please try again.');
@@ -428,10 +469,10 @@ cq('#tugJoinForm').onsubmit=async event=>{
     let team='unassigned';
     if(room.teamMode==='random')team=chooseBalancedTeam(players);
     else if(room.teamMode==='choose'){
-      if(!['red','blue'].includes(tugSelectedTeam))throw new Error('Choose Team Red or Team Blue.');
+      if(!['red','blue'].includes(tugSelectedTeam))throw new Error('Choose Team A or Team B.');
       const stats=tugTeamStats(players);
-      if(tugSelectedTeam==='red'&&stats.red.players.length>stats.blue.players.length)throw new Error('Team Red is full right now. Choose Team Blue.');
-      if(tugSelectedTeam==='blue'&&stats.blue.players.length>stats.red.players.length)throw new Error('Team Blue is full right now. Choose Team Red.');
+      if(tugSelectedTeam==='red'&&stats.red.players.length>stats.blue.players.length)throw new Error('Team A is full right now. Choose Team B.');
+      if(tugSelectedTeam==='blue'&&stats.blue.players.length>stats.red.players.length)throw new Error('Team B is full right now. Choose Team A.');
       team=tugSelectedTeam;
     }
     tugCode=code;tugRole='player';tugPlayerId=currentUser.uid;tugPlayerName=rawName;tugTeam=team;customLanguage=room.language||typingLanguage;
@@ -453,7 +494,7 @@ function showTugLobby(data){
 function renderTugLobbyPlayers(players){
   const box=cq('#tugLobbyTeams');box.innerHTML='';
   cq('#tugPlayerCount').textContent=`Joined: ${players.length} ${players.length===1?'player':'players'}`;
-  const groups=[['red','Team Red'],['blue','Team Blue']];
+  const groups=[['red','Team A'],['blue','Team B']];
   if(players.some(p=>p.team==='unassigned'))groups.push(['unassigned','Waiting for host']);
   groups.forEach(([team,title])=>{
     const panel=document.createElement('section');panel.className=`tug-lobby-team ${team}`;
@@ -470,7 +511,7 @@ function renderTugLobbyPlayers(players){
       chip.appendChild(info);
       if(tugRole==='host'){
         const controls=document.createElement('span');controls.className='tug-chip-controls';
-        ['red','blue'].forEach(nextTeam=>{const assign=document.createElement('button');assign.type='button';assign.className=`tug-mini-team ${nextTeam}`;assign.textContent=nextTeam==='red'?'R':'B';assign.title=`Move ${player.name} to ${teamLabel(nextTeam)}`;assign.disabled=player.team===nextTeam;assign.onclick=()=>fb.update(tugPlayerRef(tugCode,player.id),{team:nextTeam}).catch(()=>{});controls.appendChild(assign)});
+        ['red','blue'].forEach(nextTeam=>{const assign=document.createElement('button');assign.type='button';assign.className=`tug-mini-team ${nextTeam}`;assign.textContent=nextTeam==='red'?'A':'B';assign.title=`Move ${player.name} to ${teamLabel(nextTeam)}`;assign.disabled=player.team===nextTeam;assign.onclick=()=>fb.update(tugPlayerRef(tugCode,player.id),{team:nextTeam}).catch(()=>{});controls.appendChild(assign)});
         const remove=document.createElement('button');remove.type='button';remove.className='tug-remove-player';remove.textContent='×';remove.title=`Remove ${player.name}`;remove.onclick=()=>fb.remove(tugPlayerRef(tugCode,player.id)).catch(()=>{});controls.appendChild(remove);chip.appendChild(controls);
       }
       list.appendChild(chip);
@@ -481,7 +522,7 @@ function renderTugLobbyPlayers(players){
   cq('#startTugRoom').disabled=tugRole==='host'&&(!stats.red.players.length||!stats.blue.players.length||unassigned>0);
   if(tugRole==='host'){
     if(unassigned) cq('#tugLobbyHint').textContent='Assign every waiting player to Red or Blue before starting.';
-    else if(!stats.red.players.length||!stats.blue.players.length)cq('#tugLobbyHint').textContent='Both Team Red and Team Blue need at least one player.';
+    else if(!stats.red.players.length||!stats.blue.players.length)cq('#tugLobbyHint').textContent='Both Team A and Team B need at least one player.';
     else cq('#tugLobbyHint').textContent='Both teams are ready. Start when your class is ready.';
   }
 }
@@ -537,7 +578,7 @@ function beginTugPlayer(room){
   tugClassStarted=true;customMode='tug';
   customItems=Array.isArray(room.items)?room.items:Object.values(room.items||{});
   customIndex=Math.max(0,Math.min(customItems.length,Number(me.index)||0));
-  customScore=Number(me.score)||0;customValue='';customLanguage=room.language||typingLanguage;customDifficultyMode=room.difficulty||'normal';
+  customScore=Number(me.score)||0;customValue='';customLanguage=room.language||typingLanguage;customDifficultyMode=normalizeTugDifficulty(room.difficulty);customKeyboardShifted=false;
   tugTeam=me.team;tugCorrectChars=Number(me.correctChars)||0;tugAttemptedChars=Number(me.attemptedChars)||0;tugErrors=Number(me.errors)||0;tugGameStartedAt=room.startedAt||Date.now();
   cq('#tugLobby').hidden=true;cq('#tugClassSetup').hidden=true;cq('#tugTeacherLive').hidden=true;customResults.hidden=true;cq('#customResultActions').hidden=true;customLive.hidden=false;
   cq('#adventureWorld').hidden=true;cq('#tugWorld').hidden=false;cq('#customStatusLabel').textContent='Prompt';cq('#customLifeLabel').textContent='Team';
@@ -592,7 +633,7 @@ function renderTugTeacherResults(room,players){
   renderTugTeacherArena(players);renderTugScoreboard(players,room.challengeCount||room.items?.length||0);
   const stats=tugTeamStats(players),winner=room.winner||tugOutcome(players,true)?.winner||'tie';
   cq('#tugTeacherResultTitle').textContent=winner==='tie'?'It’s a tie!':`${teamLabel(winner)} wins!`;
-  cq('#tugTeacherSummary').textContent=`Team Red: ${stats.red.avg.toFixed(1)} average pulls · Team Blue: ${stats.blue.avg.toFixed(1)} average pulls.`;
+  cq('#tugTeacherSummary').textContent=`Team A: ${stats.red.avg.toFixed(1)} average pulls · Team B: ${stats.blue.avg.toFixed(1)} average pulls.`;
   const awards=cq('#tugAwards');awards.innerHTML='';
   const topSpeed=bestPlayer(players,'wpm'),topAccuracy=bestPlayer(players,'accuracy','score'),topPull=bestPlayer(players,'score','accuracy');
   [['⚡','Top Typist',topSpeed,topSpeed?`${Number(topSpeed.wpm||0).toFixed(1)} WPM`:'' ],['🎯','Highest Accuracy',topAccuracy,topAccuracy?`${Number(topAccuracy.accuracy??100).toFixed(0)}%`:'' ],['💪','Most Team Pulls',topPull,topPull?`${topPull.score||0} pulls`:'' ]].forEach(([icon,title,player,value])=>{if(!player)return;const card=document.createElement('div');card.innerHTML=`<span>${icon}</span><strong>${title}</strong><b></b><small>${value}</small>`;card.querySelector('b').textContent=player.name;awards.appendChild(card)});
@@ -617,12 +658,17 @@ cq('#tugPlayAgain').onclick=async()=>{
 cq('#tugNewRoom').onclick=()=>{closeTugRoom();openCustomGame('tug')};
 
 document.addEventListener('keydown',e=>{
-  if(customStage.hidden||customLive.hidden||e.ctrlKey||e.metaKey||e.altKey||e.key==='Shift')return;
+  if(customStage.hidden||customLive.hidden||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==='Shift'){if(customMode==='tug'&&normalizeTugDifficulty(customDifficulty())==='medium'&&!customKeyboardShifted){customKeyboardShifted=true;renderCustomKeyboard()}return;}
   const key=physicalKey(e);
   if(key==='Backspace'){e.preventDefault();customBackspace();return}
   const match=rowsForLanguage(customGameLanguage()).flat().find(([mapped])=>mapped===key);
   if(match){e.preventDefault();acceptCustomInput(e.shiftKey?match[2]:match[1])}
   else if(e.key===' '){e.preventDefault();acceptCustomInput(' ')}
+});
+document.addEventListener('keyup',e=>{
+  if(customStage.hidden||customLive.hidden||e.key!=='Shift')return;
+  if(customMode==='tug'&&normalizeTugDifficulty(customDifficulty())==='medium'&&customKeyboardShifted){customKeyboardShifted=false;renderCustomKeyboard()}
 });
 window.addEventListener('typinglanguagechange',()=>{
   cq('#customWordsInput').lang=languageTag();cq('#tugWordsInput').lang=languageTag();
