@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="quiz.css?v=20260912-1" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
-  <link rel="stylesheet" href="calculator.css?v=20260912-5" />
+  <link rel="stylesheet" href="calculator.css?v=20260912-6" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260912-1" />
 </head>
@@ -214,6 +214,24 @@
         <button id="showWheel" type="button">Random Wheel</button>
         <button id="showSeating" type="button">Seating Chart</button>
       </div>
+      <section class="classroom-account-bar" id="classroomAccountBar" aria-label="Classroom Tools account">
+        <div class="classroom-account-copy">
+          <span>CLASSROOM TOOLS ACCOUNT</span>
+          <strong>Save your classroom setup</strong>
+          <small>Sync Seating Chart, Schedule Timer, and Random Wheel data across devices.</small>
+        </div>
+        <div class="classroom-account-controls">
+          <div class="classroom-storage-switch" role="group" aria-label="Choose how Classroom Tools are saved">
+            <button class="active" id="seatingLocalMode" type="button">This device</button>
+            <button id="seatingGoogleMode" type="button">Google account</button>
+          </div>
+          <div class="classroom-account-actions">
+            <button class="button primary" id="seatingGoogleSignIn" type="button" hidden>Sign in with Google</button>
+            <button class="button ghost" id="seatingGoogleSignOut" type="button" hidden>Sign out</button>
+          </div>
+          <small id="seatingStorageStatus">Classroom Tools are saved locally on this device</small>
+        </div>
+      </section>
     <section class="quiz-view classroom-tool-panel" id="quizView" aria-labelledby="quiz-title" hidden>
       <div class="quiz-heading">
         <div><p class="eyebrow">TEACHER QUIZ MAKER</p><h1 id="quiz-title">Create a quiz from your list</h1></div>
@@ -454,7 +472,6 @@ Fish = ညၣ်</textarea>
         <div class="seating-layout">
           <aside class="seating-setup seating-class-panel" id="seatingClassPanel">
             <div class="panel-heading"><strong>Classes</strong><button id="closeClassPanel" type="button" aria-label="Close classes">×</button></div>
-            <div class="seating-storage"><span>Save with</span><div><button class="active" id="seatingLocalMode" type="button">This device</button><button id="seatingGoogleMode" type="button">Google account</button></div><button class="button primary" id="seatingGoogleSignIn" type="button" hidden>Sign in with Google</button><small id="seatingStorageStatus">Saved locally on this device</small></div>
             <div class="class-manager"><label class="select-class-fallback">Saved class<select id="seatingClassSelect" aria-label="Choose a saved class"></select></label><div class="seating-class-list" id="seatingClassList" aria-label="Saved classes"></div><div><button class="button primary" id="newSeatingClass" type="button">＋ New class</button><button class="button ghost" id="duplicateSeatingClass" type="button">Duplicate</button><button class="button danger" id="deleteSeatingClass" type="button">Delete</button></div><div class="reuse-layout"><label>Use layout from<select id="seatingLayoutSource" aria-label="Choose a class layout to copy"></select></label><button class="button ghost" id="useClassLayout" type="button">Use this layout</button><small>Names in this class will not change.</small></div></div>
             <label>Class name<input id="seatingClassName" value="My Class" maxlength="50" /></label>
             <label class="roster-field">Student names <span id="seatingRosterCount">6 students</span><textarea id="seatingRoster" rows="11" spellcheck="false" placeholder="Enter one student per line">Alex
@@ -483,7 +500,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
         </div>
       </section>
       <dialog class="shortcut-dialog" id="deskShortcutDialog"><form method="dialog"><button class="shortcut-close" aria-label="Close">×</button><h2>Desk layout shortcuts</h2><div id="deskShortcutList"></div><button class="button primary" value="close">Done</button></form></dialog><div class="shortcut-tooltip" id="deskTooltip" role="tooltip" hidden></div>
-      <p class="privacy"><span aria-hidden="true">●</span> Save on this device or connect your Google account.</p>
+      <p class="privacy"><span aria-hidden="true">●</span> Classroom Tools can save on this device or sync through your Google account.</p>
     </section>
 
     <section class="workspace practice-view" id="practiceView" aria-labelledby="practice-title" hidden>
@@ -537,8 +554,8 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260912-1"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260912-5"></script>
-  <script src="seating.js?v=20260911-31"></script>
+  <script src="calculator.js?v=20260912-6"></script>
+  <script src="seating.js?v=20260912-1"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
 </html>

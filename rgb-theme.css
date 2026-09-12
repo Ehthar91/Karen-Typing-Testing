@@ -112,3 +112,9 @@ body.theme-rgb .schedule-active-card.is-schedule-fullscreen .schedule-next{backg
 body.theme-rgb .schedule-day-drawer{background:rgba(13,31,52,.97);border-color:#315778;box-shadow:0 22px 60px rgba(0,0,0,.4)}
 body.theme-rgb .schedule-day-drawer-heading{background:rgba(16,38,63,.98);border-color:#2d4d6c}body.theme-rgb .schedule-day-drawer-heading span{color:#9db4ce}body.theme-rgb .schedule-day-drawer-heading strong{color:#f2f7ff}body.theme-rgb .schedule-day-drawer-heading button{background:#10263f;border-color:#355a7c;color:#dce9f7}
 body.theme-rgb .schedule-day-item{border-color:#294660}body.theme-rgb .schedule-day-item>strong,body.theme-rgb .schedule-day-item b{color:#eef5ff}body.theme-rgb .schedule-day-item small,body.theme-rgb .schedule-day-empty{color:#a9bdd4}
+
+/* Classroom Tools shared account */
+body.theme-rgb .classroom-account-bar{border-color:#294966;background:linear-gradient(135deg,#10243b,#132a45);box-shadow:none}
+body.theme-rgb .classroom-account-copy>strong{color:#f3f8ff}body.theme-rgb .classroom-account-copy>small{color:#9fb4ca}
+body.theme-rgb .classroom-storage-switch{background:#0b1b2e}body.theme-rgb .classroom-storage-switch button{color:#a6b8cb}body.theme-rgb .classroom-storage-switch button.active{background:#1c3a5d;color:#fff;box-shadow:none}
+body.theme-rgb .classroom-account-controls>small{color:#9fb4ca}body.theme-rgb .classroom-account-controls>small.synced{color:#63e6b5}
