@@ -19,7 +19,7 @@ function setCalculatorMode(mode){
   showSeating.classList.toggle('active',seating);
   calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':'Graphing & Scientific Calculator';
   calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
-  if(wheel)setTimeout(drawWheel,0);
+  if(wheel)setTimeout(()=>{refreshWheelSeatingClasses();drawWheel()},0);
   if(seating)setTimeout(()=>window.renderSeatingChart?.(),0);
 }
 showWheel.onclick=()=>setCalculatorMode('wheel');
@@ -31,12 +31,54 @@ const wheelResults=document.querySelector('#wheelResults');
 const wheelWinner=document.querySelector('#wheelWinner');
 const wheelWinnerName=document.querySelector('#wheelWinnerName');
 const wheelSpinTime=document.querySelector('#wheelSpinTime');
+const wheelSeatingClass=document.querySelector('#wheelSeatingClass');
+const loadWheelSeatingClass=document.querySelector('#loadWheelSeatingClass');
+const wheelClassSourceStatus=document.querySelector('#wheelClassSourceStatus');
 const wheelColors=['#2563eb','#ef476f','#06b6d4','#f59e0b','#8b5cf6','#22c55e','#f97316','#ec4899','#0ea5e9','#14b8a6','#6366f1','#eab308'];
 let wheelRotation=0,wheelSpinning=false,lastWheelWinner='',wheelHistory=[];
 const savedWheelEntries=localStorage.getItem('glnWheelEntries');
 if(savedWheelEntries)wheelEntries.value=savedWheelEntries;
 const savedWheelSpinTime=localStorage.getItem('glnWheelSpinTime');
 if(savedWheelSpinTime&&wheelSpinTime.querySelector(`option[value="${savedWheelSpinTime}"]`))wheelSpinTime.value=savedWheelSpinTime;
+function seatingClassListsForWheel(){
+  if(typeof window.getSeatingClassLists==='function'){
+    try{return window.getSeatingClassLists()}catch{}
+  }
+  try{
+    const saved=JSON.parse(localStorage.getItem('glnSeatingClasses')||'null');
+    return Array.isArray(saved?.classes)?saved.classes.map(item=>({id:String(item.id||''),className:String(item.className||'My Class'),roster:Array.isArray(item.roster)?item.roster:[]})):[];
+  }catch{return []}
+}
+function refreshWheelSeatingClasses(){
+  if(!wheelSeatingClass)return;
+  const previous=wheelSeatingClass.value||localStorage.getItem('glnWheelSeatingClass')||'';
+  const classes=seatingClassListsForWheel().filter(item=>item?.id&&Array.isArray(item.roster));
+  wheelSeatingClass.innerHTML='<option value="">Choose a class…</option>';
+  classes.forEach(item=>{
+    const option=new Option(`${item.className} (${item.roster.length})`,item.id);
+    wheelSeatingClass.add(option);
+  });
+  if(classes.some(item=>item.id===previous))wheelSeatingClass.value=previous;
+  loadWheelSeatingClass.disabled=!classes.length;
+  if(!classes.length)wheelClassSourceStatus.textContent='No saved Seating Chart classes yet. Create a class in Seating Chart first.';
+  else if(!wheelSeatingClass.value)wheelClassSourceStatus.textContent=`${classes.length} saved class${classes.length===1?'':'es'} available.`;
+  else{
+    const selected=classes.find(item=>item.id===wheelSeatingClass.value);
+    wheelClassSourceStatus.textContent=selected?`${selected.roster.length} student${selected.roster.length===1?'':'s'} in ${selected.className}.`:`${classes.length} saved classes available.`;
+  }
+}
+function loadSelectedSeatingClassToWheel(){
+  const classes=seatingClassListsForWheel(),selected=classes.find(item=>item.id===wheelSeatingClass.value);
+  if(!selected){showToast('Choose a Seating Chart class first');return}
+  const names=selected.roster.map(name=>String(name||'').trim()).filter(Boolean).slice(0,100);
+  if(!names.length){showToast(`${selected.className} has no student names yet`);return}
+  wheelEntries.value=names.join('\n');
+  localStorage.setItem('glnWheelSeatingClass',selected.id);
+  saveAndDrawWheel();
+  wheelHistory=[];renderWheelHistory();
+  wheelClassSourceStatus.textContent=`Loaded ${names.length} student${names.length===1?'':'s'} from ${selected.className}.`;
+  showToast(`Loaded ${selected.className} onto the wheel`);
+}
 function currentWheelEntries(){
   let entries=wheelEntries.value.split(/\r?\n/).map(item=>item.trim()).filter(Boolean).slice(0,100);
   if(document.querySelector('#wheelNoDuplicates').checked)entries=[...new Set(entries)];
@@ -81,6 +123,9 @@ function spinRandomWheel(){
 }
 function saveAndDrawWheel(){localStorage.setItem('glnWheelEntries',wheelEntries.value);drawWheel()}
 document.querySelector('#spinWheel').onclick=spinRandomWheel;
+loadWheelSeatingClass.onclick=loadSelectedSeatingClassToWheel;
+wheelSeatingClass.onchange=()=>{localStorage.setItem('glnWheelSeatingClass',wheelSeatingClass.value);refreshWheelSeatingClasses()};
+window.addEventListener('gln:seating-classes-updated',refreshWheelSeatingClasses);
 wheelCanvas.onclick=spinRandomWheel;
 wheelEntries.oninput=saveAndDrawWheel;
 document.querySelector('#wheelNoDuplicates').onchange=drawWheel;
@@ -92,6 +137,7 @@ document.querySelector('#keepWheelWinner').onclick=()=>{wheelWinner.hidden=true}
 document.querySelector('#removeWheelWinner').onclick=()=>{const entries=wheelEntries.value.split(/\r?\n/),index=entries.findIndex(item=>item.trim()===lastWheelWinner);if(index>=0)entries.splice(index,1);wheelEntries.value=entries.join('\n').replace(/^\s+|\s+$/g,'');saveAndDrawWheel();wheelWinner.hidden=true};
 document.querySelector('#wheelFullscreen').onclick=()=>{if(!document.fullscreenElement)wheelPanel.requestFullscreen?.();else document.exitFullscreen?.()};
 window.addEventListener('resize',()=>{if(!wheelPanel.hidden)drawWheel()});
+refreshWheelSeatingClasses();
 drawWheel();
 function closeCalculator(){
   calculatorView.hidden=true;
