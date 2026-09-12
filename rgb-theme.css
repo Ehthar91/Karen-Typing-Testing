@@ -40,3 +40,18 @@ body.theme-rgb .podium-place.place-1 .podium-block{color:#fff!important;backgrou
 body.theme-rgb .podium-place.place-2 .podium-block{color:#fff!important;background:linear-gradient(145deg,#91a7bd,#455a73)!important;border-color:#c8d8e7!important;box-shadow:0 0 24px rgba(165,190,216,.18)!important}
 body.theme-rgb .podium-place.place-3 .podium-block{color:#fff!important;background:linear-gradient(145deg,#c97845,#713518)!important;border-color:#e6a174!important;box-shadow:0 0 24px rgba(202,112,58,.18)!important}
 body.theme-rgb .podium-block strong,body.theme-rgb .podium-block small,body.theme-rgb .podium-block span{color:#fff!important}
+
+
+/* RGB race prompt panel polish */
+body.theme-rgb .race-live:not(.teacher-view) > .race-passage{
+  background:linear-gradient(180deg, rgba(14,31,52,.96), rgba(12,26,44,.96))!important;
+  border:1px solid #2f557b!important;
+  box-shadow:0 20px 42px rgba(0,0,0,.34), 0 0 0 1px rgba(62,142,255,.08), 0 0 20px rgba(62,142,255,.1)!important;
+  color:#eef4ff!important;
+}
+body.theme-rgb .race-live:not(.teacher-view) > .race-passage::before{color:#9ab4cf!important}
+body.theme-rgb .race-live:not(.teacher-view) > .race-passage .done{color:#63ebb7!important;background:rgba(38,204,147,.14)!important}
+body.theme-rgb .race-live:not(.teacher-view) > .race-passage .current{color:#07101f!important;background:#ffd84d!important;box-shadow:0 0 18px rgba(255,216,77,.38)!important}
+body.theme-rgb .race-live:not(.teacher-view) > .race-key-instruction{background:#122845!important;border:1px solid #30577d!important;color:#eef4ff!important;box-shadow:0 12px 24px rgba(0,0,0,.22)!important}
+body.theme-rgb .race-live:not(.teacher-view) > .race-key-instruction.needs-shift{background:#243f67!important;color:#fff!important}
+body.theme-rgb .race-live:not(.teacher-view) > .race-prompt{color:#cad9ee!important}
