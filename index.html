@@ -20,10 +20,10 @@
   <link rel="stylesheet" href="race-modern.css?v=20260910-6" />
   <link rel="stylesheet" href="race-features.css?v=20260911-11" />
   <link rel="stylesheet" href="creator-credit.css?v=20260910-6" />
-  <link rel="stylesheet" href="quiz.css?v=20260910-6" />
+  <link rel="stylesheet" href="quiz.css?v=20260912-1" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
-  <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260912-1" />
+  <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
+  <link rel="stylesheet" href="calculator.css?v=20260912-5" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260912-1" />
 </head>
@@ -38,7 +38,6 @@
         <button class="active" id="navType" type="button">Type</button>
         <button id="navPractice" type="button">Practice</button>
         <button id="navGames" type="button">Games</button>
-        <button id="navQuiz" type="button">Quiz</button>
         <button id="navTools" type="button">Classroom Tools</button>
       </nav>
       <div class="language-switch" role="group" aria-label="Typing language">
@@ -202,7 +201,20 @@
       <p class="privacy"><span aria-hidden="true">●</span> Classroom race and Tug of War rooms expire after four hours.</p>
     </section>
 
-    <section class="workspace quiz-view" id="quizView" aria-labelledby="quiz-title" hidden>
+    <section class="calculator-view" id="calculatorView" aria-labelledby="calculator-title" hidden>
+      <div class="calculator-heading">
+        <div><p class="eyebrow" id="calculatorEyebrow">GLN CLASSROOM TOOLS</p><h1 id="calculator-title">Graphing &amp; Scientific Calculator</h1></div>
+        <p class="hint" id="calculatorHint">Choose GLN TI-84 or GLN TI-30XS inside the calculator.</p>
+      </div>
+      <div class="calculator-mode-switch" id="classroomToolSwitch" role="group" aria-label="Choose a classroom tool">
+        <button id="showCalculator" type="button">Calculator</button>
+        <button id="showNumberGenerator" type="button">Number Generator</button>
+        <button id="showScheduleTimer" type="button">Schedule Timer</button>
+        <button id="showQuiz" type="button">Quiz</button>
+        <button id="showWheel" type="button">Random Wheel</button>
+        <button id="showSeating" type="button">Seating Chart</button>
+      </div>
+    <section class="quiz-view classroom-tool-panel" id="quizView" aria-labelledby="quiz-title" hidden>
       <div class="quiz-heading">
         <div><p class="eyebrow">TEACHER QUIZ MAKER</p><h1 id="quiz-title">Create a quiz from your list</h1></div>
         <p class="hint">Paste pairs, generate questions, and let students answer.</p>
@@ -284,18 +296,6 @@ Fish = ညၣ်</textarea>
       <p class="privacy"><span aria-hidden="true">●</span> Quiz lists and answers stay on this device.</p>
     </section>
 
-    <section class="calculator-view" id="calculatorView" aria-labelledby="calculator-title" hidden>
-      <div class="calculator-heading">
-        <div><p class="eyebrow" id="calculatorEyebrow">GLN CLASSROOM TOOLS</p><h1 id="calculator-title">Graphing &amp; Scientific Calculator</h1></div>
-        <p class="hint" id="calculatorHint">Choose GLN TI-84 or GLN TI-30XS inside the calculator.</p>
-      </div>
-      <div class="calculator-mode-switch" id="classroomToolSwitch" role="group" aria-label="Choose a classroom tool">
-        <button id="showCalculator" type="button">Calculator</button>
-        <button id="showNumberGenerator" type="button">Number Generator</button>
-        <button id="showScheduleTimer" type="button">Schedule Timer</button>
-        <button id="showWheel" type="button">Random Wheel</button>
-        <button id="showSeating" type="button">Seating Chart</button>
-      </div>
       <div class="calculator-frame-card" id="calculatorPanel">
         <iframe id="calculatorFrame" src="calculator.html?v=20260910-11" title="GLN graphing and scientific calculators" loading="lazy" allow="fullscreen"></iframe>
       </div>
@@ -535,9 +535,9 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="custom-games.js?v=20260911-14"></script>
   <script src="race.js?v=20260911-8"></script>
   <script src="race-features.js?v=20260911-7"></script>
-  <script src="quiz.js?v=20260910-9"></script>
+  <script src="quiz.js?v=20260912-1"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260912-1"></script>
+  <script src="calculator.js?v=20260912-5"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
