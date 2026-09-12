@@ -405,3 +405,10 @@
     width:min(100%, calc(100% - 20px));
   }
 }
+
+/* Medium mode uses the same keyboard proportions as the Type page. */
+.race-live.difficulty-medium:not(.teacher-view)>.race-keyboard{padding:18px;overflow-x:auto}
+.race-live.difficulty-medium:not(.teacher-view)>.race-keyboard .key{height:60px}
+.race-live.difficulty-medium:not(.teacher-view)>.race-keyboard.real-keyboard{gap:7px;overflow:hidden}
+.race-live.difficulty-medium:not(.teacher-view)>.race-keyboard.real-keyboard .key-row{min-width:0}
+@media(max-width:720px){.race-live.difficulty-medium:not(.teacher-view)>.race-keyboard{padding:14px 10px}.race-live.difficulty-medium:not(.teacher-view)>.race-keyboard .key{height:56px}}

@@ -16,3 +16,6 @@
 .podium-vehicle{width:min(180px,94%);height:82px;aspect-ratio:auto;margin-bottom:-10px;background-position:center bottom!important}
 .lobby-vehicle{width:42px;height:25px;background-position:center!important}
 @media(max-width:720px){.race-car.vehicle-sprite{width:86px;height:46px;bottom:-1px!important}.vehicle-preview{height:185px}.podium-vehicle{height:66px}}
+
+/* Medium: no key guide, but keep the full Type-page keyboard visible. */
+.race-live.difficulty-medium:not(.teacher-view)>.race-key-instruction{display:none!important}

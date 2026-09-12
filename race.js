@@ -1,5 +1,5 @@
 const raceStage=document.querySelector('#raceStage'),raceJoin=document.querySelector('#raceJoin'),raceLobby=document.querySelector('#raceLobby'),raceLive=document.querySelector('#raceLive'),raceResults=document.querySelector('#raceResults');
-let raceCode='',racePlayerId='',racePlayerName='',racePassageText='',raceTyped='',raceSendTimer=null,raceCountdownTimer=null,raceCountdownDone=true,raceStartedAt=0,raceCorrect=0,raceErrors=0,raceMode='',raceUnsubscribe=null,raceLanguage=typingLanguage,raceLastStatus='',raceFinishing=false;
+let raceCode='',racePlayerId='',racePlayerName='',racePassageText='',raceTyped='',raceSendTimer=null,raceCountdownTimer=null,raceCountdownDone=true,raceStartedAt=0,raceCorrect=0,raceErrors=0,raceMode='',raceUnsubscribe=null,raceLanguage=typingLanguage,raceLastStatus='',raceFinishing=false,raceDifficultyMode='medium',raceKeyboardShifted=false;
 let fb=null,db=null,auth=null,currentUser=null;
 const carColors=['#ef3340','#1687e8','#19a974','#f5a623','#8b5cf6','#ec4899'];
 const CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -163,6 +163,8 @@ function watchRace(){
 }
 function beginLiveRace(data){
   const passageInfo=racePassageInfo(data.passage);raceLobby.hidden=true;raceLive.hidden=false;raceLive.classList.remove('show-results');raceResults.hidden=true;raceLanguage=passageInfo.language;racePassageText=passageInfo.text;raceTyped='';raceStartedAt=data.startedAt||Date.now();raceCorrect=0;raceErrors=0;
+  raceDifficultyMode=String(data.difficulty||'Medium').toLowerCase();raceKeyboardShifted=false;
+  raceLive.classList.remove('difficulty-easy','difficulty-medium','difficulty-hard');raceLive.classList.add(`difficulty-${raceDifficultyMode}`);
   raceLive.classList.toggle('teacher-view',raceMode==='host');document.querySelector('#raceFullscreen').hidden=raceMode!=='host';
   document.querySelector('#racePassage').lang=raceLanguage==='en'?'en':raceLanguage==='pwo'?'kjp':'ksw';
   renderRacePassage();renderRaceKeyboard();
@@ -203,8 +205,48 @@ function renderRacePassage(){
   const current=document.createElement('span');current.className='current';current.textContent=racePassageText.slice(raceTyped.length,raceTyped.length+1);
   const rest=document.createTextNode(racePassageText.slice(raceTyped.length+1));box.append(done,current,rest)
 }
+function makeRaceTypeControl(label,display,action,className=''){
+  const button=document.createElement('button');button.type='button';button.className='key modifier';
+  if(className)button.classList.add(...className.split(' ').filter(Boolean));
+  button.dataset.code=label;button.innerHTML=`<small>${label}</small>${display}`;button.onclick=action;return button
+}
+function makeRaceTypeKey(label,char,value=char){
+  const button=document.createElement('button');button.type='button';button.className='key';button.dataset.code=label;button.dataset.value=value;
+  button.innerHTML=`<small>${label==='Space'?'':label}</small>${char}`;button.onclick=()=>acceptRaceInput(value);return button
+}
+function setRaceKeyboardShift(on){raceKeyboardShifted=!!on;renderRaceKeyboard()}
+function renderMediumRaceKeyboard(box,mobile,layout){
+  box.classList.toggle('real-keyboard',!mobile);
+  layout.forEach((row,rowIndex)=>{
+    const line=document.createElement('div');line.className=`key-row keyboard-row-${rowIndex}`;
+    if(!mobile&&rowIndex===1)line.appendChild(makeRaceTypeControl('Tab','Tab',()=>{},'tab-key'));
+    if(!mobile&&rowIndex===2)line.appendChild(makeRaceTypeControl('Caps Lock','Caps',()=>setRaceKeyboardShift(!raceKeyboardShifted),'caps-key'));
+    if(rowIndex===layout.length-1)line.appendChild(makeRaceTypeControl('Shift',mobile?'Shift':'⇧ Shift',()=>setRaceKeyboardShift(!raceKeyboardShifted),'shift-key'));
+    row.forEach(([key,normal,shift])=>line.appendChild(makeRaceTypeKey(key,raceKeyboardShifted?shift:normal,raceKeyboardShifted?shift:normal)));
+    if(!mobile&&rowIndex===0)line.appendChild(makeRaceTypeControl('Backspace','⌫ Backspace',raceBackspace,'backspace-key'));
+    if(!mobile&&rowIndex===2)line.appendChild(makeRaceTypeControl('Enter','↵ Enter',()=>{},'enter-key'));
+    if(rowIndex===layout.length-1){
+      if(mobile)line.appendChild(makeRaceTypeControl('Backspace','⌫',raceBackspace,'backspace-key'));
+      else line.appendChild(makeRaceTypeControl('Shift','Shift ⇧',()=>setRaceKeyboardShift(!raceKeyboardShifted),'shift-key'));
+    }
+    box.appendChild(line)
+  });
+  const bottom=document.createElement('div');bottom.className='key-row phone-bottom-row keyboard-row-bottom';
+  if(!mobile){[['Ctrl','Ctrl'],['Alt','Alt']].forEach(([label,display])=>bottom.appendChild(makeRaceTypeControl(label,display,()=>{},'system-key')))}
+  const space=makeRaceTypeKey('Space','Space',' ');space.classList.add('wide','space');bottom.appendChild(space);
+  if(mobile){const enter=makeRaceTypeControl('Enter','↵',()=>{},'enter-key');enter.classList.add('wide');bottom.appendChild(enter)}
+  else [['Alt','Alt'],['Ctrl','Ctrl']].forEach(([label,display])=>bottom.appendChild(makeRaceTypeControl(label,display,()=>{},'system-key')));
+  box.appendChild(bottom)
+}
 function renderRaceKeyboard(){
-  const box=document.querySelector('#raceKeyboard');box.innerHTML='';const expected=raceExpected(),shifted=expected?.shift||false,instruction=document.querySelector('#raceKeyInstruction'),mobile=phoneKeyboard(),layout=rowsForLanguage(raceLanguage);
+  const box=document.querySelector('#raceKeyboard');box.innerHTML='';
+  const instruction=document.querySelector('#raceKeyInstruction'),mobile=phoneKeyboard(),layout=rowsForLanguage(raceLanguage);
+  const medium=raceDifficultyMode==='medium';
+  instruction.hidden=medium;
+  if(medium){renderMediumRaceKeyboard(box,mobile,layout);return}
+  box.classList.remove('real-keyboard');
+  const expected=raceExpected(),shifted=expected?.shift||false;
+  instruction.hidden=false;
   instruction.textContent=expected?(expected.key==='Space'?'Press Space':shifted?`Hold Shift + press ${expected.key}`:`Press ${expected.key}`):'Finished!';
   instruction.classList.toggle('needs-shift',shifted);
   layout.forEach((row,rowIndex)=>{
@@ -232,7 +274,7 @@ function acceptRaceInput(value){
     raceTyped+=value;raceCorrect+=value.length;document.querySelector('#racePrompt').textContent='Keep going!';
     renderRacePassage();renderRaceKeyboard();scheduleRaceProgress()
   }else{
-    raceErrors++;const prompt=document.querySelector('#racePrompt');prompt.textContent='Try the highlighted key.';prompt.style.color='#c92525';
+    raceErrors++;const prompt=document.querySelector('#racePrompt');prompt.textContent=raceDifficultyMode==='easy'?'Try the highlighted key.':'Try again.';prompt.style.color='#c92525';
     setTimeout(()=>prompt.style.color='',220)
   }
 }
@@ -255,6 +297,8 @@ document.addEventListener('keydown',e=>{
   }
   e.preventDefault();acceptRaceInput(value)
 });
+document.addEventListener('keydown',e=>{if(raceStage.hidden||raceLive.hidden||raceMode!=='player'||raceDifficultyMode!=='medium'||e.key!=='Shift')return;if(!raceKeyboardShifted){raceKeyboardShifted=true;renderRaceKeyboard()}});
+document.addEventListener('keyup',e=>{if(raceStage.hidden||raceLive.hidden||raceMode!=='player'||raceDifficultyMode!=='medium'||e.key!=='Shift')return;if(raceKeyboardShifted){raceKeyboardShifted=false;renderRaceKeyboard()}});
 document.querySelector('#raceAgain').onclick=async()=>{
   if(raceMode!=='host')return;
   try{
