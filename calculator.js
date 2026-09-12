@@ -1,10 +1,12 @@
 const navTools=document.querySelector('#navTools');
 const calculatorView=document.querySelector('#calculatorView');
+const dashboardPanel=document.querySelector('#classroomDashboardPanel');
 const calculatorPanel=document.querySelector('#calculatorPanel');
 const numberGeneratorPanel=document.querySelector('#numberGeneratorPanel');
 const scheduleTimerPanel=document.querySelector('#scheduleTimerPanel');
 const wheelPanel=document.querySelector('#wheelPanel');
 const seatingPanel=document.querySelector('#seatingPanel');
+const showDashboard=document.querySelector('#showDashboard');
 const showCalculator=document.querySelector('#showCalculator');
 const showNumberGenerator=document.querySelector('#showNumberGenerator');
 const showScheduleTimer=document.querySelector('#showScheduleTimer');
@@ -15,31 +17,36 @@ const calculatorTitle=document.querySelector('#calculator-title');
 const calculatorHint=document.querySelector('#calculatorHint');
 const calculatorEyebrow=document.querySelector('#calculatorEyebrow');
 function setCalculatorMode(mode){
+  const dashboard=mode==='dashboard';
   const calculator=mode==='calculator';
   const numberGenerator=mode==='number-generator';
   const scheduleTimer=mode==='schedule-timer';
   const quiz=mode==='quiz';
   const wheel=mode==='wheel';
   const seating=mode==='seating';
+  dashboardPanel.hidden=!dashboard;
   calculatorPanel.hidden=!calculator;
   numberGeneratorPanel.hidden=!numberGenerator;
   scheduleTimerPanel.hidden=!scheduleTimer;
   quizView.hidden=!quiz;
   wheelPanel.hidden=!wheel;
   seatingPanel.hidden=!seating;
+  showDashboard.classList.toggle('active',dashboard);
   showCalculator.classList.toggle('active',calculator);
   showNumberGenerator.classList.toggle('active',numberGenerator);
   showScheduleTimer.classList.toggle('active',scheduleTimer);
   showQuiz.classList.toggle('active',quiz);
   showWheel.classList.toggle('active',wheel);
   showSeating.classList.toggle('active',seating);
-  calculatorTitle.textContent=seating?'Seating Chart':wheel?'Random Wheel':quiz?'Quiz':scheduleTimer?'Schedule Timer':numberGenerator?'Number Generator':'Graphing & Scientific Calculator';
-  calculatorHint.textContent=seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':quiz?'Create, practice, and run classroom quizzes.':scheduleTimer?'Create multiple timers that start automatically at their scheduled times.':numberGenerator?'Generate classroom numbers from any range, with an optional no-repeat mode.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
+  calculatorTitle.textContent=dashboard?'Classroom Dashboard':seating?'Seating Chart':wheel?'Random Wheel':quiz?'Quiz':scheduleTimer?'Schedule Timer':numberGenerator?'Number Generator':'Graphing & Scientific Calculator';
+  calculatorHint.textContent=dashboard?'Choose a class, see today’s schedule, and open your classroom tools from one place.':seating?'Create, arrange, and print a classroom seating plan.':wheel?'Paste a list, spin, and select someone or something at random.':quiz?'Create, practice, and run classroom quizzes.':scheduleTimer?'Create multiple timers that start automatically at their scheduled times.':numberGenerator?'Generate classroom numbers from any range, with an optional no-repeat mode.':'Choose GLN TI-84 or GLN TI-30XS inside the calculator.';
+  if(dashboard)setTimeout(()=>{refreshDashboardClasses();updateClassroomDashboard()},0);
   if(numberGenerator)setTimeout(()=>{numberGeneratorMin.focus();queueFitNumberGeneratorResult()},0);
   if(scheduleTimer)setTimeout(()=>{renderScheduleTimers();updateScheduleTimerClock()},0);
   if(wheel)setTimeout(()=>{refreshWheelSeatingClasses();drawWheel()},0);
   if(seating)setTimeout(()=>window.renderSeatingChart?.(),0);
 }
+showDashboard.onclick=()=>setCalculatorMode('dashboard');
 showCalculator.onclick=()=>setCalculatorMode('calculator');
 showNumberGenerator.onclick=()=>setCalculatorMode('number-generator');
 showScheduleTimer.onclick=()=>setCalculatorMode('schedule-timer');
@@ -531,6 +538,87 @@ if(stopScheduleTimer)stopScheduleTimer.addEventListener('click',()=>{
 });
 loadClassroomSchedules();specialEditorSlots=[defaultSpecialSlot()];setScheduleEditorType('weekly',{keepSpecial:true});renderSpecialSlotEditor();renderScheduleTimers();updateScheduleTimerClock();syncScheduleFullscreenUI();setInterval(updateScheduleTimerClock,500);
 
+/* Classroom Dashboard */
+const dashboardClassSelect=document.querySelector('#dashboardClassSelect');
+const dashboardClassCount=document.querySelector('#dashboardClassCount');
+const dashboardClassNote=document.querySelector('#dashboardClassNote');
+const dashboardStudentResult=document.querySelector('#dashboardStudentResult');
+const dashboardPickStudent=document.querySelector('#dashboardPickStudent');
+const dashboardResetPicker=document.querySelector('#dashboardResetPicker');
+const dashboardOpenSeating=document.querySelector('#dashboardOpenSeating');
+const dashboardLoadWheel=document.querySelector('#dashboardLoadWheel');
+const dashboardDay=document.querySelector('#dashboardDay');
+const dashboardDate=document.querySelector('#dashboardDate');
+const dashboardClock=document.querySelector('#dashboardClock');
+const dashboardScheduleState=document.querySelector('#dashboardScheduleState');
+const dashboardScheduleCurrent=document.querySelector('#dashboardScheduleCurrent');
+const dashboardScheduleRemaining=document.querySelector('#dashboardScheduleRemaining');
+const dashboardScheduleNext=document.querySelector('#dashboardScheduleNext');
+const dashboardAgenda=document.querySelector('#dashboardAgenda');
+const dashboardSyncDot=document.querySelector('#dashboardSyncDot');
+const dashboardSyncText=document.querySelector('#dashboardSyncText');
+const dashboardSyncDetail=document.querySelector('#dashboardSyncDetail');
+let dashboardPickerRemaining=[];
+let dashboardPickerClassId='';
+function dashboardClasses(){return typeof window.getSeatingClassLists==='function'?window.getSeatingClassLists():[]}
+function selectedDashboardClass(){const classes=dashboardClasses();return classes.find(item=>item.id===dashboardClassSelect?.value)||classes[0]||null}
+function resetDashboardPicker(message='Select a class and pick a student.'){
+  dashboardPickerRemaining=[];dashboardPickerClassId='';
+  if(!dashboardStudentResult)return;
+  const small=dashboardStudentResult.querySelector('small'),strong=dashboardStudentResult.querySelector('strong'),span=dashboardStudentResult.querySelector('span');
+  if(small)small.textContent='Ready to pick';if(strong)strong.textContent='—';if(span)span.textContent=message;
+}
+function refreshDashboardClasses(){
+  if(!dashboardClassSelect)return;
+  const classes=dashboardClasses();const previous=dashboardClassSelect.value||localStorage.getItem('glnDashboardClassId')||'';
+  dashboardClassSelect.innerHTML='';
+  if(!classes.length){dashboardClassSelect.add(new Option('No Seating Chart classes yet',''));dashboardClassSelect.disabled=true;dashboardClassCount.textContent='0 students';dashboardClassNote.textContent='Create a class in Seating Chart to use it here.';dashboardPickStudent.disabled=true;dashboardOpenSeating.disabled=false;dashboardLoadWheel.disabled=true;return}
+  dashboardClassSelect.disabled=false;classes.forEach(item=>dashboardClassSelect.add(new Option(item.className,item.id)));
+  dashboardClassSelect.value=classes.some(item=>item.id===previous)?previous:classes[0].id;
+  localStorage.setItem('glnDashboardClassId',dashboardClassSelect.value);dashboardPickStudent.disabled=false;dashboardLoadWheel.disabled=false;updateDashboardClassSummary();
+}
+function updateDashboardClassSummary(){
+  const item=selectedDashboardClass(),count=item?.roster?.length||0;
+  if(dashboardClassCount)dashboardClassCount.textContent=`${count} student${count===1?'':'s'}`;
+  if(dashboardClassNote)dashboardClassNote.textContent=item?`${item.className} is ready for quick classroom actions.`:'Class lists come from Seating Chart.';
+  if(item&&dashboardPickerClassId&&dashboardPickerClassId!==item.id)resetDashboardPicker();
+}
+function pickDashboardStudent(){
+  const item=selectedDashboardClass();const roster=(item?.roster||[]).map(name=>String(name).trim()).filter(Boolean);
+  if(!roster.length){resetDashboardPicker('This class does not have any student names yet.');return}
+  if(dashboardPickerClassId!==item.id||!dashboardPickerRemaining.length){dashboardPickerClassId=item.id;dashboardPickerRemaining=[...roster]}
+  const index=Math.floor(Math.random()*dashboardPickerRemaining.length),name=dashboardPickerRemaining.splice(index,1)[0];
+  const small=dashboardStudentResult.querySelector('small'),strong=dashboardStudentResult.querySelector('strong'),span=dashboardStudentResult.querySelector('span');
+  small.textContent='Selected student';strong.textContent=name;span.textContent=dashboardPickerRemaining.length?`${dashboardPickerRemaining.length} student${dashboardPickerRemaining.length===1?'':'s'} remaining this round.`:'Everyone has been picked. The next pick starts a new round.';
+}
+function updateDashboardSchedule(now=new Date()){
+  if(!dashboardScheduleState)return;
+  const active=activeTimerOccurrence(now);const upcoming=getUpcomingSchedule(now);const agenda=upcomingSchedulesForToday(now).slice(0,4);
+  if(active){const manual=String(active.key).startsWith('manual:');dashboardScheduleState.textContent=manual?'RUNNING NOW':active.type==='special'?'SPECIAL SCHEDULE':'IN PROGRESS';dashboardScheduleCurrent.textContent=active.displayName;dashboardScheduleRemaining.textContent=formatTimerRemaining(active.end-now)}
+  else{dashboardScheduleState.textContent=specialScheduleExistsToday(now)?'SPECIAL SCHEDULE TODAY':'WAITING';dashboardScheduleCurrent.textContent='No timer is running';dashboardScheduleRemaining.textContent='--:--'}
+  dashboardScheduleNext.textContent=upcoming?formatUpcomingSchedule(upcoming):'No upcoming schedule';
+  dashboardAgenda.innerHTML='';
+  if(!agenda.length){const empty=document.createElement('p');empty.textContent='No more scheduled activities today.';dashboardAgenda.append(empty)}
+  else agenda.forEach(item=>{const row=document.createElement('div');row.className='dashboard-agenda-row';const time=document.createElement('strong');time.textContent=formatScheduleTime(item.time);const copy=document.createElement('span');copy.textContent=item.displayName;row.append(time,copy);dashboardAgenda.append(row)});
+}
+function updateDashboardSync(){
+  if(!dashboardSyncText)return;
+  const status=document.querySelector('#seatingStorageStatus');const mode=localStorage.getItem('glnClassroomToolsStorageMode')||localStorage.getItem('glnSeatingStorageMode')||'local';const text=status?.textContent||'';
+  const google=mode==='google';dashboardSyncDot.classList.toggle('is-google',google);dashboardSyncText.textContent=google?'Google account sync':'Saved on this device';dashboardSyncDetail.textContent=text||(google?'Classroom Tools will sync when Google sign-in is available.':'Your Classroom Tools data remains available locally.');
+}
+function updateClassroomDashboard(){
+  if(!dashboardDay)return;
+  const now=new Date();dashboardDay.textContent=now.toLocaleDateString(undefined,{weekday:'long'});dashboardDate.textContent=now.toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});dashboardClock.textContent=now.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit',second:'2-digit'});updateDashboardSchedule(now);updateDashboardSync();updateDashboardClassSummary();
+}
+if(dashboardClassSelect)dashboardClassSelect.addEventListener('change',()=>{localStorage.setItem('glnDashboardClassId',dashboardClassSelect.value);resetDashboardPicker();updateDashboardClassSummary()});
+if(dashboardPickStudent)dashboardPickStudent.addEventListener('click',pickDashboardStudent);
+if(dashboardResetPicker)dashboardResetPicker.addEventListener('click',()=>resetDashboardPicker());
+if(dashboardOpenSeating)dashboardOpenSeating.addEventListener('click',()=>{const id=dashboardClassSelect?.value;setCalculatorMode('seating');setTimeout(()=>{if(id)window.selectSeatingClassById?.(id);window.renderSeatingChart?.()},0)});
+if(dashboardLoadWheel)dashboardLoadWheel.addEventListener('click',()=>{const id=dashboardClassSelect?.value;setCalculatorMode('wheel');setTimeout(()=>{refreshWheelSeatingClasses();const select=document.querySelector('#wheelSeatingClass');if(select&&id){select.value=id;localStorage.setItem('glnWheelSeatingClass',id)}document.querySelector('#loadWheelSeatingClass')?.click()},0)});
+document.querySelectorAll('[data-dashboard-tool]').forEach(button=>button.addEventListener('click',()=>{const tool=button.dataset.dashboardTool;if(tool==='quiz')openQuiz();else setCalculatorMode(tool)}));
+window.addEventListener('gln:seating-classes-updated',()=>{refreshDashboardClasses();updateClassroomDashboard()});
+setTimeout(()=>{refreshDashboardClasses();updateClassroomDashboard()},0);setInterval(()=>{if(dashboardPanel&&!dashboardPanel.hidden)updateClassroomDashboard()},1000);
+
 const wheelCanvas=document.querySelector('#randomWheel');
 const wheelContext=wheelCanvas.getContext('2d');
 const wheelEntries=document.querySelector('#wheelEntries');
@@ -687,7 +775,7 @@ function closeCalculator(){
   navTools.classList.remove('active');
   document.body.classList.remove('calculator-open');
 }
-function openCalculator(mode='wheel'){
+function openCalculator(mode='dashboard'){
   typeView.hidden=true;
   practiceView.hidden=true;
   gamesView.hidden=true;
@@ -705,7 +793,7 @@ function openCalculator(mode='wheel'){
   if(typeof closeRace==='function')closeRace();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-navTools.onclick=()=>openCalculator('wheel');
+navTools.onclick=()=>openCalculator('dashboard');
 navType.addEventListener('click',closeCalculator);
 navPractice.addEventListener('click',closeCalculator);
 navGames.addEventListener('click',closeCalculator);
