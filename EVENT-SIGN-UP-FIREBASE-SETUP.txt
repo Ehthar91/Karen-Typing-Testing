@@ -12,3 +12,5 @@ This version adds:
 - owner-only event editing/deletion and editor-link creation/revocation
 
 The shared editor can optionally link the event to that browser/account's own Schedule Timer Special Schedule.
+
+Shared Editor Move update: publish the firebase-rules.json in this build so editor links can claim an available destination spot before releasing the old appointment.
