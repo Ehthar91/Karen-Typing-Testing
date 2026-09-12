@@ -69,7 +69,7 @@
             ".validate": "!newData.exists() || (root.child('eventSignups').child($eventId).child('slots').child($slotId).exists() && newData.numChildren() <= root.child('eventSignups').child($eventId).child('slots').child($slotId).child('capacity').val())",
             "$uid": {
               ".write": "auth != null && (root.child('eventSignups').child($eventId).child('ownerUid').val() === auth.uid || (auth.uid === $uid && (!newData.exists() || root.child('eventSignups').child($eventId).child('status').val() === 'open')))",
-              ".validate": "!newData.exists() || (newData.hasChildren(['uid','name','createdAt']) && newData.child('uid').val() === $uid && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 60 && (!newData.child('note').exists() || (newData.child('note').isString() && newData.child('note').val().length <= 200)))",
+              ".validate": "!newData.exists() || (newData.hasChildren(['uid','name','createdAt']) && newData.child('uid').val() === $uid && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 60 && (!newData.child('studentName').exists() || (newData.child('studentName').isString() && newData.child('studentName').val().length > 0 && newData.child('studentName').val().length <= 60)) && (!newData.child('parentName').exists() || (newData.child('parentName').isString() && newData.child('parentName').val().length > 0 && newData.child('parentName').val().length <= 60)) && (!newData.child('email').exists() || (newData.child('email').isString() && newData.child('email').val().length > 2 && newData.child('email').val().length <= 120)) && (!newData.child('phone').exists() || (newData.child('phone').isString() && newData.child('phone').val().length <= 30)) && (!newData.child('note').exists() || (newData.child('note').isString() && newData.child('note').val().length <= 200)))",
               ".read": "auth != null && (auth.uid === $uid || root.child('eventSignups').child($eventId).child('ownerUid').val() === auth.uid)"
             }
           }
@@ -91,6 +91,9 @@
           "$slotId": {
             ".validate": "!newData.exists() || (newData.hasChildren(['id','time','duration','capacity']) && newData.child('id').val() === $slotId && newData.child('time').isString() && newData.child('time').val().length === 5 && newData.child('duration').isNumber() && newData.child('duration').val() >= 1 && newData.child('duration').val() <= 480 && newData.child('capacity').isNumber() && newData.child('capacity').val() >= 1 && newData.child('capacity').val() <= 100 && newData.child('capacity').val() >= root.child('eventSignups').child($eventId).child('signups').child($slotId).numChildren() && (!newData.child('label').exists() || (newData.child('label').isString() && newData.child('label').val().length <= 50)))"
           }
+        },
+        "allowMultiple": {
+          ".read": "auth != null"
         }
       }
     }

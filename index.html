@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
   <link rel="stylesheet" href="calculator.css?v=20260912-9" />
-  <link rel="stylesheet" href="event-signup.css?v=20260912-2" />
+  <link rel="stylesheet" href="event-signup.css?v=20260912-3" />
   <link rel="stylesheet" href="seating.css?v=20260912-31" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260912-2" />
 </head>
@@ -546,8 +546,9 @@ Fish = ညၣ်</textarea>
               <div class="event-link-options">
                 <label class="event-check"><input id="eventSignupLinkSchedule" type="checkbox" checked /><span><strong>Link to Schedule Timer</strong><small>Filled signup slots become a Special Schedule automatically.</small></span></label>
                 <label class="event-check"><input id="eventSignupOpen" type="checkbox" checked /><span><strong>Open for signups</strong><small>Turn this off to stop new registrations.</small></span></label>
+                <label class="event-check"><input id="eventSignupAllowMultiple" type="checkbox" checked /><span><strong>Allow multiple slots</strong><small>Families can reserve a separate time for each student.</small></span></label>
               </div>
-              <label>Schedule Timer activity name<select id="eventSignupActivityMode"><option value="participant" selected>Participant name</option><option value="event-participant">Event + participant name</option><option value="event">Event name</option></select></label>
+              <label>Schedule Timer activity name<select id="eventSignupActivityMode"><option value="participant" selected>Student/participant name</option><option value="event-participant">Event + participant name</option><option value="event">Event name</option></select></label>
               <section class="event-slot-generator" aria-labelledby="eventSlotGeneratorTitle">
                 <div class="event-slot-generator-heading"><div><strong id="eventSlotGeneratorTitle">Quick Slot Generator</strong><small>Create a batch of equal-length signup slots automatically.</small></div><span>Auto times</span></div>
                 <div class="event-slot-generator-grid">
@@ -570,10 +571,17 @@ Fish = ညၣ်</textarea>
           <p class="event-public-message" id="eventPublicMessage">Loading available time slots…</p>
           <div class="event-public-slots" id="eventPublicSlots"></div>
           <form class="event-public-form" id="eventPublicForm" hidden>
-            <h3>Sign up</h3><p id="eventPublicSelectedSlot">Choose a time slot above.</p>
-            <label>Your name<input id="eventPublicName" maxlength="60" autocomplete="name" required placeholder="Student or participant name" /></label>
-            <label>Note (optional)<textarea id="eventPublicNote" maxlength="200" placeholder="Optional note"></textarea></label>
-            <div class="event-public-actions"><button class="button ghost" id="eventPublicCancelSignup" type="button" hidden>Cancel my signup</button><button class="button primary" type="submit">Save my signup</button></div>
+            <div class="event-public-form-heading"><div><h3>Sign up</h3><p>Enter the parent or guardian information once, then add the student name for each selected time.</p></div></div>
+            <div class="event-public-contact-grid">
+              <label>Parent/Guardian Name<input id="eventPublicParentName" maxlength="60" autocomplete="name" required placeholder="Parent or guardian name" /></label>
+              <label>Email<input id="eventPublicEmail" type="email" maxlength="120" autocomplete="email" required placeholder="name@example.com" /><small>Used for signup contact. Confirmation email delivery will be connected separately.</small></label>
+              <label>Phone <span class="optional">optional</span><input id="eventPublicPhone" type="tel" maxlength="30" autocomplete="tel" placeholder="Phone number" /></label>
+            </div>
+            <section class="event-public-selected-section" aria-labelledby="eventPublicSelectedSlot">
+              <div class="event-public-selected-heading"><strong>Your selected times</strong><p id="eventPublicSelectedSlot">Choose a time slot above.</p></div>
+              <div class="event-public-selection-list" id="eventPublicSelectionList"></div>
+            </section>
+            <div class="event-public-actions"><button class="button ghost" id="eventPublicCancelSignup" type="button" hidden>Cancel all my signups</button><button class="button primary" id="eventPublicSubmit" type="submit">Save signup</button></div>
           </form>
         </section>
       </section>
@@ -677,7 +685,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz.js?v=20260912-1"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260912-9"></script>
-  <script src="event-signup.js?v=20260912-2"></script>
+  <script src="event-signup.js?v=20260912-3"></script>
   <script src="seating.js?v=20260912-2"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
