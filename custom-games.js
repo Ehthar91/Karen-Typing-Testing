@@ -79,7 +79,7 @@ function tugAvatarData(index){return tugAvatars[((Number(index)||0)%tugAvatars.l
 function tugAvatarSrc(index,team='neutral'){
   const data=tugAvatarData(index);
   const side=(team==='red'||team==='blue')?team:'neutral';
-  return `tug-avatars/${data.key}-${side}.svg`;
+  return `tug-avatar-${data.key}-${side}.svg`;
 }
 function tugAvatarPose(player,base='idle'){if(base!=='pull')return base;if(player?.finished)return'hold';return'pull'}
 function tugConsumeScoreBursts(players){
@@ -117,6 +117,16 @@ function renderTugAvatarFigure(playerOrIndex,options={}){
   img.decoding='async';
   img.loading='lazy';
   img.src=tugAvatarSrc(avatarIndex,team||'neutral');
+  img.onerror=()=>{
+    img.hidden=true;
+    stage.classList.add('asset-missing');
+    if(!stage.querySelector('.tug-avatar-fallback')){
+      const fallback=document.createElement('span');
+      fallback.className='tug-avatar-fallback';
+      fallback.textContent=data.name.split(/\s+/).map(word=>word[0]).slice(0,2).join('');
+      stage.appendChild(fallback);
+    }
+  };
   stage.appendChild(img);
   if(options.pulse){
     const pop=document.createElement('b');
