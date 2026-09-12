@@ -120,7 +120,7 @@
           <div class="tug-class-options">
             <form class="tug-option tug-host-option" id="tugCreateForm">
               <div class="tug-option-heading"><span>👩‍🏫</span><div><strong>Host</strong><p>Paste your own list, choose the team setup, then create a room.</p></div></div>
-              <label>Word or sentence list<textarea id="tugWordsInput" rows="7" maxlength="4000" lang="ksw" placeholder="မိၢ်&#10;ပၢ်&#10;မိၢ်ဒီးပၢ်အိၣ်လၢဟံၣ်။" required></textarea><small>One word or sentence per line. Commas also work.</small></label>
+              <label>Word or sentence list<textarea id="tugWordsInput" rows="7" maxlength="4000" lang="ksw" placeholder="Enter or paste your own words or sentences" required></textarea><small>One word or sentence per line. Commas also work.</small></label>
               <div class="tug-host-settings">
                 <label>Difficulty<select id="tugDifficulty"><option value="easy">Easy · guided keyboard · bonus at 20 WPM</option><option value="medium" selected>Medium · keyboard only · bonus at 30 WPM</option><option value="hard">Hard · no keyboard · bonus at 40 WPM</option></select></label>
                 <label>Challenges<input id="tugChallengeCount" type="number" min="1" max="50" value="10"></label>
@@ -169,7 +169,7 @@
         <div class="race-join" id="raceJoin">
           <div class="race-intro"><span class="race-flag">🏁</span><h2>Race your classmates</h2><p>Everyone types the same Karen passage. Accurate typing moves your car toward the finish line.</p></div>
           <div class="race-options">
-            <form class="race-option" id="createRaceForm"><strong>Host (Teacher)</strong><p>Paste the Karen words your players will type.</p><label>Race words<textarea id="raceWordsInput" lang="ksw" rows="5" maxlength="800" placeholder="မိၢ်&#10;ပၢ်&#10;မိၢ်ပၢ်" required></textarea><small>Use one word per line, commas, or spaces.</small></label><button class="button primary" type="submit">Create a race</button></form>
+            <form class="race-option" id="createRaceForm"><strong>Host (Teacher)</strong><p>Paste the Karen words your players will type.</p><label>Race words<textarea id="raceWordsInput" lang="ksw" rows="5" maxlength="800" placeholder="Enter or paste your own race words" required></textarea><small>Use one word per line, commas, or spaces.</small></label><button class="button primary" type="submit">Create a race</button></form>
             <form class="race-option" id="joinRaceForm"><strong>Player</strong><p>Enter the shared code and your name.</p><label>Room code<input id="raceCodeInput" maxlength="5" autocomplete="off" placeholder="ABCDE" required /></label><label>Your name<input id="raceNameInput" maxlength="24" autocomplete="name" placeholder="Player name" required /></label><button class="button primary" type="submit">Join race</button></form>
           </div>
           <p class="race-error" id="raceError" role="alert"></p>
@@ -314,12 +314,7 @@ Fish = ညၣ်</textarea>
               <div class="wheel-class-source-actions"><select id="wheelSeatingClass" aria-label="Choose a seating chart class"><option value="">Choose a class…</option></select><button class="button primary" id="loadWheelSeatingClass" type="button">Load Names</button></div>
               <small class="wheel-class-source-status" id="wheelClassSourceStatus">Your manual wheel list will stay available until you load a class.</small>
             </div>
-            <label class="wheel-entry-label">Names, words, or topics<textarea id="wheelEntries" rows="12" spellcheck="false" placeholder="Enter one item per line">Alex
-Maria
-Saw Htoo
-Naw Paw
-Jordan
-Taylor</textarea><small>Enter one item per line.</small></label>
+            <label class="wheel-entry-label">Names, words, or topics<textarea id="wheelEntries" rows="12" spellcheck="false" placeholder="Enter one item per line"></textarea><small>Enter one item per line.</small></label>
             <div class="wheel-actions"><button class="button ghost" id="shuffleWheel" type="button">Shuffle</button><button class="button ghost" id="clearWheel" type="button">Clear</button></div>
             <div class="wheel-options"><label class="wheel-check"><input id="wheelNoDuplicates" type="checkbox" checked /> Remove duplicate entries</label><label class="wheel-time">Spin time<select id="wheelSpinTime" aria-label="Wheel spin time"><option value="1" selected>1 second</option><option value="2">2 seconds</option><option value="3">3 seconds</option><option value="4">4 seconds</option><option value="5">5 seconds</option><option value="6">6 seconds</option><option value="7">7 seconds</option><option value="8">8 seconds</option><option value="9">9 seconds</option><option value="10">10 seconds</option></select></label></div>
             <div class="wheel-history"><div><strong>Results</strong><button id="clearWheelResults" type="button">Clear results</button></div><ol id="wheelResults"><li>No results yet</li></ol></div>
@@ -416,12 +411,12 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="app.js?v=20260911-1"></script>
   <script src="practice.js?v=20260910-6"></script>
   <script src="games.js?v=20260911-1"></script>
-  <script src="custom-games.js?v=20260911-13"></script>
-  <script src="race.js?v=20260911-7"></script>
+  <script src="custom-games.js?v=20260911-14"></script>
+  <script src="race.js?v=20260911-8"></script>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260911-20"></script>
+  <script src="calculator.js?v=20260911-21"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
