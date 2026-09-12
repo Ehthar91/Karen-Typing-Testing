@@ -41,75 +41,115 @@ const numberGeneratorResult=document.querySelector('#numberGeneratorResult');
 const numberGeneratorStatus=document.querySelector('#numberGeneratorStatus');
 const numberGeneratorHistory=document.querySelector('#numberGeneratorHistory');
 const numberNoRepeats=document.querySelector('#numberNoRepeats');
+const numberUseCommas=document.querySelector('#numberUseCommas');
+const NUMBER_GENERATOR_LIMIT=9999999999;
+const MAX_SAFE_RANDOM_RANGE=9007199254740992;
 let generatedNumberHistory=[];
-let numberRemainingPool=[];
-let numberPoolSignature='';
+let numberNoRepeatSignature='';
+let numberNoRepeatRemaining=0;
+let numberNoRepeatSwaps=new Map();
+function parseGeneratorInteger(value,fallback){
+  const cleaned=String(value??'').replace(/,/g,'').trim();
+  if(!cleaned)return fallback;
+  const parsed=Number(cleaned);
+  return Number.isFinite(parsed)?Math.trunc(parsed):fallback;
+}
+function formatGeneratorNumber(value){
+  const integer=Math.trunc(Number(value));
+  if(!Number.isFinite(integer))return '—';
+  return numberUseCommas?.checked?integer.toLocaleString('en-US'):String(integer);
+}
 function normalizedNumberRange(){
-  let min=Number(numberGeneratorMin.value),max=Number(numberGeneratorMax.value);
-  if(!Number.isFinite(min))min=1;
-  if(!Number.isFinite(max))max=30;
-  min=Math.trunc(min);max=Math.trunc(max);
-  const hardLimit=100000;
-  min=Math.max(-hardLimit,Math.min(hardLimit,min));
-  max=Math.max(-hardLimit,Math.min(hardLimit,max));
+  let min=parseGeneratorInteger(numberGeneratorMin.value,1),max=parseGeneratorInteger(numberGeneratorMax.value,30);
+  min=Math.max(-NUMBER_GENERATOR_LIMIT,Math.min(NUMBER_GENERATOR_LIMIT,min));
+  max=Math.max(-NUMBER_GENERATOR_LIMIT,Math.min(NUMBER_GENERATOR_LIMIT,max));
   if(min>max)[min,max]=[max,min];
-  numberGeneratorMin.value=String(min);numberGeneratorMax.value=String(max);
+  numberGeneratorMin.value=formatGeneratorNumber(min);numberGeneratorMax.value=formatGeneratorNumber(max);
   return{min,max,size:max-min+1};
 }
-function secureRandomInt(min,max){
-  const range=max-min+1;
-  if(range<=1)return min;
-  if(window.crypto?.getRandomValues&&range<=0x100000000){
-    const limit=Math.floor(0x100000000/range)*range;
-    const values=new Uint32Array(1);let value;
-    do{window.crypto.getRandomValues(values);value=values[0]}while(value>=limit);
-    return min+(value%range);
+function secureRandomOffset(range){
+  if(range<=1)return 0;
+  if(range>MAX_SAFE_RANDOM_RANGE)throw new Error('Range is too large.');
+  if(window.crypto?.getRandomValues){
+    const values=new Uint32Array(2);
+    const limit=Math.floor(MAX_SAFE_RANDOM_RANGE/range)*range;
+    let value;
+    do{
+      window.crypto.getRandomValues(values);
+      value=(values[0]&0x1fffff)*4294967296+values[1];
+    }while(value>=limit);
+    return value%range;
   }
-  return min+Math.floor(Math.random()*range);
+  return Math.floor(Math.random()*range);
 }
-function resetNumberPool(){numberRemainingPool=[];numberPoolSignature=''}
-function prepareNumberPool(min,max){
+function secureRandomInt(min,max){return min+secureRandomOffset(max-min+1)}
+function resetNumberPool(){numberNoRepeatSignature='';numberNoRepeatRemaining=0;numberNoRepeatSwaps=new Map()}
+function prepareNoRepeatSampler(min,max){
   const signature=`${min}:${max}`;
-  if(numberPoolSignature===signature&&numberRemainingPool.length)return;
   const size=max-min+1;
-  if(size>10000){numberRemainingPool=[];numberPoolSignature=signature;return}
-  numberRemainingPool=Array.from({length:size},(_,i)=>min+i);
-  for(let i=numberRemainingPool.length-1;i>0;i--){const j=secureRandomInt(0,i);[numberRemainingPool[i],numberRemainingPool[j]]=[numberRemainingPool[j],numberRemainingPool[i]]}
-  numberPoolSignature=signature;
+  if(numberNoRepeatSignature===signature&&numberNoRepeatRemaining>0)return;
+  numberNoRepeatSignature=signature;
+  numberNoRepeatRemaining=size;
+  numberNoRepeatSwaps=new Map();
+}
+function takeNoRepeatNumber(min,max){
+  prepareNoRepeatSampler(min,max);
+  if(numberNoRepeatRemaining<=0){resetNumberPool();prepareNoRepeatSampler(min,max)}
+  const pickIndex=secureRandomOffset(numberNoRepeatRemaining);
+  const lastIndex=numberNoRepeatRemaining-1;
+  const chosenOffset=numberNoRepeatSwaps.has(pickIndex)?numberNoRepeatSwaps.get(pickIndex):pickIndex;
+  const lastOffset=numberNoRepeatSwaps.has(lastIndex)?numberNoRepeatSwaps.get(lastIndex):lastIndex;
+  if(pickIndex!==lastIndex)numberNoRepeatSwaps.set(pickIndex,lastOffset);
+  else numberNoRepeatSwaps.delete(pickIndex);
+  numberNoRepeatSwaps.delete(lastIndex);
+  numberNoRepeatRemaining--;
+  return min+chosenOffset;
 }
 function renderNumberHistory(){
   numberGeneratorHistory.innerHTML='';
   if(!generatedNumberHistory.length){const li=document.createElement('li');li.textContent='No numbers yet';numberGeneratorHistory.append(li);return}
-  generatedNumberHistory.forEach(value=>{const li=document.createElement('li');li.textContent=String(value);numberGeneratorHistory.append(li)});
+  generatedNumberHistory.forEach(value=>{const li=document.createElement('li');li.textContent=formatGeneratorNumber(value);numberGeneratorHistory.append(li)});
 }
 function generateClassroomNumber(){
   const{min,max,size}=normalizedNumberRange();
   if(size<1)return;
   let result;
   if(numberNoRepeats.checked){
-    if(size>10000){numberGeneratorStatus.textContent='No Repeats supports ranges up to 10,000 numbers.';return}
-    prepareNumberPool(min,max);
-    if(!numberRemainingPool.length){resetNumberPool();prepareNumberPool(min,max)}
-    result=numberRemainingPool.pop();
-    const left=numberRemainingPool.length;
-    numberGeneratorStatus.textContent=left?`${left} number${left===1?'':'s'} remaining before reset.`:'All numbers in this range have now been used. The next Generate starts a new round.';
+    result=takeNoRepeatNumber(min,max);
+    const left=numberNoRepeatRemaining;
+    numberGeneratorStatus.textContent=left?`${formatGeneratorNumber(left)} number${left===1?'':'s'} remaining before reset.`:'All numbers in this range have now been used. The next Generate starts a new round.';
   }else{
     result=secureRandomInt(min,max);
-    numberGeneratorStatus.textContent=`Generated from ${min} to ${max}.`;
+    numberGeneratorStatus.textContent=`Generated from ${formatGeneratorNumber(min)} to ${formatGeneratorNumber(max)}.`;
   }
-  numberGeneratorResult.textContent=String(result);
+  numberGeneratorResult.textContent=formatGeneratorNumber(result);
   generatedNumberHistory.unshift(result);generatedNumberHistory=generatedNumberHistory.slice(0,100);renderNumberHistory();
   numberGeneratorPanel.classList.remove('number-pop');void numberGeneratorPanel.offsetWidth;numberGeneratorPanel.classList.add('number-pop');
 }
 function resetNumberGenerator(){
-  numberGeneratorMin.value='1';numberGeneratorMax.value='30';numberNoRepeats.checked=false;numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent='Choose a range, then generate a number.';generatedNumberHistory=[];renderNumberHistory();resetNumberPool();
+  numberGeneratorMin.value='1';numberGeneratorMax.value='30';numberNoRepeats.checked=false;numberUseCommas.checked=true;numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent='Choose a range, then generate a number.';generatedNumberHistory=[];renderNumberHistory();resetNumberPool();
 }
 document.querySelector('#generateNumber').onclick=generateClassroomNumber;
 document.querySelector('#resetNumberGenerator').onclick=resetNumberGenerator;
 document.querySelector('#clearNumberHistory').onclick=()=>{generatedNumberHistory=[];renderNumberHistory()};
 numberNoRepeats.onchange=()=>{resetNumberPool();numberGeneratorStatus.textContent=numberNoRepeats.checked?'No Repeats is on. Each number will be used once per round.':'Repeats are allowed.'};
-[numberGeneratorMin,numberGeneratorMax].forEach(input=>{input.addEventListener('change',()=>{normalizedNumberRange();resetNumberPool()});input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();generateClassroomNumber()}})});
-document.querySelectorAll('[data-number-max]').forEach(button=>button.addEventListener('click',()=>{numberGeneratorMin.value='1';numberGeneratorMax.value=button.dataset.numberMax;resetNumberPool();numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent=`Quick range set to 1–${button.dataset.numberMax}. Press Generate when ready.`;}));
+numberUseCommas.onchange=()=>{
+  const currentResult=generatedNumberHistory[0];
+  const min=parseGeneratorInteger(numberGeneratorMin.value,1),max=parseGeneratorInteger(numberGeneratorMax.value,30);
+  numberGeneratorMin.value=formatGeneratorNumber(Math.max(-NUMBER_GENERATOR_LIMIT,Math.min(NUMBER_GENERATOR_LIMIT,min)));
+  numberGeneratorMax.value=formatGeneratorNumber(Math.max(-NUMBER_GENERATOR_LIMIT,Math.min(NUMBER_GENERATOR_LIMIT,max)));
+  numberGeneratorResult.textContent=currentResult===undefined?'—':formatGeneratorNumber(currentResult);
+  renderNumberHistory();
+};
+[numberGeneratorMin,numberGeneratorMax].forEach(input=>{
+  input.addEventListener('focus',()=>input.select());
+  input.addEventListener('change',()=>{normalizedNumberRange();resetNumberPool()});
+  input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();generateClassroomNumber()}})
+});
+document.querySelectorAll('[data-number-max]').forEach(button=>button.addEventListener('click',()=>{
+  const max=Number(button.dataset.numberMax);
+  numberGeneratorMin.value=formatGeneratorNumber(1);numberGeneratorMax.value=formatGeneratorNumber(max);resetNumberPool();numberGeneratorResult.textContent='—';numberGeneratorStatus.textContent=`Quick range set to ${formatGeneratorNumber(1)}–${formatGeneratorNumber(max)}. Press Generate when ready.`;
+}));
 renderNumberHistory();
 
 const wheelCanvas=document.querySelector('#randomWheel');

@@ -23,9 +23,9 @@
   <link rel="stylesheet" href="quiz.css?v=20260910-6" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260910-9" />
-  <link rel="stylesheet" href="calculator.css?v=20260911-17" />
+  <link rel="stylesheet" href="calculator.css?v=20260911-18" />
   <link rel="stylesheet" href="seating.css?v=20260911-30" />
-  <link rel="stylesheet" href="rgb-theme.css?v=20260911-6" />
+  <link rel="stylesheet" href="rgb-theme.css?v=20260911-7" />
 </head>
 <body>
   <main class="app-shell">
@@ -306,9 +306,9 @@ Fish = ညၣ်</textarea>
         <div class="number-generator-layout">
           <div class="number-generator-main">
             <div class="number-range-fields" aria-label="Number range">
-              <label>Minimum<input id="numberGeneratorMin" type="number" inputmode="numeric" value="1" step="1" /></label>
+              <label>Minimum<input id="numberGeneratorMin" type="text" inputmode="numeric" value="1" autocomplete="off" /></label>
               <span aria-hidden="true">to</span>
-              <label>Maximum<input id="numberGeneratorMax" type="number" inputmode="numeric" value="30" step="1" /></label>
+              <label>Maximum<input id="numberGeneratorMax" type="text" inputmode="numeric" value="30" autocomplete="off" /></label>
             </div>
             <div class="number-result-card" aria-live="polite" aria-atomic="true">
               <span>Random number</span>
@@ -316,7 +316,10 @@ Fish = ညၣ်</textarea>
               <small id="numberGeneratorStatus">Choose a range, then generate a number.</small>
             </div>
             <button class="number-generate-button" id="generateNumber" type="button">Generate</button>
-            <label class="number-no-repeat"><input id="numberNoRepeats" type="checkbox" /> <span><strong>No Repeats</strong><small>Use every number once before repeating.</small></span></label>
+            <div class="number-options">
+              <label class="number-no-repeat"><input id="numberNoRepeats" type="checkbox" /> <span><strong>No Repeats</strong><small>Use every number once before repeating.</small></span></label>
+              <label class="number-no-repeat"><input id="numberUseCommas" type="checkbox" checked /> <span><strong>Use Commas</strong><small>Show large numbers with thousands separators.</small></span></label>
+            </div>
           </div>
           <aside class="number-generator-side">
             <div class="number-presets">
@@ -327,6 +330,9 @@ Fish = ညၣ်</textarea>
                 <button type="button" data-number-max="30">1–30</button>
                 <button type="button" data-number-max="40">1–40</button>
                 <button type="button" data-number-max="100">1–100</button>
+                <button type="button" data-number-max="1000">1–1,000</button>
+                <button type="button" data-number-max="1000000">1–1,000,000</button>
+                <button type="button" data-number-max="9999999999">1–9,999,999,999</button>
               </div>
             </div>
             <div class="number-history">
@@ -455,7 +461,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260910-9"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
-  <script src="calculator.js?v=20260911-23"></script>
+  <script src="calculator.js?v=20260911-24"></script>
   <script src="seating.js?v=20260911-31"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
