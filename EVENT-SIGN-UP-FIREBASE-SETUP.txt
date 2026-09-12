@@ -1,0 +1,20 @@
+EVENT SIGN UP — FIREBASE SETUP
+
+The Event Sign Up tool uses Firebase Realtime Database so a student/parent can open a public signup link and reserve a time slot.
+
+IMPORTANT: Uploading the website to GitHub Pages does NOT automatically update Firebase Realtime Database rules.
+
+Before testing public signup links:
+1. Open Firebase Console for the gln-karen-typing-center project.
+2. Go to Realtime Database -> Rules.
+3. Replace/publish the rules with the project's updated firebase-rules.json file.
+4. Confirm Anonymous Authentication is enabled (the Car Race already uses it).
+5. Google Authentication can remain enabled for the teacher Classroom Tools account.
+
+The new rules add an eventSignups section that:
+- lets anyone authenticated by Firebase read an event when they have its link;
+- lets only the event owner edit/delete the event;
+- lets each participant create/update/cancel only their own signup;
+- enforces each slot's capacity.
+
+After publishing the rules, hard-refresh the website (Command + Shift + R).

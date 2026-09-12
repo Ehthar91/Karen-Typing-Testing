@@ -318,7 +318,7 @@ body.schedule-fullscreen-open{overflow:hidden}
 .calculator-heading{width:100%;margin-bottom:18px}
 .calculator-mode-switch{
   display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
+  grid-template-columns:repeat(8,minmax(0,1fr));
   width:100%;
   max-width:none;
   margin:0 0 14px;
@@ -330,6 +330,7 @@ body.schedule-fullscreen-open{overflow:hidden}
 .number-generator-card,
 .schedule-timer-card,
 .wheel-card,
+.event-signup-card,
 .seating-card,
 .quiz-view.classroom-tool-panel{
   width:100%;

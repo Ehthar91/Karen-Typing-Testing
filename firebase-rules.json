@@ -59,6 +59,37 @@
           }
         }
       }
+    },
+    "eventSignups": {
+      "$eventId": {
+        ".read": "auth != null && data.child('ownerUid').val() === auth.uid",
+        ".write": "auth != null && ((!data.exists() && newData.child('ownerUid').val() === auth.uid) || data.child('ownerUid').val() === auth.uid)",
+        "signups": {
+          "$slotId": {
+            ".validate": "!newData.exists() || (root.child('eventSignups').child($eventId).child('slots').child($slotId).exists() && newData.numChildren() <= root.child('eventSignups').child($eventId).child('slots').child($slotId).child('capacity').val())",
+            "$uid": {
+              ".write": "auth != null && (auth.uid === $uid || root.child('eventSignups').child($eventId).child('ownerUid').val() === auth.uid)",
+              ".validate": "!newData.exists() || (newData.hasChildren(['uid','name','createdAt']) && newData.child('uid').val() === $uid && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 60 && (!newData.child('note').exists() || (newData.child('note').isString() && newData.child('note').val().length <= 200)))",
+              ".read": "auth != null && (auth.uid === $uid || root.child('eventSignups').child($eventId).child('ownerUid').val() === auth.uid)"
+            }
+          }
+        },
+        "title": {
+          ".read": "auth != null"
+        },
+        "date": {
+          ".read": "auth != null"
+        },
+        "description": {
+          ".read": "auth != null"
+        },
+        "status": {
+          ".read": "auth != null"
+        },
+        "slots": {
+          ".read": "auth != null"
+        }
+      }
     }
   }
 }
