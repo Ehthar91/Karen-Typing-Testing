@@ -1,27 +1,30 @@
-EVENT SIGN UP — FIREBASE SETUP
+EVENT SIGN UP — FIREBASE SETUP (CLAIMABLE SPOTS)
 
 The Event Sign Up tool uses Firebase Realtime Database so a student/parent can open a public signup link and reserve one or more time slots.
 
-IMPORTANT: Uploading the website to GitHub Pages does NOT automatically update Firebase Realtime Database rules.
+IMPORTANT: Uploading the website to GitHub Pages does NOT update Firebase Realtime Database rules.
 
 Before testing public signup links:
 1. Open Firebase Console for the gln-karen-typing-center project.
 2. Go to Realtime Database -> Rules.
-3. Replace/publish the rules with the project's updated firebase-rules.json file.
-4. Confirm Anonymous Authentication is enabled (the Car Race already uses it).
-5. Google Authentication can remain enabled for the teacher Classroom Tools account.
+3. Replace ALL current rules with the project's updated firebase-rules.json file.
+4. Click Publish.
+5. Confirm Anonymous Authentication is enabled (the Car Race already uses it).
+6. Google Authentication can remain enabled for the teacher Classroom Tools account.
 
-The updated rules:
-- let anyone authenticated by Firebase read the public event details when they have its link;
-- let only the event owner edit/delete the event;
-- let each participant create/update/cancel only their own signup records;
-- support multiple time slots for the same family while keeping each slot separate;
-- accept Parent/Guardian Name, Email, optional Phone, and Student Name fields;
-- enforce each slot's capacity, including simultaneous signups;
-- block new registrations when an event is closed while still allowing a participant to cancel;
-- prevent an organizer from lowering a slot limit below the number already signed up.
+WHAT CHANGED IN THIS BUILD
+- Event Sign Up no longer tries to count signup children inside Security Rules.
+- Every time slot now contains a fixed set of claimable spot IDs equal to its capacity.
+- A participant must claim one available spot with a Firebase transaction before the reservation is saved.
+- One physical spot can hold only one claim, so a 1-person slot cannot become 2/1 even when two people click at nearly the same time.
+- Full slots remain visible for now but are disabled and marked FULL.
+- Cancelling a reservation releases its claimed spot so it becomes available again.
+- Parent/Guardian Name, Email, optional Phone, Student Name, multiple selected slots, and Schedule Timer linking are preserved.
 
-EMAIL NOTE:
-This build collects the email address but does not send confirmation emails yet. Automatic confirmation/manage links require the planned secure server-side email service (for example a Firebase Cloud Function + mail provider). Do not put a mail API key in the website JavaScript.
+OLD TEST EVENTS
+Events created by the older signup system do not have claimable spot IDs yet. After publishing these rules, create a NEW test event for the cleanest test. An older event can be migrated by editing and updating it only when its current signup count does not exceed its configured capacity. If an old test event already shows 2/1, delete it or create a fresh event rather than trying to preserve the invalid overbooked state.
 
-After publishing the rules, hard-refresh the website (Command + Shift + R).
+EMAIL NOTE
+This build collects the email address but does not send confirmation emails yet. Automatic confirmation/manage links require the planned secure server-side email service. Do not put a mail API key in the website JavaScript.
+
+After publishing the rules and uploading the site, hard-refresh the website with Command + Shift + R.
