@@ -743,3 +743,61 @@ body.theme-rgb .tug-avatar-fallback{background:linear-gradient(180deg,#173352,#1
   .tug-player-team .tug-avatar-art{max-height:142px}
   .tug-player-rope p{bottom:-78px;font-size:.88rem;padding:8px 12px;max-width:92%}
 }
+
+
+/* Tug difficulty keyboard + Team A/B visual update */
+/* Medium uses the same keyboard structure as the Type page, but without answer highlighting. */
+#customGameKeyboard.real-keyboard{gap:7px;overflow:hidden;padding:18px}
+#customGameKeyboard.real-keyboard .key-row{width:100%;min-width:0;gap:6px;justify-content:center}
+#customGameKeyboard.real-keyboard .key{flex:0 1 68px;min-width:45px;max-width:76px}
+#customGameKeyboard.real-keyboard .modifier{flex:none;max-width:none;padding:0 11px;font:800 .72rem Inter,sans-serif}
+#customGameKeyboard.real-keyboard .modifier small{display:none}
+#customGameKeyboard.real-keyboard .backspace-key{width:116px}
+#customGameKeyboard.real-keyboard .tab-key{width:88px}
+#customGameKeyboard.real-keyboard .caps-key{width:105px}
+#customGameKeyboard.real-keyboard .enter-key{width:112px}
+#customGameKeyboard.real-keyboard .shift-key{width:138px}
+#customGameKeyboard.real-keyboard .keyboard-row-bottom{padding:0 6%}
+#customGameKeyboard.real-keyboard .keyboard-row-bottom .system-key{width:86px}
+#customGameKeyboard.real-keyboard .keyboard-row-bottom .space{width:auto;max-width:520px;flex:1}
+#customGameKeyboard.real-keyboard .keyboard-row-1{padding-left:1.5%}
+#customGameKeyboard.real-keyboard .keyboard-row-2{padding-left:2.6%}
+#customGameKeyboard.real-keyboard .keyboard-row-3{padding-left:4%}
+#customGameKeyboard.real-keyboard .system-key{font-size:.68rem;color:#718096;cursor:default}
+#customGameKeyboard.real-keyboard .system-key:active{transform:none;border-bottom-width:3px}
+
+/* Team A / Team B use interface accents instead of avatar clothing colors. */
+.tug-team-choice.red.selected{border-color:#d6a43b;background:#fff8e7;color:#805900}
+.tug-team-choice.blue.selected{border-color:#42a7ba;background:#eefbfd;color:#126273}
+.tug-lobby-team.red{border-color:#ecd49a;background:#fffaf0}
+.tug-lobby-team.blue{border-color:#9fd8e2;background:#f2fcfd}
+.tug-mini-team.red{background:#fff0c7;color:#755000}
+.tug-mini-team.blue{background:#dff6f8;color:#126273}
+.tug-arena-score.red span,.tug-arena-score.red strong{color:#c38a18}
+.tug-arena-score.blue span,.tug-arena-score.blue strong{color:#258da1}
+.tug-player-team.red>span,.tug-lobby-team.red h3,.tug-score-team.red h3{background:linear-gradient(180deg,#efc45f,#c99327);color:#fff}
+.tug-player-team.blue>span,.tug-lobby-team.blue h3,.tug-score-team.blue h3{background:linear-gradient(180deg,#63bfd0,#2b91a5);color:#fff}
+.team-red-text{color:#c38a18!important}
+.team-blue-text{color:#258da1!important}
+.tug-finish.red{background:linear-gradient(180deg,#f1cb70,#c99021)!important}
+.tug-finish.blue{background:linear-gradient(180deg,#78c8d7,#2c91a4)!important}
+.tug-arena-score.red{border-color:rgba(214,164,59,.25)}
+.tug-arena-score.blue{border-color:rgba(66,167,186,.25)}
+
+body.theme-rgb .tug-team-choice.red.selected{background:#3b321d;border-color:#d7ad4e;color:#ffe6a8}
+body.theme-rgb .tug-team-choice.blue.selected{background:#15363d;border-color:#49b1c4;color:#c9f5fb}
+body.theme-rgb .tug-lobby-team.red{background:#2b281b;border-color:#6b592a}
+body.theme-rgb .tug-lobby-team.blue{background:#132f36;border-color:#2f6771}
+body.theme-rgb .tug-mini-team.red{background:#4b3c16;color:#ffe3a0}
+body.theme-rgb .tug-mini-team.blue{background:#183e47;color:#c8f4fa}
+body.theme-rgb .team-red-text{color:#f2c761!important}
+body.theme-rgb .team-blue-text{color:#69cfdf!important}
+body.theme-rgb .tug-arena-score.red span,body.theme-rgb .tug-arena-score.red strong{color:#f2c761}
+body.theme-rgb .tug-arena-score.blue span,body.theme-rgb .tug-arena-score.blue strong{color:#69cfdf}
+body.theme-rgb #customGameKeyboard.real-keyboard .system-key{color:#9fb0c8}
+
+@media(max-width:720px){
+  #customGameKeyboard.real-keyboard{padding:14px 10px;overflow-x:auto}
+  #customGameKeyboard.real-keyboard .key-row{justify-content:flex-start;min-width:680px}
+  #customGameKeyboard.real-keyboard .key{height:56px}
+}
