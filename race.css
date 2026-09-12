@@ -327,3 +327,81 @@
     font-size: 1.65rem;
   }
 }
+
+
+/* Race prompt panel polish to match Tug of War typing area */
+.race-live:not(.teacher-view) > .race-passage{
+  width:min(720px, calc(100% - 36px));
+  margin:18px auto 10px;
+  padding:18px 24px 16px;
+  border:1px solid #d8e6f3;
+  border-radius:26px;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,249,255,.96));
+  box-shadow:0 18px 36px rgba(17,24,39,.08);
+  text-align:center;
+  color:#173868;
+  font:800 clamp(2.2rem, 4.2vw, 3.8rem)/1.28 "Padauk", sans-serif;
+}
+.race-live:not(.teacher-view) > .race-passage::before{
+  content:"TYPE THIS";
+  display:block;
+  margin-bottom:10px;
+  color:#6e7f94;
+  font:900 .85rem/1 Inter, sans-serif;
+  letter-spacing:.22em;
+}
+.race-live:not(.teacher-view) > .race-passage .done{
+  color:#1ea978;
+  background:rgba(30,169,120,.14);
+  border-radius:10px;
+  padding:0 .08em;
+}
+.race-live:not(.teacher-view) > .race-passage .current{
+  display:inline-block;
+  padding:0 .16em;
+  border-radius:12px;
+  background:#ffe178;
+  color:#11233e;
+  box-shadow:0 8px 16px rgba(255,225,120,.35);
+}
+.race-live:not(.teacher-view) > .race-key-instruction{
+  width:fit-content;
+  min-width:220px;
+  margin:0 auto 10px;
+  padding:10px 18px;
+  border-radius:999px;
+  background:#eef5ff;
+  color:#173868;
+  font:900 .84rem/1.2 Inter, sans-serif;
+  box-shadow:0 10px 22px rgba(23,56,104,.08);
+}
+.race-live:not(.teacher-view) > .race-key-instruction.needs-shift{
+  background:#173868;
+  color:#fff;
+  box-shadow:0 10px 22px rgba(23,56,104,.18);
+}
+.race-live:not(.teacher-view) > .race-prompt{
+  width:min(720px, calc(100% - 36px));
+  margin:0 auto 12px;
+  text-align:center;
+  color:#617389;
+  font:700 .96rem/1.4 Inter, sans-serif;
+}
+
+@media(max-width:720px){
+  .race-live:not(.teacher-view) > .race-passage{
+    width:min(100%, calc(100% - 20px));
+    margin:14px auto 8px;
+    padding:16px 14px 14px;
+    border-radius:22px;
+    font-size:clamp(1.9rem, 8vw, 3rem);
+  }
+  .race-live:not(.teacher-view) > .race-passage::before{
+    font-size:.76rem;
+    letter-spacing:.18em;
+  }
+  .race-live:not(.teacher-view) > .race-key-instruction,
+  .race-live:not(.teacher-view) > .race-prompt{
+    width:min(100%, calc(100% - 20px));
+  }
+}
