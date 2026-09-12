@@ -90,3 +90,18 @@ body.theme-rgb .schedule-saved-heading small{color:#a9bdd4}
 body.theme-rgb .schedule-saved-heading button{color:#71e9ff}
 body.theme-rgb .schedule-weekly-panel .schedule-list-heading{border-bottom-color:#315b7c}
 body.theme-rgb .schedule-one-day-panel .schedule-list-heading{border-bottom-color:#8d7430}
+
+/* Special Schedule groups - RGB theme */
+body.theme-rgb #scheduleWeeklyEditor>label,body.theme-rgb .schedule-special-editor>label,body.theme-rgb .special-slot-editor-row label{color:#a9bdd4}
+body.theme-rgb .special-slots-heading strong{color:#f1f7ff}body.theme-rgb .special-slots-heading small{color:#9fb3ca}
+body.theme-rgb .special-slots-heading button,body.theme-rgb .special-slot-editor-row,body.theme-rgb .special-schedule-card,body.theme-rgb .special-schedule-slot>button{background:#0f2239;border-color:#355777;color:#eef5ff}
+body.theme-rgb .special-slot-editor-row label>span{color:#9fb3ca}
+body.theme-rgb .special-slot-editor-row input{background:#0b1c30;border-color:#355777;color:#eef5ff;color-scheme:dark}
+body.theme-rgb .special-slot-remove{background:#351d25;border-color:#6a3c46;color:#ff9b9b}
+body.theme-rgb .schedule-special-panel .schedule-list-heading{border-bottom-color:#8d7430}
+body.theme-rgb .special-schedule-card{border-color:#29435f;background:#0f2239}
+body.theme-rgb .special-schedule-card.is-expired{background:#111d2e}
+body.theme-rgb .special-schedule-card-title>strong,body.theme-rgb .special-schedule-slot>strong,body.theme-rgb .special-schedule-slot b{color:#eef5ff}
+body.theme-rgb .special-schedule-card-head small,body.theme-rgb .special-schedule-slot small{color:#a9bdd4}
+body.theme-rgb .special-schedule-slots{background:#0c1b2e;border-color:#29435f}
+body.theme-rgb .special-schedule-slot{border-color:#29435f}
