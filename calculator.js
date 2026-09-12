@@ -301,7 +301,10 @@ function loadClassroomSchedules(){
   }catch{classroomSchedules=[]}
   deactivateExpiredSpecialSchedules();
 }
-function saveClassroomSchedules(){localStorage.setItem(SCHEDULE_TIMER_STORAGE_KEY,JSON.stringify(classroomSchedules))}
+function saveClassroomSchedules(){
+  localStorage.setItem(SCHEDULE_TIMER_STORAGE_KEY,JSON.stringify(classroomSchedules));
+  if(!window.__classroomToolsApplyingCloud)window.queueClassroomToolsCloudSync?.();
+}
 function deactivateExpiredSpecialSchedules(now=new Date()){
   const today=localScheduleDateKey(now);let changed=false;
   classroomSchedules.forEach(entry=>{if(entry.type==='special'&&entry.enabled&&entry.date<today){entry.enabled=false;changed=true}});
@@ -627,15 +630,18 @@ function spinRandomWheel(){
   function animate(now){const progress=Math.min(1,(now-startTime)/duration),eased=1-Math.pow(1-progress,4);wheelRotation=start+(end-start)*eased;drawWheel();if(progress<1)requestAnimationFrame(animate);else{wheelRotation=end%twoPi;wheelSpinning=false;document.querySelector('#spinWheel').disabled=false;showWheelResult(entries[winnerIndex])}}
   requestAnimationFrame(animate);
 }
-function saveAndDrawWheel(){localStorage.setItem('glnWheelEntries',wheelEntries.value);drawWheel()}
+function saveAndDrawWheel(){
+  localStorage.setItem('glnWheelEntries',wheelEntries.value);drawWheel();
+  if(!window.__classroomToolsApplyingCloud)window.queueClassroomToolsCloudSync?.();
+}
 document.querySelector('#spinWheel').onclick=spinRandomWheel;
 loadWheelSeatingClass.onclick=loadSelectedSeatingClassToWheel;
-wheelSeatingClass.onchange=()=>{localStorage.setItem('glnWheelSeatingClass',wheelSeatingClass.value);refreshWheelSeatingClasses()};
+wheelSeatingClass.onchange=()=>{localStorage.setItem('glnWheelSeatingClass',wheelSeatingClass.value);refreshWheelSeatingClasses();if(!window.__classroomToolsApplyingCloud)window.queueClassroomToolsCloudSync?.()};
 window.addEventListener('gln:seating-classes-updated',refreshWheelSeatingClasses);
 wheelCanvas.onclick=spinRandomWheel;
 wheelEntries.oninput=saveAndDrawWheel;
 document.querySelector('#wheelNoDuplicates').onchange=drawWheel;
-wheelSpinTime.onchange=()=>localStorage.setItem('glnWheelSpinTime',wheelSpinTime.value);
+wheelSpinTime.onchange=()=>{localStorage.setItem('glnWheelSpinTime',wheelSpinTime.value);if(!window.__classroomToolsApplyingCloud)window.queueClassroomToolsCloudSync?.()};
 document.querySelector('#shuffleWheel').onclick=()=>{const entries=currentWheelEntries();for(let i=entries.length-1;i>0;i--){const j=randomWheelIndex(i+1);[entries[i],entries[j]]=[entries[j],entries[i]]}wheelEntries.value=entries.join('\n');saveAndDrawWheel()};
 document.querySelector('#clearWheel').onclick=()=>{wheelEntries.value='';saveAndDrawWheel();wheelEntries.focus()};
 document.querySelector('#clearWheelResults').onclick=()=>{wheelHistory=[];renderWheelHistory()};
@@ -645,6 +651,37 @@ document.querySelector('#wheelFullscreen').onclick=()=>{if(!document.fullscreenE
 window.addEventListener('resize',()=>{if(!wheelPanel.hidden)drawWheel()});
 refreshWheelSeatingClasses();
 drawWheel();
+
+// Shared Classroom Tools cloud-sync payload. Seating Chart owns the account connection;
+// persistent data from other tools is supplied here so one Google account can sync them together.
+window.getClassroomToolsSyncData=()=>({
+  version:1,
+  schedules:classroomSchedules.map(item=>JSON.parse(JSON.stringify(item))),
+  wheel:{
+    entries:wheelEntries.value,
+    spinTime:wheelSpinTime.value,
+    seatingClass:wheelSeatingClass.value
+  }
+});
+window.applyClassroomToolsSyncData=data=>{
+  if(!data||typeof data!=='object')return;
+  window.__classroomToolsApplyingCloud=true;
+  try{
+    if(Array.isArray(data.schedules)){
+      const result=migrateStoredSchedules(data.schedules);
+      classroomSchedules=result.items;
+      localStorage.setItem(SCHEDULE_TIMER_STORAGE_KEY,JSON.stringify(classroomSchedules));
+      renderScheduleTimers();updateScheduleTimerClock();
+    }
+    if(data.wheel&&typeof data.wheel==='object'){
+      if(typeof data.wheel.entries==='string'){wheelEntries.value=data.wheel.entries;localStorage.setItem('glnWheelEntries',data.wheel.entries)}
+      if(data.wheel.spinTime!==undefined){wheelSpinTime.value=String(data.wheel.spinTime);localStorage.setItem('glnWheelSpinTime',wheelSpinTime.value)}
+      if(typeof data.wheel.seatingClass==='string')localStorage.setItem('glnWheelSeatingClass',data.wheel.seatingClass);
+      refreshWheelSeatingClasses();drawWheel();
+    }
+  }finally{window.__classroomToolsApplyingCloud=false}
+};
+
 function closeCalculator(){
   calculatorView.hidden=true;
   navTools.classList.remove('active');
