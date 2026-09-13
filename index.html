@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
   <link rel="stylesheet" href="calculator.css?v=20260912-12" />
   <link rel="stylesheet" href="event-signup.css?v=20260912-14" />
-  <link rel="stylesheet" href="seating.css?v=20260913-41" />
+  <link rel="stylesheet" href="seating.css?v=20260913-42" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260912-2" />
 </head>
 <body>
@@ -618,7 +618,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
             <button class="button primary" id="buildSeating" type="button">Build seating chart</button>
             <input id="seatingFileInput" type="file" accept=".csv,.txt" hidden /><button class="button ghost" id="importSeatingRoster" type="button">Upload CSV or text file</button>
             <div class="seating-actions inspector-control"><button class="button ghost" id="shuffleSeating" type="button">Shuffle seats</button><button class="button ghost" id="flipSeating" type="button">Flip room</button></div>
-            <details class="layout-editor" open><summary>Layout settings</summary><div class="desk-edit-actions"><button class="button ghost" id="applyDeskSizeAll" type="button" data-tip="Make every desk match the selected desk">Apply selected size to all</button></div><div class="room-settings"><label>Room size<select id="roomPreset"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option><option value="wide">Wide</option><option value="square">Square</option><option value="custom">Custom</option></select></label><div><label>Width<input id="roomWidth" type="number" min="500" max="2000" step="10" value="760" /></label><label>Height<input id="roomHeight" type="number" min="360" max="1400" step="10" value="520" /></label></div></div><label class="rule-check"><input id="snapDesks" type="checkbox" checked /> Snap movement</label><label class="rule-check"><input id="smartGuides" type="checkbox" checked /> Align desk edges</label><label class="rule-check"><input id="deskTooltips" type="checkbox" checked /> Show shortcut tooltips</label><button class="button ghost shortcuts-button" id="showDeskShortcuts" type="button">⌨ View keyboard shortcuts</button><small>Select a desk to reveal eight resize handles. Hold Shift to keep its proportions or Option/Alt to resize from the center.</small></details>
+            <details class="layout-editor" open><summary>Layout settings</summary><div class="room-settings"><label>Room size<select id="roomPreset"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option><option value="wide">Wide</option><option value="square">Square</option><option value="custom">Custom</option></select></label><div><label>Width<input id="roomWidth" type="number" min="500" max="2000" step="10" value="760" /></label><label>Height<input id="roomHeight" type="number" min="360" max="1400" step="10" value="520" /></label></div></div><label class="rule-check"><input id="snapDesks" type="checkbox" checked /> Snap movement</label><label class="rule-check"><input id="smartGuides" type="checkbox" checked /> Align desk edges</label><label class="rule-check"><input id="deskTooltips" type="checkbox" checked /> Show shortcut tooltips</label><button class="button ghost shortcuts-button" id="showDeskShortcuts" type="button">⌨ View keyboard shortcuts</button><small>Select a desk to reveal eight resize handles. Hold Shift to keep its proportions or Option/Alt to resize from the center.</small></details>
             <details class="seating-rules"><summary>Classroom rules</summary><label>Keep apart<textarea id="seatingKeepApart" rows="3" placeholder="Alex, Jordan&#10;Maria, Taylor"></textarea><small>One pair per line, separated by a comma.</small></label><label>Place near front<textarea id="seatingNearFront" rows="2" placeholder="Saw Htoo&#10;Naw Paw"></textarea></label><label class="rule-check"><input id="seatingAlternateGender" type="checkbox" /> Alternate groups A and B when possible</label><label>Group A names<textarea id="seatingGroupA" rows="2"></textarea></label><label>Group B names<textarea id="seatingGroupB" rows="2"></textarea></label></details>
             <details class="seating-groups"><summary>Automatic groups</summary><label>Number of groups<select id="seatingGroupCount"></select></label><button class="button primary" id="makeSeatingGroups" type="button">Create groups</button><div id="seatingGroupResults"></div></details>
             <p class="seating-help">Drag students to exchange seats in room view. Use Show locks to reveal the lock controls; locked seats stay marked and remain in place when shuffling. Edit layout mode moves the desks instead.</p>
@@ -638,6 +638,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
                   <button class="button ghost" id="contextDuplicateDesk" type="button">Duplicate</button>
                   <button class="button ghost" id="contextRotateLeft" type="button">↺ Rotate left</button>
                   <button class="button ghost" id="contextRotateRight" type="button">↻ Rotate right</button>
+                  <button class="button ghost" id="applyDeskSizeAll" type="button" data-tip="Make every desk match the selected desk">Match all sizes</button>
                   <button class="button danger" id="contextDeleteDesk" type="button">Delete desk</button>
                 </div>
               </div>
@@ -714,7 +715,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260912-10"></script>
   <script src="event-signup.js?v=20260912-15"></script>
-  <script src="seating.js?v=20260913-41"></script>
+  <script src="seating.js?v=20260913-42"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>
 </html>
