@@ -20,13 +20,13 @@
   <link rel="stylesheet" href="race-modern.css?v=20260910-6" />
   <link rel="stylesheet" href="race-features.css?v=20260911-11" />
   <link rel="stylesheet" href="creator-credit.css?v=20260912-1" />
-  <link rel="stylesheet" href="quiz.css?v=20260912-1" />
+  <link rel="stylesheet" href="quiz.css?v=20260913-2" />
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260913-2" />
   <link rel="stylesheet" href="calculator.css?v=20260912-12" />
   <link rel="stylesheet" href="event-signup.css?v=20260912-14" />
   <link rel="stylesheet" href="seating.css?v=20260913-43" />
-  <link rel="stylesheet" href="rgb-theme.css?v=20260912-2" />
+  <link rel="stylesheet" href="rgb-theme.css?v=20260913-3" />
 </head>
 <body>
   <main class="app-shell">
@@ -361,6 +361,14 @@ Fish = ညၣ်</textarea>
           <p class="quiz-feedback" id="quizFeedback"></p>
           <button class="button primary" id="checkQuizAnswer" type="button">Check answer</button>
           <button class="button primary" id="nextQuizQuestion" type="button" hidden>Next question →</button>
+        </div>
+        <div class="quiz-keyboard-toolbar" id="quizKeyboardToolbar" hidden>
+          <span>Keyboard</span>
+          <div class="quiz-keyboard-switch" role="group" aria-label="Quiz keyboard language">
+            <button type="button" data-quiz-keyboard="ksw" aria-pressed="false">S’gaw Karen</button>
+            <button type="button" data-quiz-keyboard="pwo" aria-pressed="false">Pwo Karen</button>
+            <button type="button" data-quiz-keyboard="en" aria-pressed="false">English</button>
+          </div>
         </div>
         <div class="quiz-keyboard keyboard" id="quizKeyboard"></div>
       </section>
@@ -711,7 +719,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="custom-games.js?v=20260911-14"></script>
   <script src="race.js?v=20260911-8"></script>
   <script src="race-features.js?v=20260911-7"></script>
-  <script src="quiz.js?v=20260913-2"></script>
+  <script src="quiz.js?v=20260913-3"></script>
   <script src="quiz-classroom.js?v=20260913-10"></script>
   <script src="calculator.js?v=20260912-10"></script>
   <script src="event-signup.js?v=20260912-15"></script>
