@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
   <link rel="stylesheet" href="quiz-print.css?v=20260912-1" />
   <link rel="stylesheet" href="calculator.css?v=20260912-9" />
-  <link rel="stylesheet" href="event-signup.css?v=20260912-9" />
+  <link rel="stylesheet" href="event-signup.css?v=20260912-12" />
   <link rel="stylesheet" href="seating.css?v=20260912-31" />
   <link rel="stylesheet" href="rgb-theme.css?v=20260912-2" />
 </head>
@@ -579,9 +579,10 @@ Fish = ညၣ်</textarea>
           <section class="event-public-success" id="eventPublicSuccess" hidden>
             <div class="event-public-success-icon">✓</div>
             <div><h3>Signup confirmed</h3><p id="eventPublicSuccessText">Your appointment was saved.</p></div>
-            <label><span>Private Manage Signup link</span><input id="eventPublicManageLink" readonly aria-label="Private manage signup link" /></label>
+            <p class="event-public-delivery-status" id="eventPublicDeliveryStatus">Preparing your confirmation…</p>
+            <label id="eventPublicManageLinkWrap"><span>Private Manage Signup link — fallback</span><input id="eventPublicManageLink" readonly aria-label="Private manage signup link" /></label>
             <div class="event-public-success-actions"><button class="button primary" id="eventPublicCopyManageLink" type="button">Copy private link</button><button class="button ghost" id="eventPublicStartAnother" type="button">Start Another Signup</button></div>
-            <small>Email delivery is not connected yet. For testing, save this private link. Once email sending is connected, this link will be emailed automatically and can be hidden from this confirmation screen.</small>
+            <small id="eventPublicFallbackNote">Keep this private link until the confirmation email is delivered.</small>
           </section>
           <div class="event-public-slots" id="eventPublicSlots"></div>
           <form class="event-public-form" id="eventPublicForm" hidden>
@@ -589,7 +590,7 @@ Fish = ညၣ်</textarea>
             <div class="event-public-contact-grid">
               <label>Parent/Guardian Name<input id="eventPublicParentName" maxlength="60" autocomplete="name" required placeholder="Parent or guardian name" /></label>
               <label>Email<input id="eventPublicEmail" type="email" maxlength="120" autocomplete="email" required placeholder="name@example.com" /><small>A private management link will be tied to this email. Automatic email delivery will be connected separately.</small></label>
-              <label>Phone <span class="optional">optional</span><input id="eventPublicPhone" type="tel" maxlength="30" autocomplete="tel" placeholder="Phone number" /></label>
+              <label>Phone <span class="optional">optional</span><input id="eventPublicPhone" type="tel" maxlength="30" autocomplete="tel" placeholder="Phone number" /><span class="event-sms-consent" id="eventPublicSmsConsent"><input id="eventPublicSmsOptIn" type="checkbox" /> <span>Text me the confirmation and private management link</span></span><small>SMS is optional. A phone number is required if you choose text confirmation.</small></label>
             </div>
             <section class="event-public-selected-section" aria-labelledby="eventPublicSelectedSlot">
               <div class="event-public-selected-heading"><strong>Your selected times</strong><p id="eventPublicSelectedSlot">Choose a time slot above.</p></div>
@@ -699,7 +700,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="quiz.js?v=20260912-1"></script>
   <script src="quiz-classroom.js?v=20260910-9"></script>
   <script src="calculator.js?v=20260912-9"></script>
-  <script src="event-signup.js?v=20260912-11"></script>
+  <script src="event-signup.js?v=20260912-12"></script>
   <script src="seating.js?v=20260912-2"></script>
   <script src="rgb-theme.js?v=20260911-2"></script>
 </body>

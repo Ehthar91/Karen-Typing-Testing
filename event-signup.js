@@ -39,11 +39,16 @@ const eventPublicSelectedSlot=document.querySelector('#eventPublicSelectedSlot')
 const eventPublicParentName=document.querySelector('#eventPublicParentName');
 const eventPublicEmail=document.querySelector('#eventPublicEmail');
 const eventPublicPhone=document.querySelector('#eventPublicPhone');
+const eventPublicSmsOptIn=document.querySelector('#eventPublicSmsOptIn');
+const eventPublicSmsConsent=document.querySelector('#eventPublicSmsConsent');
 const eventPublicSelectionList=document.querySelector('#eventPublicSelectionList');
 const eventPublicSubmit=document.querySelector('#eventPublicSubmit');
 const eventPublicCancelSignup=document.querySelector('#eventPublicCancelSignup');
 const eventPublicSuccess=document.querySelector('#eventPublicSuccess');
 const eventPublicSuccessText=document.querySelector('#eventPublicSuccessText');
+const eventPublicDeliveryStatus=document.querySelector('#eventPublicDeliveryStatus');
+const eventPublicManageLinkWrap=document.querySelector('#eventPublicManageLinkWrap');
+const eventPublicFallbackNote=document.querySelector('#eventPublicFallbackNote');
 const eventPublicManageLink=document.querySelector('#eventPublicManageLink');
 const eventPublicCopyManageLink=document.querySelector('#eventPublicCopyManageLink');
 const eventPublicStartAnother=document.querySelector('#eventPublicStartAnother');
@@ -73,6 +78,53 @@ let publicSubmissionComplete=false;
 let publicSubmittedManageLink='';
 let sharedEditorEventId='';
 let sharedEditorToken='';
+let eventFunctionsClient=null;
+async function getEventFunctionsClient(){
+  if(eventFunctionsClient)return eventFunctionsClient;
+  await initRaceFirebase();
+  const functionsMod=await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js');
+  const instance=functionsMod.getFunctions(auth.app,'us-central1');
+  eventFunctionsClient={functionsMod,instance};
+  return eventFunctionsClient;
+}
+async function callEventDeliveryFunction(name,data){
+  const {functionsMod,instance}=await getEventFunctionsClient();
+  const callable=functionsMod.httpsCallable(instance,name);
+  const result=await callable(data);
+  return result?.data||{};
+}
+function eventDeliveryErrorMessage(error,channel){
+  const code=String(error?.code||'');
+  if(code.includes('not-found'))return `${channel} delivery is not deployed yet.`;
+  if(code.includes('failed-precondition'))return error?.message||`${channel} delivery is not configured yet.`;
+  if(code.includes('unauthenticated'))return 'Firebase sign-in expired. Refresh and try again.';
+  return error?.message||`${channel} delivery could not be sent.`;
+}
+async function sendSignupNotifications(eventId,manageToken,smsOptIn){
+  if(!eventPublicDeliveryStatus)return;
+  eventPublicDeliveryStatus.className='event-public-delivery-status is-sending';
+  eventPublicDeliveryStatus.textContent=smsOptIn?'Sending your private link by email and text…':'Sending your private link by email…';
+  const emailPromise=callEventDeliveryFunction('sendEventSignupEmail',{eventId,manageToken});
+  const smsPromise=smsOptIn?callEventDeliveryFunction('sendEventSignupSms',{eventId,manageToken}):Promise.resolve({skipped:true});
+  const [emailResult,smsResult]=await Promise.allSettled([emailPromise,smsPromise]);
+  const emailOk=emailResult.status==='fulfilled'&&(emailResult.value?.sent||emailResult.value?.alreadySent);
+  const smsOk=!smsOptIn||(smsResult.status==='fulfilled'&&(smsResult.value?.sent||smsResult.value?.alreadySent));
+  if(emailOk){
+    eventPublicManageLinkWrap.hidden=true;
+    eventPublicCopyManageLink.hidden=true;
+    if(eventPublicFallbackNote)eventPublicFallbackNote.textContent=smsOptIn&&smsOk?'Your private link was sent to your email and phone. Use either message to manage or cancel your signup.':'Your private link was sent to your email. Use that email to manage or cancel your signup.';
+  }else{
+    eventPublicManageLinkWrap.hidden=false;
+    eventPublicCopyManageLink.hidden=false;
+    if(eventPublicFallbackNote)eventPublicFallbackNote.textContent='Email was not delivered. Copy and save the private link above so you can manage or cancel your signup.';
+  }
+  const parts=[];
+  parts.push(emailOk?'Email sent':eventDeliveryErrorMessage(emailResult.status==='rejected'?emailResult.reason:null,'Email'));
+  if(smsOptIn)parts.push(smsOk?'Text sent':eventDeliveryErrorMessage(smsResult.status==='rejected'?smsResult.reason:null,'SMS'));
+  eventPublicDeliveryStatus.className=`event-public-delivery-status ${emailOk&&(smsOk||!smsOptIn)?'is-ok':'is-warning'}`;
+  eventPublicDeliveryStatus.textContent=parts.join(' · ');
+}
+
 let sharedEditorEventData=null;
 let sharedEditorUnsubscribe=null;
 function eventSignupId(){
@@ -366,16 +418,16 @@ async function openSharedEventEditor(id,token){
   catch(error){sharedEditorMessage(error?.code==='PERMISSION_DENIED'?'This editor link is invalid, expired, or has been revoked.':(error?.message||'Could not open the shared editor link.'),'error');eventSharedEditorSlots.innerHTML=''}
 }
 function publicMessage(text,type=''){eventPublicMessage.textContent=text;eventPublicMessage.classList.toggle('is-ok',type==='ok');eventPublicMessage.classList.toggle('is-error',type==='error')}
-function resetPublicFormFields(){eventPublicParentName.value='';eventPublicEmail.value='';eventPublicPhone.value='';publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicOwnSignups=new Map();publicSelectionInitialized=true}
+function resetPublicFormFields(){eventPublicParentName.value='';eventPublicEmail.value='';eventPublicPhone.value='';if(eventPublicSmsOptIn)eventPublicSmsOptIn.checked=false;publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicOwnSignups=new Map();publicSelectionInitialized=true}
 function applyPrivateReservationData(raw){
   publicOwnSignups=new Map();publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();let first=null;
   for(const [reservationId,item] of Object.entries(raw||{})){if(!item)continue;const slotId=String(item.slotId||reservationId);if(!publicEventData?.slots?.[slotId])continue;const record={...item,_reservationId:reservationId};publicOwnSignups.set(slotId,record);publicSelectedSlotIds.add(slotId);publicDraftStudentNames.set(slotId,signupStudentName(record));if(!first)first=record}
-  if(first){eventPublicParentName.value=first.parentName||'';eventPublicEmail.value=first.email||'';eventPublicPhone.value=first.phone||''}
+  if(first){eventPublicParentName.value=first.parentName||'';eventPublicEmail.value=first.email||'';eventPublicPhone.value=first.phone||'';if(eventPublicSmsOptIn)eventPublicSmsOptIn.checked=Boolean(first.smsOptIn)}
   publicSelectionInitialized=true;
 }
 function initializePublicSelection(){if(publicSelectionInitialized)return;publicSelectedSlotIds=new Set();publicDraftStudentNames=new Map();publicOwnSignups=new Map();publicSelectionInitialized=true}
 function showPublicSuccess(link,count,parentName){
-  publicSubmissionComplete=true;publicSubmittedManageLink=link;if(eventPublicSuccess){eventPublicSuccess.hidden=false;if(eventPublicSuccessText)eventPublicSuccessText.textContent=`${count} appointment${count===1?'':'s'} saved for ${parentName}.`;if(eventPublicManageLink)eventPublicManageLink.value=link}publicMessage('Signup confirmed. Your private management link is the only participant link that can change or cancel this signup.','ok');renderPublicEvent();
+  publicSubmissionComplete=true;publicSubmittedManageLink=link;if(eventPublicSuccess){eventPublicSuccess.hidden=false;if(eventPublicSuccessText)eventPublicSuccessText.textContent=`${count} appointment${count===1?'':'s'} saved for ${parentName}.`;if(eventPublicManageLink)eventPublicManageLink.value=link;if(eventPublicManageLinkWrap)eventPublicManageLinkWrap.hidden=false;if(eventPublicCopyManageLink)eventPublicCopyManageLink.hidden=false;if(eventPublicFallbackNote)eventPublicFallbackNote.textContent='Keep this private link until the confirmation email is delivered.';if(eventPublicDeliveryStatus){eventPublicDeliveryStatus.className='event-public-delivery-status is-sending';eventPublicDeliveryStatus.textContent='Preparing your confirmation…'}}publicMessage('Signup confirmed. Sending your private management link…','ok');renderPublicEvent();
 }
 function startFreshPublicSignup(){
   publicSubmissionComplete=false;publicSubmittedManageLink='';if(eventPublicSuccess)eventPublicSuccess.hidden=true;resetPublicFormFields();renderPublicEvent();publicMessage(publicEventData?.allowMultiple===false?'Choose one time slot, then enter the parent/guardian and student information.':'Choose one or more time slots. Parent/guardian information is entered once; each time gets its own student name.');eventPublicSlots?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -394,7 +446,7 @@ function renderPublicSelection(){
   if(eventPublicSubmit){eventPublicSubmit.textContent=publicManageMode?'Save changes':(slots.length>1?`Save ${slots.length} signups`:'Save signup');eventPublicSubmit.disabled=!slots.length}
 }
 function renderPublicEvent(){
-  const event=publicEventData;if(!event)return;initializePublicSelection();eventPublicTitle.textContent=event.title||'Event Sign Up';eventPublicDate.textContent=eventDateSummary(event);eventPublicDescription.textContent=event.description||'Choose an available time slot below.';
+  const event=publicEventData;if(!event)return;initializePublicSelection();if(eventPublicSmsConsent)eventPublicSmsConsent.hidden=publicManageMode;eventPublicTitle.textContent=event.title||'Event Sign Up';eventPublicDate.textContent=eventDateSummary(event);eventPublicDescription.textContent=event.description||'Choose an available time slot below.';
   if(eventPublicSuccess)eventPublicSuccess.hidden=!publicSubmissionComplete;if(publicSubmissionComplete&&!publicManageMode){eventPublicSlots.hidden=true;eventPublicForm.hidden=true;eventPublicCancelSignup.hidden=true;return}
   eventPublicSlots.hidden=false;eventPublicSlots.innerHTML='';const own=publicCurrentSignups();eventPublicCancelSignup.hidden=!(publicManageMode&&own.length);eventPublicCancelSignup.textContent=own.length>1?'Cancel all appointments':'Cancel appointment';
   if(publicManageMode){publicMessage(own.length?'Private management link verified. You can change or cancel only this signup.':'This private management link has no active appointments. You can choose a new time if the event is still open.',own.length?'ok':'')}
@@ -420,18 +472,18 @@ async function releaseClaim(slotId,spotId,token){
   await fb.set(claimRef,{token,active:false,releasedAt:Date.now()});await fb.set(availabilityRef,false);if(publicEventData?.availability?.[slotId])publicEventData.availability[slotId][spotId]=false;
 }
 async function savePublicSignup(event){
-  event.preventDefault();if(!publicEventData||!publicSelectedSlotIds.size)return;const parentName=eventPublicParentName.value.trim().replace(/\s+/g,' ').slice(0,60);const email=eventPublicEmail.value.trim().toLowerCase().slice(0,120);const phone=eventPublicPhone.value.trim().replace(/\s+/g,' ').slice(0,30);
-  if(!parentName){eventPublicParentName.focus();return}if(!email||!eventPublicEmail.checkValidity()){eventPublicEmail.focus();return}
+  event.preventDefault();if(!publicEventData||!publicSelectedSlotIds.size)return;const parentName=eventPublicParentName.value.trim().replace(/\s+/g,' ').slice(0,60);const email=eventPublicEmail.value.trim().toLowerCase().slice(0,120);const phone=eventPublicPhone.value.trim().replace(/\s+/g,' ').slice(0,30);const smsOptIn=Boolean(!publicManageMode&&eventPublicSmsOptIn?.checked);
+  if(!parentName){eventPublicParentName.focus();return}if(!email||!eventPublicEmail.checkValidity()){eventPublicEmail.focus();return}if(smsOptIn&&!phone){eventPublicPhone.focus();publicMessage('Enter a phone number or turn off text confirmation.','error');return}
   const selectedSlots=eventSlotsArray(publicEventData).filter(slot=>publicSelectedSlotIds.has(slot.id));if(!selectedSlots.length)return;const students=new Map();for(const slot of selectedSlots){const raw=String(publicDraftStudentNames.get(slot.id)||signupStudentName(publicOwnSignups.get(slot.id))).trim().replace(/\s+/g,' ').slice(0,60);if(!raw){const input=eventPublicSelectionList.querySelector(`[data-slot-id="${slot.id}"] input`);input?.focus();publicMessage(`Enter the student name for ${eventDateText(eventSlotDate(slot,publicEventData))} at ${formatScheduleTime(slot.time)}.`,'error');return}students.set(slot.id,raw)}
   const token=publicManageMode?publicManageToken:eventManageToken();const newlyClaimed=[];
   try{
     await initRaceFirebase();const now=Date.now();const claimedBySlot=new Map();for(const slot of selectedSlots){const previous=publicOwnSignups.get(slot.id);if(previous?.spotId){claimedBySlot.set(slot.id,previous.spotId);continue}const spotId=await claimEventSpot(slot,token);claimedBySlot.set(slot.id,spotId);newlyClaimed.push({slotId:slot.id,spotId})}
     const reservationUpdates={};const nextRecords=[];for(const [slotId,previous] of publicOwnSignups){if(publicSelectedSlotIds.has(slotId))continue;if(previous?._reservationId)reservationUpdates[previous._reservationId]=null}
-    for(const slot of selectedSlots){const previous=publicOwnSignups.get(slot.id);const studentName=students.get(slot.id);const spotId=claimedBySlot.get(slot.id);const reservationId=previous?._reservationId||eventReservationId();const record={manageToken:token,slotId:slot.id,spotId,name:studentName,studentName,parentName,email,phone,createdAt:previous?.createdAt||now,updatedAt:now};reservationUpdates[reservationId]=record;nextRecords.push([reservationId,record])}
+    for(const slot of selectedSlots){const previous=publicOwnSignups.get(slot.id);const studentName=students.get(slot.id);const spotId=claimedBySlot.get(slot.id);const reservationId=previous?._reservationId||eventReservationId();const record={manageToken:token,slotId:slot.id,spotId,name:studentName,studentName,parentName,email,phone,smsOptIn:publicManageMode?Boolean(previous?.smsOptIn):smsOptIn,createdAt:previous?.createdAt||now,updatedAt:now};reservationUpdates[reservationId]=record;nextRecords.push([reservationId,record])}
     await fb.update(fb.ref(db,`eventSignups/${publicEventSignupId}/reservations/${token}`),reservationUpdates);
     for(const [slotId,previous] of publicOwnSignups){if(publicSelectedSlotIds.has(slotId))continue;if(previous?.spotId)await releaseClaim(slotId,previous.spotId,token)}
     if(publicManageMode){applyPrivateReservationData(Object.fromEntries(nextRecords));renderPublicEvent();publicMessage('Your signup changes were saved.','ok')}
-    else{const link=eventManageLink(publicEventSignupId,token);resetPublicFormFields();showPublicSuccess(link,selectedSlots.length,parentName)}
+    else{const link=eventManageLink(publicEventSignupId,token);resetPublicFormFields();showPublicSuccess(link,selectedSlots.length,parentName);sendSignupNotifications(publicEventSignupId,token,smsOptIn).catch(error=>{if(eventPublicDeliveryStatus){eventPublicDeliveryStatus.className='event-public-delivery-status is-warning';eventPublicDeliveryStatus.textContent=eventDeliveryErrorMessage(error,'Email')}})}
   }catch(error){for(const item of newlyClaimed)try{await releaseClaim(item.slotId,item.spotId,token)}catch{}const message=error?.code==='SLOT_FULL'?'One of the selected times was just taken. Choose another available time and try again.':error?.code==='PERMISSION_DENIED'?'Firebase blocked the private-link signup. Publish the updated Event Sign Up database rules included with this build.':(error?.message||'Could not save your signup.');publicMessage(message,'error')}
 }
 async function cancelPublicSignup(){
