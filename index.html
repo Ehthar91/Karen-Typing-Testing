@@ -20,8 +20,8 @@
   <link rel="stylesheet" href="race-modern.css?v=20260910-6" />
   <link rel="stylesheet" href="race-features.css?v=20260911-11" />
   <link rel="stylesheet" href="creator-credit.css?v=20260912-1" />
-  <link rel="stylesheet" href="quiz.css?v=20260913-2" />
-  <link rel="stylesheet" href="quiz-classroom.css?v=20260910-8" />
+  <link rel="stylesheet" href="quiz.css?v=20260913-3" />
+  <link rel="stylesheet" href="quiz-classroom.css?v=20260913-11" />
   <link rel="stylesheet" href="quiz-print.css?v=20260913-2" />
   <link rel="stylesheet" href="calculator.css?v=20260912-12" />
   <link rel="stylesheet" href="event-signup.css?v=20260912-14" />
@@ -343,10 +343,11 @@ Fish = ညၣ်</textarea>
           <div class="quiz-student-chips" id="quizLobbyStudents"><span>No students yet</span></div>
         </div>
         <div class="quiz-teacher-live" id="quizTeacherLive" hidden>
-          <div class="quiz-live-status"><div><span id="quizLiveLabel">QUESTION 1 OF 2</span><h2 id="quizLiveQuestion">Question</h2><small id="quizLiveAnswer">Answer: —</small></div><button class="button primary" id="advanceClassQuiz" type="button">Next question →</button></div>
-          <div class="quiz-live-scoreboard"><div class="quiz-score-head"><span>Student</span><span>Progress</span><span>Score</span></div><div id="quizLiveStudents"></div></div>
+          <div class="quiz-live-status"><div><span id="quizLiveLabel">QUESTION 1 OF 2</span><h2 id="quizLiveQuestion">Question</h2><small id="quizLiveAnswer">Answer: —</small></div><div class="quiz-live-actions"><button class="button primary" id="advanceClassQuiz" type="button">Next question →</button><button class="button ghost" id="endClassQuiz" type="button">End quiz</button></div></div>
+          <div class="quiz-live-scoreboard"><div class="quiz-score-head"><span>Student</span><span>Progress</span><span>Score</span><span>Status</span></div><div id="quizLiveStudents"></div></div>
         </div>
-        <div class="quiz-class-results" id="quizClassResults" hidden><p class="eyebrow">CLASS RESULTS</p><h2>Quiz complete!</h2><p class="print-date" id="quizPrintDate"></p><div class="quiz-class-podium" id="quizClassPodium"></div><div class="quiz-class-list" id="quizClassList"></div><div class="quiz-result-actions"><button class="button primary" id="quizClassAgain" type="button">Use this quiz again</button><button class="button ghost print-quiz" id="printClassResults" type="button">Print results</button></div></div>
+        <div class="quiz-student-finished" id="quizStudentWaiting" hidden><span class="quiz-result-icon">✓</span><p class="eyebrow">ANSWERS SUBMITTED</p><h2>You’re finished!</h2><strong id="quizStudentDoneScore">0 out of 0</strong><p id="quizStudentDoneMessage">Waiting for the rest of the class…</p></div>
+        <div class="quiz-class-results" id="quizClassResults" hidden><p class="eyebrow">CLASS RESULTS</p><h2 id="quizClassResultsTitle">Quiz complete!</h2><p class="print-date" id="quizPrintDate"></p><div class="quiz-class-podium" id="quizClassPodium"></div><div class="quiz-class-list" id="quizClassList"></div><div class="quiz-result-actions"><button class="button primary" id="quizClassAgain" type="button">Use this quiz again</button><button class="button ghost print-quiz" id="printClassResults" type="button">Print results</button></div></div>
         <p class="quiz-class-error" id="quizClassError" role="alert"></p>
       </section>
 
@@ -378,7 +379,7 @@ Fish = ညၣ်</textarea>
         <div class="quiz-review" id="quizReview"></div>
     <div class="quiz-result-actions"><button class="button primary" id="retryQuiz" type="button">Try again</button><button class="button ghost" id="newQuiz" type="button">Edit word list</button><button class="button ghost print-quiz" id="printQuizResults" type="button">Print results</button></div>
       </section>
-      <p class="privacy"><span aria-hidden="true">●</span> Quiz lists and answers stay on this device.</p>
+      <p class="privacy"><span aria-hidden="true">●</span> Solo quiz lists stay on this device. Classroom Quiz uses the online classroom service so students can join and scores can sync.</p>
     </section>
 
       <div class="calculator-frame-card" id="calculatorPanel">
@@ -719,8 +720,8 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="custom-games.js?v=20260911-14"></script>
   <script src="race.js?v=20260911-8"></script>
   <script src="race-features.js?v=20260911-7"></script>
-  <script src="quiz.js?v=20260913-3"></script>
-  <script src="quiz-classroom.js?v=20260913-10"></script>
+  <script src="quiz.js?v=20260913-4"></script>
+  <script src="quiz-classroom.js?v=20260913-11"></script>
   <script src="calculator.js?v=20260912-10"></script>
   <script src="event-signup.js?v=20260912-15"></script>
   <script src="seating.js?v=20260913-42"></script>
