@@ -25,3 +25,28 @@ body.theme-rgb.quiz-student-locked #quizView{background:#071225!important}
 body.theme-rgb.quiz-student-locked .quiz-lock-notice{background:#0e2038;color:#f0f7ff;border-color:#294968}
 body.theme-rgb.quiz-student-locked .quiz-lock-notice small{color:#aebdd2}
 @media(max-width:800px){body.quiz-student-locked #quizView{padding:0!important}body.quiz-student-locked #quizClassroom{min-height:100dvh;border-radius:0;border-left:0;border-right:0}.quiz-lock-notice{align-items:flex-start;flex-wrap:wrap}.quiz-lock-notice .button{width:100%}}
+
+/* Locked student playing view: show only the actual quiz player, not the empty classroom shell above it. */
+body.quiz-student-locked.quiz-student-playing #quizClassroom{display:none!important}
+body.quiz-student-locked.quiz-student-playing #quizPlayer{display:block!important;max-width:1100px;margin:0 auto!important}
+body.quiz-student-locked.quiz-student-playing #quizPlayer .quiz-player-top{border-radius:18px 18px 0 0}
+@media(max-width:800px){body.quiz-student-locked.quiz-student-playing #quizPlayer{max-width:none;margin:0!important;border-radius:0;min-height:100dvh}}
+/* Locked classroom quiz: fullscreen is entered from Join Quiz. There is intentionally no Exit Full Screen control. */
+.quiz-fullscreen-guard[hidden]{display:none!important}
+.quiz-fullscreen-guard{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(7,18,37,.98);text-align:center}
+.quiz-fullscreen-guard-card{width:min(520px,100%);padding:34px 28px;border:1px solid #355373;border-radius:22px;background:#0d1d32;color:#f4f8ff;box-shadow:0 24px 80px rgba(0,0,0,.42)}
+.quiz-fullscreen-guard-card .eyebrow{margin:12px 0 5px;color:#8dbce8}.quiz-fullscreen-guard-card h2{margin:0;font-size:clamp(1.7rem,5vw,2.5rem)}.quiz-fullscreen-guard-card p:not(.eyebrow){margin:10px auto 22px;max-width:390px;color:#b9c8da}.quiz-fullscreen-lock-icon{display:block;font-size:2.2rem}.quiz-fullscreen-guard-card .button{min-width:220px}
+body:not(.theme-rgb) .quiz-fullscreen-guard{background:rgba(237,243,249,.98)}
+body:not(.theme-rgb) .quiz-fullscreen-guard-card{background:#fff;color:#10223a;border-color:#c7d7e8;box-shadow:0 24px 80px rgba(24,50,82,.18)}
+body:not(.theme-rgb) .quiz-fullscreen-guard-card p:not(.eyebrow){color:#5b6b80}
+@media(max-width:600px){.quiz-fullscreen-guard{padding:16px}.quiz-fullscreen-guard-card{padding:28px 20px;border-radius:18px}.quiz-fullscreen-guard-card .button{width:100%;min-width:0}}
+
+
+/* Teacher dashboard: live student fullscreen status */
+.quiz-status-stack{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}
+.quiz-screen-badge{display:inline-flex;align-items:center;white-space:nowrap;padding:4px 8px;border-radius:999px;font-size:.68rem;font-style:normal;font-weight:900;line-height:1.1;border:1px solid transparent}
+.quiz-screen-badge.is-fullscreen{background:#e8f7ef;color:#087344;border-color:#b7e4cc}
+.quiz-screen-badge.is-not-fullscreen{background:#fff0ef;color:#b42318;border-color:#f2b8b3}
+.quiz-screen-badge.is-warning{background:#fff7e6;color:#9a6700;border-color:#f0d49a}
+.quiz-screen-badge.is-unlocked{background:#f2f4f7;color:#667085;border-color:#d0d5dd}
+@media(max-width:800px){.quiz-status-stack{gap:6px}.quiz-screen-badge{font-size:.65rem}}
