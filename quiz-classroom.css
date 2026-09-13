@@ -9,3 +9,19 @@
 
 /* Keep role-specific Classroom Quiz controls truly hidden. Author display rules must not override the HTML hidden state. */
 .quiz-classroom [hidden]{display:none!important}
+
+
+/* Classroom Quiz Lock Mode */
+.quiz-lobby-info label small{margin-top:2px;color:#667085;font-size:.68rem;font-weight:600;line-height:1.35}
+.quiz-lock-notice{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #c7e6f5;background:#eef9ff;color:#173868}
+.quiz-lock-notice>span{font-size:1.25rem}.quiz-lock-notice>div{min-width:0;flex:1}.quiz-lock-notice strong,.quiz-lock-notice small{display:block}.quiz-lock-notice small{margin-top:2px;color:#5b6b80;font-size:.75rem}.quiz-lock-notice .button{min-height:34px}
+body.quiz-student-locked{overflow:hidden}
+body.quiz-student-locked .topbar,body.quiz-student-locked .creator-credit{display:none!important}
+body.quiz-student-locked #quizView{display:block!important;position:fixed!important;inset:0!important;z-index:9999!important;overflow:auto!important;max-width:none!important;margin:0!important;padding:18px!important;background:var(--bg,#edf3f9)!important}
+body.quiz-student-locked #quizView>.quiz-heading,body.quiz-student-locked #quizView>.privacy{display:none!important}
+body.quiz-student-locked #quizClassroom{max-width:1100px;margin:0 auto!important;min-height:calc(100dvh - 36px)}
+body.quiz-student-locked #leaveClassQuiz,body.quiz-student-locked #editQuiz{display:none!important}
+body.theme-rgb.quiz-student-locked #quizView{background:#071225!important}
+body.theme-rgb.quiz-student-locked .quiz-lock-notice{background:#0e2038;color:#f0f7ff;border-color:#294968}
+body.theme-rgb.quiz-student-locked .quiz-lock-notice small{color:#aebdd2}
+@media(max-width:800px){body.quiz-student-locked #quizView{padding:0!important}body.quiz-student-locked #quizClassroom{min-height:100dvh;border-radius:0;border-left:0;border-right:0}.quiz-lock-notice{align-items:flex-start;flex-wrap:wrap}.quiz-lock-notice .button{width:100%}}

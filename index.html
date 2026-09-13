@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="race-features.css?v=20260911-11" />
   <link rel="stylesheet" href="creator-credit.css?v=20260912-1" />
   <link rel="stylesheet" href="quiz.css?v=20260913-3" />
-  <link rel="stylesheet" href="quiz-classroom.css?v=20260913-12" />
+  <link rel="stylesheet" href="quiz-classroom.css?v=20260913-14" />
   <link rel="stylesheet" href="quiz-print.css?v=20260913-2" />
   <link rel="stylesheet" href="calculator.css?v=20260912-12" />
   <link rel="stylesheet" href="event-signup.css?v=20260912-14" />
@@ -336,10 +336,10 @@ Fish = ညၣ်</textarea>
       </section>
 
       <section class="quiz-classroom" id="quizClassroom" hidden>
-        <div class="quiz-class-top"><button class="back-games" id="leaveClassQuiz" type="button">← Leave room</button><strong>Classroom Quiz</strong><span id="quizClassConnection">Online</span></div>
+        <div class="quiz-class-top"><button class="back-games" id="leaveClassQuiz" type="button">← Leave room</button><strong>Classroom Quiz</strong><span id="quizClassConnection">Online</span></div><div class="quiz-lock-notice" id="quizStudentLockNotice" hidden><span aria-hidden="true">🔒</span><div><strong>Quiz screen locked</strong><small>Stay on this screen until your teacher releases the class.</small></div><button class="button ghost" id="quizFullscreenButton" type="button">Fullscreen</button></div>
         <div class="quiz-class-lobby" id="quizClassLobby">
           <div class="quiz-room-code"><span>ROOM CODE</span><strong id="quizRoomCode">—</strong><button class="button ghost" id="copyQuizCode" type="button">Copy code</button></div>
-          <div class="quiz-lobby-info"><h2 id="quizLobbyTitle">Waiting for students</h2><p id="quizLobbyHint">Share the room code with your class.</p><label id="quizPaceField">Quiz pace<select id="quizPace"><option value="teacher">Teacher-paced</option><option value="student">Student-paced</option></select></label><label id="quizAdvanceField">Question advance<select id="quizAdvance"><option value="manual">Teacher clicks next</option><option value="auto">Auto-next after everyone answers</option></select></label><button class="button primary" id="startClassQuiz" type="button">Start quiz</button></div>
+          <div class="quiz-lobby-info"><h2 id="quizLobbyTitle">Waiting for students</h2><p id="quizLobbyHint">Share the room code with your class.</p><label id="quizPaceField">Quiz pace<select id="quizPace"><option value="teacher">Teacher-paced</option><option value="student">Student-paced</option></select></label><label id="quizAdvanceField">Question advance<select id="quizAdvance"><option value="manual">Teacher clicks next</option><option value="auto">Auto-next after everyone answers</option></select></label><label id="quizLockField">Student screen<select id="quizLockMode"><option value="locked" selected>Lock during quiz</option><option value="normal">Normal</option></select><small>Locked students stay in the Classroom Quiz until you release them.</small></label><button class="button primary" id="startClassQuiz" type="button">Start quiz</button></div>
           <div class="quiz-student-chips" id="quizLobbyStudents"><span>No students yet</span></div>
         </div>
         <div class="quiz-teacher-live" id="quizTeacherLive" hidden>
@@ -347,7 +347,7 @@ Fish = ညၣ်</textarea>
           <div class="quiz-live-scoreboard"><div class="quiz-score-head"><span>Student</span><span>Progress</span><span>Score</span><span>Status</span></div><div id="quizLiveStudents"></div></div>
         </div>
         <div class="quiz-student-finished" id="quizStudentWaiting" hidden><span class="quiz-result-icon">✓</span><p class="eyebrow">ANSWERS SUBMITTED</p><h2>You’re finished!</h2><strong id="quizStudentDoneScore">0 out of 0</strong><p id="quizStudentDoneMessage">Waiting for the rest of the class…</p></div>
-        <div class="quiz-class-results" id="quizClassResults" hidden><p class="eyebrow">CLASS RESULTS</p><h2 id="quizClassResultsTitle">Quiz complete!</h2><p class="print-date" id="quizPrintDate"></p><div class="quiz-class-podium" id="quizClassPodium"></div><div class="quiz-class-list" id="quizClassList"></div><div class="quiz-result-actions"><button class="button primary" id="quizClassAgain" type="button">Use this quiz again</button><button class="button ghost print-quiz" id="printClassResults" type="button">Print results</button></div></div>
+        <div class="quiz-class-results" id="quizClassResults" hidden><p class="eyebrow">CLASS RESULTS</p><h2 id="quizClassResultsTitle">Quiz complete!</h2><p class="print-date" id="quizPrintDate"></p><div class="quiz-class-podium" id="quizClassPodium"></div><div class="quiz-class-list" id="quizClassList"></div><div class="quiz-result-actions"><button class="button primary" id="quizClassAgain" type="button">Use this quiz again</button><button class="button ghost" id="releaseQuizStudents" type="button">Release students</button><button class="button ghost print-quiz" id="printClassResults" type="button">Print results</button></div></div>
         <p class="quiz-class-error" id="quizClassError" role="alert"></p>
       </section>
 
@@ -721,7 +721,7 @@ Taylor</textarea><small>Enter one student per line.</small></label>
   <script src="race.js?v=20260911-8"></script>
   <script src="race-features.js?v=20260911-7"></script>
   <script src="quiz.js?v=20260913-6"></script>
-  <script src="quiz-classroom.js?v=20260913-13"></script>
+  <script src="quiz-classroom.js?v=20260913-14"></script>
   <script src="calculator.js?v=20260912-10"></script>
   <script src="event-signup.js?v=20260912-15"></script>
   <script src="seating.js?v=20260913-42"></script>
